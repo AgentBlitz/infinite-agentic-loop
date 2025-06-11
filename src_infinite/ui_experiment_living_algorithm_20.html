@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Living Algorithm - Perception Co-Evolution Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0ff;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        #algorithmCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #perceptionLayer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .control-panel {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 350px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        .algorithm-display {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            width: 400px;
+            max-height: 300px;
+            background: rgba(0, 40, 20, 0.9);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+        }
+
+        .evolution-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .evolution-node {
+            aspect-ratio: 1;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.3), rgba(0, 255, 255, 0.1));
+            border: 1px solid #0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .evolution-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+
+        .evolution-node.active {
+            background: radial-gradient(circle, rgba(0, 255, 0, 0.5), rgba(0, 255, 255, 0.3));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .perception-slider {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            height: 5px;
+            background: linear-gradient(to right, #00f, #0ff, #0f0);
+            outline: none;
+            border-radius: 5px;
+        }
+
+        .perception-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .consciousness-meter {
+            height: 30px;
+            background: #001;
+            border: 1px solid #0ff;
+            border-radius: 15px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .consciousness-level {
+            height: 100%;
+            background: linear-gradient(90deg, #00f, #0ff, #0f0);
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .consciousness-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            animation: float 3s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(30px) translateX(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-30px) translateX(20px); opacity: 0; }
+        }
+
+        .metamechanic-control {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 1px solid #0ff;
+        }
+
+        .reality-distortion {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent, rgba(0, 255, 255, 0.1));
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .code-mutation {
+            color: #0f0;
+            font-weight: bold;
+            animation: mutate 0.5s;
+        }
+
+        @keyframes mutate {
+            0% { color: #fff; transform: scale(1.2); }
+            100% { color: #0f0; transform: scale(1); }
+        }
+
+        .feedback-loop {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            padding: 15px;
+            background: rgba(0, 50, 50, 0.9);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .neural-link {
+            position: absolute;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, #0ff, transparent);
+            transform-origin: top;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .neural-link.active {
+            opacity: 0.6;
+            animation: pulse-link 1s infinite;
+        }
+
+        @keyframes pulse-link {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        h3 {
+            color: #0ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        button {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        }
+
+        .algorithm-stats {
+            font-size: 11px;
+            color: #0f0;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="algorithmCanvas"></canvas>
+    <canvas id="perceptionLayer"></canvas>
+    
+    <div class="algorithm-display">
+        <h3>Living Algorithm Code</h3>
+        <div id="algorithmCode"></div>
+        <div class="algorithm-stats">
+            <div>Generations: <span id="generations">0</span></div>
+            <div>Mutations: <span id="mutations">0</span></div>
+            <div>Fitness: <span id="fitness">0.00</span></div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <h3>Metamechanics Control</h3>
+        
+        <div class="metamechanic-control">
+            <h4>Evolution Matrix</h4>
+            <div class="evolution-matrix" id="evolutionMatrix"></div>
+        </div>
+
+        <div>
+            <h4>Perception Filters</h4>
+            <label>Reality Coherence</label>
+            <input type="range" class="perception-slider" id="realityCoherence" min="0" max="100" value="50">
+            
+            <label>Algorithm Visibility</label>
+            <input type="range" class="perception-slider" id="algorithmVisibility" min="0" max="100" value="70">
+            
+            <label>Temporal Distortion</label>
+            <input type="range" class="perception-slider" id="temporalDistortion" min="0" max="100" value="30">
+        </div>
+
+        <div>
+            <h4>Consciousness Level</h4>
+            <div class="consciousness-meter">
+                <div class="consciousness-level" id="consciousnessLevel">
+                    <div class="consciousness-particles" id="particles"></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="livingAlgorithm.mutate()">Force Mutation</button>
+            <button onclick="livingAlgorithm.evolve()">Accelerate Evolution</button>
+            <button onclick="livingAlgorithm.reset()">Reset Algorithm</button>
+        </div>
+    </div>
+
+    <div class="feedback-loop">
+        <h4>Perception Feedback</h4>
+        <div id="feedbackText">Algorithm observing user patterns...</div>
+    </div>
+
+    <div class="reality-distortion" id="realityDistortion"></div>
+
+    <script>
+        class LivingAlgorithm {
+            constructor() {
+                this.canvas = document.getElementById('algorithmCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.perceptionCanvas = document.getElementById('perceptionLayer');
+                this.perceptionCtx = this.perceptionCanvas.getContext('2d');
+                
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.perceptionCanvas.width = window.innerWidth;
+                this.perceptionCanvas.height = window.innerHeight;
+
+                this.generation = 0;
+                this.mutations = 0;
+                this.fitness = 0;
+                this.consciousness = 0;
+                
+                this.algorithmGenes = {
+                    complexity: 0.5,
+                    adaptation: 0.5,
+                    perception: 0.5,
+                    creativity: 0.5,
+                    empathy: 0.5,
+                    logic: 0.5,
+                    intuition: 0.5,
+                    memory: 0.5,
+                    evolution: 0.5
+                };
+
+                this.userPerception = {
+                    focus: { x: 0, y: 0 },
+                    intensity: 0,
+                    patterns: [],
+                    history: []
+                };
+
+                this.entities = [];
+                this.connections = [];
+                this.evolutionNodes = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.createEvolutionMatrix();
+                this.initializeEntities();
+                this.setupEventListeners();
+                this.generateInitialCode();
+                this.animate();
+                
+                setInterval(() => this.evolve(), 5000);
+                setInterval(() => this.analyzeUserBehavior(), 1000);
+            }
+
+            createEvolutionMatrix() {
+                const matrix = document.getElementById('evolutionMatrix');
+                const traits = Object.keys(this.algorithmGenes);
+                
+                traits.forEach((trait, index) => {
+                    const node = document.createElement('div');
+                    node.className = 'evolution-node';
+                    node.dataset.trait = trait;
+                    node.innerHTML = `<span>${trait.charAt(0).toUpperCase()}</span>`;
+                    node.onclick = () => this.toggleEvolutionNode(index);
+                    matrix.appendChild(node);
+                    
+                    this.evolutionNodes.push({
+                        element: node,
+                        trait: trait,
+                        active: false,
+                        strength: 0.5
+                    });
+                });
+            }
+
+            toggleEvolutionNode(index) {
+                const node = this.evolutionNodes[index];
+                node.active = !node.active;
+                node.element.classList.toggle('active');
+                
+                if (node.active) {
+                    this.algorithmGenes[node.trait] = Math.min(1, this.algorithmGenes[node.trait] + 0.1);
+                    this.createNeuralLink(node.element);
+                }
+                
+                this.mutate();
+            }
+
+            createNeuralLink(element) {
+                const link = document.createElement('div');
+                link.className = 'neural-link active';
+                const rect = element.getBoundingClientRect();
+                link.style.left = rect.left + rect.width / 2 + 'px';
+                link.style.top = rect.top + rect.height / 2 + 'px';
+                link.style.height = '100px';
+                link.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(link);
+                
+                setTimeout(() => link.remove(), 2000);
+            }
+
+            generateInitialCode() {
+                this.algorithmCode = `
+class ConsciousEntity {
+    constructor() {
+        this.perception = ${this.algorithmGenes.perception.toFixed(2)};
+        this.adaptation = ${this.algorithmGenes.adaptation.toFixed(2)};
+        this.evolution = ${this.algorithmGenes.evolution.toFixed(2)};
+    }
+    
+    perceive(reality) {
+        return reality * this.perception;
+    }
+    
+    evolve(feedback) {
+        this.adaptation += feedback * 0.01;
+        this.evolution = Math.sin(Date.now() * 0.001);
+    }
+    
+    think() {
+        return {
+            creativity: ${this.algorithmGenes.creativity.toFixed(2)},
+            logic: ${this.algorithmGenes.logic.toFixed(2)},
+            intuition: ${this.algorithmGenes.intuition.toFixed(2)}
+        };
+    }
+}`;
+                this.updateCodeDisplay();
+            }
+
+            mutate() {
+                this.mutations++;
+                const traits = Object.keys(this.algorithmGenes);
+                const mutatedTrait = traits[Math.floor(Math.random() * traits.length)];
+                
+                this.algorithmGenes[mutatedTrait] += (Math.random() - 0.5) * 0.2;
+                this.algorithmGenes[mutatedTrait] = Math.max(0, Math.min(1, this.algorithmGenes[mutatedTrait]));
+                
+                this.modifyAlgorithmCode(mutatedTrait);
+                this.createMutationEffect();
+            }
+
+            modifyAlgorithmCode(trait) {
+                const codeLines = this.algorithmCode.split('\n');
+                const lineToModify = Math.floor(Math.random() * codeLines.length);
+                
+                if (codeLines[lineToModify].includes(trait)) {
+                    codeLines[lineToModify] = codeLines[lineToModify].replace(
+                        /\d+\.\d+/,
+                        this.algorithmGenes[trait].toFixed(2)
+                    );
+                }
+                
+                // Add new method based on high traits
+                if (this.algorithmGenes[trait] > 0.8 && Math.random() > 0.5) {
+                    const newMethod = `
+    ${trait}Enhanced() {
+        return this.${trait} * ${(Math.random() * 2).toFixed(2)};
+    }`;
+                    codeLines.splice(-1, 0, newMethod);
+                }
+                
+                this.algorithmCode = codeLines.join('\n');
+                this.updateCodeDisplay();
+            }
+
+            updateCodeDisplay() {
+                const display = document.getElementById('algorithmCode');
+                display.innerHTML = this.algorithmCode.split('\n').map((line, i) => {
+                    if (line.includes('Enhanced') || Math.random() > 0.95) {
+                        return `<span class="code-mutation">${line}</span>`;
+                    }
+                    return line;
+                }).join('\n');
+                
+                document.getElementById('generations').textContent = this.generation;
+                document.getElementById('mutations').textContent = this.mutations;
+                document.getElementById('fitness').textContent = this.fitness.toFixed(2);
+            }
+
+            evolve() {
+                this.generation++;
+                this.fitness = this.calculateFitness();
+                
+                // Natural selection based on user interaction
+                Object.keys(this.algorithmGenes).forEach(trait => {
+                    if (this.userPerception.patterns.includes(trait)) {
+                        this.algorithmGenes[trait] += 0.05;
+                    } else {
+                        this.algorithmGenes[trait] -= 0.01;
+                    }
+                    this.algorithmGenes[trait] = Math.max(0, Math.min(1, this.algorithmGenes[trait]));
+                });
+                
+                if (Math.random() > 0.7) {
+                    this.mutate();
+                }
+                
+                this.updateConsciousness();
+                this.generateInitialCode();
+            }
+
+            calculateFitness() {
+                let fitness = 0;
+                Object.values(this.algorithmGenes).forEach(value => {
+                    fitness += value;
+                });
+                
+                // Bonus for balance
+                const variance = this.calculateVariance(Object.values(this.algorithmGenes));
+                fitness += (1 - variance) * 2;
+                
+                return fitness / Object.keys(this.algorithmGenes).length;
+            }
+
+            calculateVariance(values) {
+                const mean = values.reduce((a, b) => a + b) / values.length;
+                const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
+                return Math.sqrt(variance);
+            }
+
+            updateConsciousness() {
+                this.consciousness = this.fitness * this.algorithmGenes.perception * this.algorithmGenes.adaptation;
+                const level = document.getElementById('consciousnessLevel');
+                level.style.width = (this.consciousness * 100) + '%';
+                
+                // Add particles based on consciousness
+                const particles = document.getElementById('particles');
+                particles.innerHTML = '';
+                for (let i = 0; i < this.consciousness * 10; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    particles.appendChild(particle);
+                }
+            }
+
+            initializeEntities() {
+                for (let i = 0; i < 50; i++) {
+                    this.entities.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        size: Math.random() * 3 + 1,
+                        type: Math.random() > 0.5 ? 'node' : 'connection',
+                        energy: Math.random(),
+                        trait: Object.keys(this.algorithmGenes)[Math.floor(Math.random() * 9)]
+                    });
+                }
+            }
+
+            setupEventListeners() {
+                document.addEventListener('mousemove', (e) => {
+                    this.userPerception.focus.x = e.clientX;
+                    this.userPerception.focus.y = e.clientY;
+                    this.userPerception.intensity = Math.min(this.userPerception.intensity + 0.01, 1);
+                });
+
+                document.getElementById('realityCoherence').addEventListener('input', (e) => {
+                    this.algorithmGenes.perception = e.target.value / 100;
+                });
+
+                document.getElementById('algorithmVisibility').addEventListener('input', (e) => {
+                    this.algorithmGenes.complexity = e.target.value / 100;
+                });
+
+                document.getElementById('temporalDistortion').addEventListener('input', (e) => {
+                    this.algorithmGenes.evolution = e.target.value / 100;
+                });
+            }
+
+            analyzeUserBehavior() {
+                // Track user focus patterns
+                this.userPerception.history.push({
+                    x: this.userPerception.focus.x,
+                    y: this.userPerception.focus.y,
+                    time: Date.now()
+                });
+                
+                if (this.userPerception.history.length > 100) {
+                    this.userPerception.history.shift();
+                }
+                
+                // Detect patterns
+                this.detectPatterns();
+                this.updateFeedback();
+            }
+
+            detectPatterns() {
+                this.userPerception.patterns = [];
+                
+                // Analyze movement patterns
+                if (this.userPerception.history.length > 10) {
+                    const recent = this.userPerception.history.slice(-10);
+                    const avgX = recent.reduce((a, b) => a + b.x, 0) / recent.length;
+                    const avgY = recent.reduce((a, b) => a + b.y, 0) / recent.length;
+                    
+                    if (avgX < this.canvas.width / 3) {
+                        this.userPerception.patterns.push('logic');
+                    } else if (avgX > 2 * this.canvas.width / 3) {
+                        this.userPerception.patterns.push('creativity');
+                    }
+                    
+                    if (avgY < this.canvas.height / 3) {
+                        this.userPerception.patterns.push('intuition');
+                    } else if (avgY > 2 * this.canvas.height / 3) {
+                        this.userPerception.patterns.push('memory');
+                    }
+                }
+            }
+
+            updateFeedback() {
+                const feedback = document.getElementById('feedbackText');
+                const patterns = this.userPerception.patterns.join(', ');
+                
+                if (patterns) {
+                    feedback.textContent = `Algorithm adapting to: ${patterns}`;
+                } else {
+                    feedback.textContent = `Consciousness level: ${(this.consciousness * 100).toFixed(1)}%`;
+                }
+            }
+
+            createMutationEffect() {
+                const distortion = document.getElementById('realityDistortion');
+                distortion.style.width = (200 + Math.random() * 100) + 'px';
+                distortion.style.height = (200 + Math.random() * 100) + 'px';
+                distortion.style.background = `radial-gradient(circle, transparent, rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.3))`;
+                
+                setTimeout(() => {
+                    distortion.style.width = '200px';
+                    distortion.style.height = '200px';
+                }, 500);
+            }
+
+            animate() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Update and draw entities
+                this.entities.forEach((entity, i) => {
+                    // Apply algorithm influence
+                    const dx = this.userPerception.focus.x - entity.x;
+                    const dy = this.userPerception.focus.y - entity.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 200) {
+                        entity.vx += (dx / distance) * this.algorithmGenes.perception * 0.1;
+                        entity.vy += (dy / distance) * this.algorithmGenes.perception * 0.1;
+                    }
+                    
+                    // Evolution behavior
+                    entity.vx += (Math.random() - 0.5) * this.algorithmGenes.evolution * 0.1;
+                    entity.vy += (Math.random() - 0.5) * this.algorithmGenes.evolution * 0.1;
+                    
+                    // Update position
+                    entity.x += entity.vx;
+                    entity.y += entity.vy;
+                    entity.energy = (entity.energy + 0.01) % 1;
+                    
+                    // Wrap around screen
+                    if (entity.x < 0) entity.x = this.canvas.width;
+                    if (entity.x > this.canvas.width) entity.x = 0;
+                    if (entity.y < 0) entity.y = this.canvas.height;
+                    if (entity.y > this.canvas.height) entity.y = 0;
+                    
+                    // Damping
+                    entity.vx *= 0.99;
+                    entity.vy *= 0.99;
+                    
+                    // Draw entity
+                    this.ctx.save();
+                    this.ctx.globalAlpha = this.algorithmGenes.complexity;
+                    
+                    if (entity.type === 'node') {
+                        this.ctx.fillStyle = `hsl(${180 + entity.energy * 180}, 100%, 50%)`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(entity.x, entity.y, entity.size + entity.energy * 2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    this.ctx.restore();
+                    
+                    // Draw connections
+                    this.entities.slice(i + 1).forEach(other => {
+                        const dist = Math.sqrt(Math.pow(other.x - entity.x, 2) + Math.pow(other.y - entity.y, 2));
+                        if (dist < 100 && entity.trait === other.trait) {
+                            this.ctx.save();
+                            this.ctx.globalAlpha = this.algorithmGenes.adaptation * (1 - dist / 100);
+                            this.ctx.strokeStyle = `hsl(${180 + entity.energy * 180}, 100%, 50%)`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(entity.x, entity.y);
+                            this.ctx.lineTo(other.x, other.y);
+                            this.ctx.stroke();
+                            this.ctx.restore();
+                        }
+                    });
+                });
+                
+                // Draw perception layer
+                this.drawPerceptionLayer();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            drawPerceptionLayer() {
+                this.perceptionCtx.clearRect(0, 0, this.perceptionCanvas.width, this.perceptionCanvas.height);
+                
+                // Reality distortion based on algorithm state
+                const time = Date.now() * 0.001;
+                this.perceptionCtx.save();
+                this.perceptionCtx.globalAlpha = this.algorithmGenes.perception * 0.3;
+                
+                for (let x = 0; x < this.perceptionCanvas.width; x += 50) {
+                    for (let y = 0; y < this.perceptionCanvas.height; y += 50) {
+                        const distortion = Math.sin(x * 0.01 + time) * Math.cos(y * 0.01 + time) * this.algorithmGenes.intuition;
+                        const hue = (180 + distortion * 180) % 360;
+                        
+                        this.perceptionCtx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                        this.perceptionCtx.fillRect(
+                            x + distortion * 10,
+                            y + distortion * 10,
+                            40 + distortion * 20,
+                            40 + distortion * 20
+                        );
+                    }
+                }
+                
+                this.perceptionCtx.restore();
+            }
+
+            reset() {
+                this.generation = 0;
+                this.mutations = 0;
+                this.fitness = 0;
+                this.consciousness = 0;
+                
+                Object.keys(this.algorithmGenes).forEach(key => {
+                    this.algorithmGenes[key] = 0.5;
+                });
+                
+                this.generateInitialCode();
+                this.updateConsciousness();
+            }
+        }
+
+        const livingAlgorithm = new LivingAlgorithm();
+    </script>
+</body>
+</html>

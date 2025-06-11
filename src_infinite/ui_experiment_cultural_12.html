@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cultural Evolution Engine - Memetic Spread Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .stat {
+            margin: 10px 0;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stat-label {
+            color: #888;
+        }
+        
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .tribe-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .tribe {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tribe:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tribe-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tribe-stats {
+            font-size: 10px;
+            color: #888;
+        }
+        
+        .idea-list {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .idea {
+            margin: 5px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .idea-name {
+            flex: 1;
+        }
+        
+        .idea-strength {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        button {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #2a2a2a;
+            border-color: #555;
+        }
+        
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            max-width: 250px;
+            border: 1px solid #333;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui">
+        <h2>Cultural Evolution Engine</h2>
+        <div class="stat">
+            <span class="stat-label">Population:</span>
+            <span class="stat-value" id="population">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Active Ideas:</span>
+            <span class="stat-value" id="active-ideas">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Cultural Diversity:</span>
+            <span class="stat-value" id="diversity">0%</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Evolution Rate:</span>
+            <span class="stat-value" id="evolution-rate">0</span>
+        </div>
+        
+        <div class="tribe-info" id="tribe-info">
+            <h3>Tribes</h3>
+            <div id="tribes-list"></div>
+        </div>
+        
+        <div class="idea-list" id="idea-list">
+            <h3>Dominant Ideas</h3>
+            <div id="ideas"></div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="game.injectIdea()">Inject New Idea</button>
+            <button onclick="game.createCulturalEvent()">Cultural Event</button>
+            <button onclick="game.togglePause()">Pause/Resume</button>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <h3>Legend</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4CAF50;"></div>
+            <span>Strong Ideas (High Fitness)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FFC107;"></div>
+            <span>Neutral Ideas</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #F44336;"></div>
+            <span>Weak Ideas (Low Fitness)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #2196F3;"></div>
+            <span>Mutated Ideas</span>
+        </div>
+    </div>
+    
+    <div id="tooltip"></div>
+    
+    <script>
+        class CulturalEvolutionEngine {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.tooltip = document.getElementById('tooltip');
+                
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                
+                this.entities = [];
+                this.ideas = new Map();
+                this.tribes = new Map();
+                this.connections = [];
+                
+                this.paused = false;
+                this.time = 0;
+                
+                this.config = {
+                    entityCount: 150,
+                    transmissionRadius: 80,
+                    mutationRate: 0.02,
+                    selectionPressure: 0.1,
+                    tribalAffinity: 0.7,
+                    ideaDecayRate: 0.001,
+                    culturalDriftRate: 0.05
+                };
+                
+                this.ideaTypes = [
+                    'Technology', 'Religion', 'Art', 'Politics', 
+                    'Philosophy', 'Science', 'Tradition', 'Innovation'
+                ];
+                
+                this.init();
+                this.animate();
+                this.setupEventListeners();
+            }
+            
+            init() {
+                // Create initial population
+                for (let i = 0; i < this.config.entityCount; i++) {
+                    this.createEntity();
+                }
+                
+                // Create initial tribes
+                this.formTribes();
+                
+                // Seed initial ideas
+                for (let i = 0; i < 5; i++) {
+                    this.injectIdea();
+                }
+            }
+            
+            createEntity() {
+                const entity = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    x: Math.random() * this.width,
+                    y: Math.random() * this.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    ideas: new Map(),
+                    tribe: null,
+                    receptivity: Math.random() * 0.5 + 0.5,
+                    influence: Math.random() * 0.3 + 0.7,
+                    memory: Math.random() * 0.8 + 0.2
+                };
+                
+                this.entities.push(entity);
+                return entity;
+            }
+            
+            formTribes() {
+                const tribeCount = 3 + Math.floor(Math.random() * 3);
+                const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#DDA0DD'];
+                
+                for (let i = 0; i < tribeCount; i++) {
+                    const tribe = {
+                        id: i,
+                        name: this.generateTribeName(),
+                        color: colors[i % colors.length],
+                        center: {
+                            x: Math.random() * this.width,
+                            y: Math.random() * this.height
+                        },
+                        culturalTraits: new Map(),
+                        members: []
+                    };
+                    
+                    this.tribes.set(i, tribe);
+                }
+                
+                // Assign entities to tribes based on proximity
+                this.entities.forEach(entity => {
+                    let closestTribe = null;
+                    let minDist = Infinity;
+                    
+                    this.tribes.forEach(tribe => {
+                        const dist = this.distance(entity, tribe.center);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestTribe = tribe;
+                        }
+                    });
+                    
+                    if (closestTribe) {
+                        entity.tribe = closestTribe.id;
+                        closestTribe.members.push(entity.id);
+                    }
+                });
+            }
+            
+            generateTribeName() {
+                const prefixes = ['Neo', 'Proto', 'Meta', 'Cyber', 'Quantum'];
+                const suffixes = ['morphs', 'techs', 'minds', 'souls', 'hearts'];
+                return prefixes[Math.floor(Math.random() * prefixes.length)] + 
+                       suffixes[Math.floor(Math.random() * suffixes.length)];
+            }
+            
+            injectIdea() {
+                const idea = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: this.generateIdeaName(),
+                    type: this.ideaTypes[Math.floor(Math.random() * this.ideaTypes.length)],
+                    strength: Math.random() * 0.7 + 0.3,
+                    fitness: Math.random() * 0.6 + 0.4,
+                    mutations: 0,
+                    carriers: new Set(),
+                    origin: Date.now(),
+                    color: this.getIdeaColor(Math.random())
+                };
+                
+                this.ideas.set(idea.id, idea);
+                
+                // Seed idea in random entities
+                const seedCount = 3 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < seedCount; i++) {
+                    const entity = this.entities[Math.floor(Math.random() * this.entities.length)];
+                    entity.ideas.set(idea.id, {
+                        strength: idea.strength,
+                        acquired: Date.now()
+                    });
+                    idea.carriers.add(entity.id);
+                }
+                
+                return idea;
+            }
+            
+            generateIdeaName() {
+                const concepts = [
+                    'Unity', 'Progress', 'Harmony', 'Revolution', 'Tradition',
+                    'Innovation', 'Balance', 'Growth', 'Wisdom', 'Freedom'
+                ];
+                const modifiers = [
+                    'Digital', 'Collective', 'Individual', 'Eternal', 'Dynamic',
+                    'Sacred', 'Radical', 'Pure', 'Complex', 'Simple'
+                ];
+                
+                return modifiers[Math.floor(Math.random() * modifiers.length)] + ' ' +
+                       concepts[Math.floor(Math.random() * concepts.length)];
+            }
+            
+            getIdeaColor(fitness) {
+                if (fitness > 0.7) return '#4CAF50';
+                if (fitness > 0.4) return '#FFC107';
+                return '#F44336';
+            }
+            
+            update() {
+                if (this.paused) return;
+                
+                this.time++;
+                
+                // Update entity positions
+                this.entities.forEach(entity => {
+                    // Random walk with tribal attraction
+                    entity.vx += (Math.random() - 0.5) * 0.1;
+                    entity.vy += (Math.random() - 0.5) * 0.1;
+                    
+                    // Tribal cohesion
+                    if (entity.tribe !== null) {
+                        const tribe = this.tribes.get(entity.tribe);
+                        if (tribe) {
+                            const dx = tribe.center.x - entity.x;
+                            const dy = tribe.center.y - entity.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (dist > 100) {
+                                entity.vx += dx / dist * 0.05;
+                                entity.vy += dy / dist * 0.05;
+                            }
+                        }
+                    }
+                    
+                    // Apply velocity with damping
+                    entity.vx *= 0.95;
+                    entity.vy *= 0.95;
+                    
+                    entity.x += entity.vx;
+                    entity.y += entity.vy;
+                    
+                    // Boundary wrapping
+                    if (entity.x < 0) entity.x = this.width;
+                    if (entity.x > this.width) entity.x = 0;
+                    if (entity.y < 0) entity.y = this.height;
+                    if (entity.y > this.height) entity.y = 0;
+                });
+                
+                // Cultural transmission
+                this.transmitIdeas();
+                
+                // Apply selection pressure
+                this.applySelection();
+                
+                // Cultural drift
+                this.applyCulturalDrift();
+                
+                // Update tribe centers
+                this.updateTribes();
+                
+                // Update UI
+                this.updateUI();
+            }
+            
+            transmitIdeas() {
+                const connections = [];
+                
+                this.entities.forEach((entity1, i) => {
+                    this.entities.slice(i + 1).forEach(entity2 => {
+                        const dist = this.distance(entity1, entity2);
+                        
+                        if (dist < this.config.transmissionRadius) {
+                            // Higher transmission rate within same tribe
+                            const sameTribal = entity1.tribe === entity2.tribe;
+                            const transmissionChance = sameTribal ? 
+                                this.config.tribalAffinity : 
+                                0.3;
+                            
+                            if (Math.random() < transmissionChance) {
+                                // Transmit ideas from entity1 to entity2
+                                entity1.ideas.forEach((ideaData, ideaId) => {
+                                    if (!entity2.ideas.has(ideaId) && Math.random() < entity2.receptivity) {
+                                        const idea = this.ideas.get(ideaId);
+                                        if (idea) {
+                                            // Check for mutation
+                                            if (Math.random() < this.config.mutationRate) {
+                                                this.mutateIdea(idea, entity2);
+                                            } else {
+                                                entity2.ideas.set(ideaId, {
+                                                    strength: ideaData.strength * entity1.influence,
+                                                    acquired: Date.now()
+                                                });
+                                                idea.carriers.add(entity2.id);
+                                            }
+                                        }
+                                    }
+                                });
+                                
+                                connections.push({ entity1, entity2, strength: transmissionChance });
+                            }
+                        }
+                    });
+                });
+                
+                this.connections = connections;
+            }
+            
+            mutateIdea(originalIdea, entity) {
+                const mutatedIdea = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: originalIdea.name + ' 2.0',
+                    type: originalIdea.type,
+                    strength: originalIdea.strength * (0.8 + Math.random() * 0.4),
+                    fitness: originalIdea.fitness * (0.9 + Math.random() * 0.2),
+                    mutations: originalIdea.mutations + 1,
+                    carriers: new Set([entity.id]),
+                    origin: Date.now(),
+                    color: '#2196F3',
+                    parent: originalIdea.id
+                };
+                
+                this.ideas.set(mutatedIdea.id, mutatedIdea);
+                entity.ideas.set(mutatedIdea.id, {
+                    strength: mutatedIdea.strength,
+                    acquired: Date.now()
+                });
+            }
+            
+            applySelection() {
+                this.entities.forEach(entity => {
+                    const ideasToRemove = [];
+                    
+                    entity.ideas.forEach((ideaData, ideaId) => {
+                        const idea = this.ideas.get(ideaId);
+                        if (idea) {
+                            // Decay weak ideas
+                            ideaData.strength -= this.config.ideaDecayRate;
+                            
+                            // Selection pressure based on fitness
+                            const survivalChance = idea.fitness * entity.memory;
+                            if (Math.random() > survivalChance || ideaData.strength <= 0) {
+                                ideasToRemove.push(ideaId);
+                                idea.carriers.delete(entity.id);
+                            }
+                        }
+                    });
+                    
+                    ideasToRemove.forEach(id => entity.ideas.delete(id));
+                });
+                
+                // Remove extinct ideas
+                const extinctIdeas = [];
+                this.ideas.forEach((idea, id) => {
+                    if (idea.carriers.size === 0) {
+                        extinctIdeas.push(id);
+                    }
+                });
+                
+                extinctIdeas.forEach(id => this.ideas.delete(id));
+            }
+            
+            applyCulturalDrift() {
+                this.tribes.forEach(tribe => {
+                    // Count ideas within tribe
+                    const tribeIdeas = new Map();
+                    
+                    this.entities.forEach(entity => {
+                        if (entity.tribe === tribe.id) {
+                            entity.ideas.forEach((ideaData, ideaId) => {
+                                if (!tribeIdeas.has(ideaId)) {
+                                    tribeIdeas.set(ideaId, 0);
+                                }
+                                tribeIdeas.set(ideaId, tribeIdeas.get(ideaId) + 1);
+                            });
+                        }
+                    });
+                    
+                    // Update cultural traits
+                    tribe.culturalTraits = tribeIdeas;
+                });
+            }
+            
+            updateTribes() {
+                this.tribes.forEach(tribe => {
+                    let centerX = 0, centerY = 0, count = 0;
+                    
+                    this.entities.forEach(entity => {
+                        if (entity.tribe === tribe.id) {
+                            centerX += entity.x;
+                            centerY += entity.y;
+                            count++;
+                        }
+                    });
+                    
+                    if (count > 0) {
+                        tribe.center.x = centerX / count;
+                        tribe.center.y = centerY / count;
+                    }
+                });
+            }
+            
+            createCulturalEvent() {
+                const eventTypes = [
+                    () => {
+                        // Mass enlightenment
+                        const idea = this.injectIdea();
+                        idea.fitness = 0.9;
+                        idea.strength = 0.8;
+                        idea.name = 'Revolutionary ' + idea.name;
+                    },
+                    () => {
+                        // Cultural purge
+                        this.ideas.forEach(idea => {
+                            if (Math.random() < 0.5) {
+                                idea.fitness *= 0.5;
+                            }
+                        });
+                    },
+                    () => {
+                        // Tribal merger
+                        if (this.tribes.size > 1) {
+                            const tribes = Array.from(this.tribes.values());
+                            const tribe1 = tribes[0];
+                            const tribe2 = tribes[1];
+                            
+                            this.entities.forEach(entity => {
+                                if (entity.tribe === tribe2.id) {
+                                    entity.tribe = tribe1.id;
+                                }
+                            });
+                            
+                            this.tribes.delete(tribe2.id);
+                        }
+                    }
+                ];
+                
+                const event = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                event();
+            }
+            
+            render() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                
+                // Draw connections
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                this.connections.forEach(conn => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(conn.entity1.x, conn.entity1.y);
+                    this.ctx.lineTo(conn.entity2.x, conn.entity2.y);
+                    this.ctx.stroke();
+                });
+                
+                // Draw tribal areas
+                this.tribes.forEach(tribe => {
+                    this.ctx.fillStyle = tribe.color + '10';
+                    this.ctx.beginPath();
+                    this.ctx.arc(tribe.center.x, tribe.center.y, 150, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+                
+                // Draw entities
+                this.entities.forEach(entity => {
+                    const tribe = this.tribes.get(entity.tribe);
+                    const size = 3 + entity.ideas.size * 2;
+                    
+                    // Entity glow based on idea count
+                    if (entity.ideas.size > 0) {
+                        const gradient = this.ctx.createRadialGradient(
+                            entity.x, entity.y, 0,
+                            entity.x, entity.y, size * 3
+                        );
+                        gradient.addColorStop(0, tribe ? tribe.color + '40' : 'rgba(255, 255, 255, 0.4)');
+                        gradient.addColorStop(1, 'transparent');
+                        
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(entity.x, entity.y, size * 3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    // Entity core
+                    this.ctx.fillStyle = tribe ? tribe.color : '#fff';
+                    this.ctx.beginPath();
+                    this.ctx.arc(entity.x, entity.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Idea indicators
+                    let angle = 0;
+                    entity.ideas.forEach((ideaData, ideaId) => {
+                        const idea = this.ideas.get(ideaId);
+                        if (idea) {
+                            const x = entity.x + Math.cos(angle) * (size + 5);
+                            const y = entity.y + Math.sin(angle) * (size + 5);
+                            
+                            this.ctx.fillStyle = idea.color;
+                            this.ctx.beginPath();
+                            this.ctx.arc(x, y, 2, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            
+                            angle += Math.PI * 2 / entity.ideas.size;
+                        }
+                    });
+                });
+            }
+            
+            updateUI() {
+                document.getElementById('population').textContent = this.entities.length;
+                document.getElementById('active-ideas').textContent = this.ideas.size;
+                
+                // Calculate diversity
+                const ideaCounts = new Map();
+                let totalIdeas = 0;
+                
+                this.entities.forEach(entity => {
+                    entity.ideas.forEach((ideaData, ideaId) => {
+                        ideaCounts.set(ideaId, (ideaCounts.get(ideaId) || 0) + 1);
+                        totalIdeas++;
+                    });
+                });
+                
+                let diversity = 0;
+                if (totalIdeas > 0) {
+                    ideaCounts.forEach(count => {
+                        const p = count / totalIdeas;
+                        diversity -= p * Math.log(p);
+                    });
+                    diversity = Math.min(100, diversity * 30);
+                }
+                
+                document.getElementById('diversity').textContent = diversity.toFixed(1) + '%';
+                document.getElementById('evolution-rate').textContent = 
+                    (this.config.mutationRate * 100).toFixed(1) + '%';
+                
+                // Update tribes list
+                const tribesHtml = Array.from(this.tribes.values()).map(tribe => {
+                    const memberCount = this.entities.filter(e => e.tribe === tribe.id).length;
+                    const dominantIdea = this.getDominantIdea(tribe);
+                    
+                    return `
+                        <div class="tribe" style="border-left: 3px solid ${tribe.color};">
+                            <div class="tribe-name">${tribe.name}</div>
+                            <div class="tribe-stats">
+                                Members: ${memberCount}<br>
+                                Dominant: ${dominantIdea ? dominantIdea.name : 'None'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('tribes-list').innerHTML = tribesHtml;
+                
+                // Update ideas list
+                const sortedIdeas = Array.from(this.ideas.values())
+                    .sort((a, b) => b.carriers.size - a.carriers.size)
+                    .slice(0, 10);
+                
+                const ideasHtml = sortedIdeas.map(idea => `
+                    <div class="idea">
+                        <span class="idea-name">${idea.name}</span>
+                        <span class="idea-strength" style="color: ${idea.color};">
+                            ${idea.carriers.size}
+                        </span>
+                    </div>
+                `).join('');
+                
+                document.getElementById('ideas').innerHTML = ideasHtml;
+            }
+            
+            getDominantIdea(tribe) {
+                let dominantIdea = null;
+                let maxCount = 0;
+                
+                tribe.culturalTraits.forEach((count, ideaId) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        dominantIdea = this.ideas.get(ideaId);
+                    }
+                });
+                
+                return dominantIdea;
+            }
+            
+            distance(a, b) {
+                const dx = a.x - b.x;
+                const dy = a.y - b.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            setupEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.width = window.innerWidth;
+                    this.height = window.innerHeight;
+                    this.canvas.width = this.width;
+                    this.canvas.height = this.height;
+                });
+                
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    let hoveredEntity = null;
+                    this.entities.forEach(entity => {
+                        const dist = this.distance({ x, y }, entity);
+                        if (dist < 10) {
+                            hoveredEntity = entity;
+                        }
+                    });
+                    
+                    if (hoveredEntity) {
+                        this.showTooltip(e.clientX, e.clientY, hoveredEntity);
+                    } else {
+                        this.hideTooltip();
+                    }
+                });
+                
+                this.canvas.addEventListener('mouseleave', () => {
+                    this.hideTooltip();
+                });
+            }
+            
+            showTooltip(x, y, entity) {
+                const tribe = this.tribes.get(entity.tribe);
+                const ideaList = Array.from(entity.ideas.keys())
+                    .map(id => this.ideas.get(id))
+                    .filter(idea => idea)
+                    .map(idea => idea.name)
+                    .join(', ');
+                
+                this.tooltip.innerHTML = `
+                    <strong>Entity ${entity.id.substr(0, 6)}</strong><br>
+                    Tribe: ${tribe ? tribe.name : 'None'}<br>
+                    Ideas: ${entity.ideas.size}<br>
+                    ${ideaList ? `Carrying: ${ideaList}` : 'No ideas'}
+                `;
+                
+                this.tooltip.style.left = x + 10 + 'px';
+                this.tooltip.style.top = y + 10 + 'px';
+                this.tooltip.style.display = 'block';
+            }
+            
+            hideTooltip() {
+                this.tooltip.style.display = 'none';
+            }
+            
+            togglePause() {
+                this.paused = !this.paused;
+            }
+            
+            animate() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        const game = new CulturalEvolutionEngine();
+    </script>
+</body>
+</html>

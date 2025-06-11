@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimensional Paradox Engine - Iteration 19</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a0515 0%, #000000 100%);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+        }
+
+        #dimensional-space {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            perspective: 2000px;
+            transform-style: preserve-3d;
+        }
+
+        .dimension-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fold-line {
+            position: absolute;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 100, 255, 0.8) 20%,
+                rgba(100, 255, 255, 0.8) 50%,
+                rgba(255, 255, 100, 0.8) 80%,
+                transparent 100%);
+            height: 3px;
+            transform-origin: left center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .fold-line:hover {
+            height: 6px;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.8);
+        }
+
+        .dimensional-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transform-style: preserve-3d;
+        }
+
+        .dimensional-node::before {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 30%, rgba(255, 255, 255, 0.1) 100%);
+            animation: dimensionalPulse 3s infinite ease-in-out;
+        }
+
+        @keyframes dimensionalPulse {
+            0%, 100% { transform: scale(1) rotateZ(0deg); opacity: 0.3; }
+            50% { transform: scale(1.5) rotateZ(180deg); opacity: 0.1; }
+        }
+
+        .paradox-nexus {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 0, 255, 0.3) 0%,
+                rgba(0, 255, 255, 0.2) 50%,
+                transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            text-align: center;
+            animation: paradoxSpin 10s infinite linear;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .paradox-nexus:hover {
+            transform: scale(1.2);
+            animation-duration: 2s;
+        }
+
+        @keyframes paradoxSpin {
+            from { transform: rotateY(0deg) rotateX(0deg); }
+            25% { transform: rotateY(90deg) rotateX(90deg); }
+            50% { transform: rotateY(180deg) rotateX(180deg); }
+            75% { transform: rotateY(270deg) rotateX(270deg); }
+            to { transform: rotateY(360deg) rotateX(360deg); }
+        }
+
+        .causality-thread {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 100, 255, 0.8) 25%,
+                rgba(100, 255, 100, 0.8) 75%,
+                rgba(255, 255, 255, 0) 100%);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: causalityFlow 2s infinite;
+        }
+
+        @keyframes causalityFlow {
+            0% { opacity: 0.3; background-position: 0% 0%; }
+            50% { opacity: 1; background-position: 100% 0%; }
+            100% { opacity: 0.3; background-position: 200% 0%; }
+        }
+
+        #synaesthetic-feedback {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            opacity: 0.7;
+        }
+
+        .sensory-bloom {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sensoryExpansion 2s ease-out forwards;
+        }
+
+        @keyframes sensoryExpansion {
+            0% { 
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(3) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        #control-nexus {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 5, 21, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 100, 255, 0.5);
+            width: 320px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 30px rgba(255, 100, 255, 0.3);
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .control-section h4 {
+            color: #ff64ff;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dimension-slider {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #ff64ff, #64ffff, #ffff64);
+            outline: none;
+            border-radius: 4px;
+            -webkit-appearance: none;
+            margin-bottom: 10px;
+        }
+
+        .dimension-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #fff, #ff64ff);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .paradox-button {
+            background: linear-gradient(45deg, #ff64ff, #64ffff);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .paradox-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 100, 255, 0.6);
+        }
+
+        #paradox-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 5, 21, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(100, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            max-width: 280px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .status-label {
+            color: #64ffff;
+        }
+
+        .status-value {
+            color: #ffff64;
+            font-weight: bold;
+        }
+
+        #temporal-wave {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 360px;
+            height: 120px;
+            background: rgba(10, 5, 21, 0.9);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 100, 0.5);
+            padding: 15px;
+            backdrop-filter: blur(20px);
+        }
+
+        .wave-display {
+            width: 100%;
+            height: 90px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .causality-indicator {
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff64ff, #64ffff, #ffff64);
+            animation: causalityIndicator 3s infinite ease-in-out;
+        }
+
+        @keyframes causalityIndicator {
+            0%, 100% { left: 0%; opacity: 0.5; }
+            50% { left: 96%; opacity: 1; }
+        }
+
+        #dimension-count {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: rgba(255, 100, 255, 0.2);
+            pointer-events: none;
+            font-weight: bold;
+            text-shadow: 0 0 50px rgba(255, 100, 255, 0.5);
+        }
+
+        .bootstrap-effect {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: bootstrapLoop 5s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes bootstrapLoop {
+            0% { 
+                transform: scale(0.5) rotate(0deg);
+                border-color: rgba(255, 100, 255, 0.8);
+                opacity: 1;
+            }
+            25% { 
+                transform: scale(1) rotate(90deg);
+                border-color: rgba(100, 255, 255, 0.8);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: scale(1.5) rotate(180deg);
+                border-color: rgba(255, 255, 100, 0.8);
+                opacity: 0.6;
+            }
+            75% { 
+                transform: scale(1) rotate(270deg);
+                border-color: rgba(100, 255, 100, 0.8);
+                opacity: 0.4;
+            }
+            100% { 
+                transform: scale(0.5) rotate(360deg);
+                border-color: rgba(255, 100, 255, 0.8);
+                opacity: 1;
+            }
+        }
+
+        .synaesthetic-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: color-dodge;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .fold-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #fff, transparent);
+            border-radius: 50%;
+            cursor: grab;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .fold-point:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .fold-point:active {
+            cursor: grabbing;
+            transform: scale(2);
+        }
+    </style>
+</head>
+<body>
+    <div id="dimensional-space">
+        <div class="dimension-layer" id="layer-0" style="transform: translateZ(0px);"></div>
+        <div class="dimension-layer" id="layer-1" style="transform: translateZ(-200px);"></div>
+        <div class="dimension-layer" id="layer-2" style="transform: translateZ(-400px);"></div>
+        <div class="dimension-layer" id="layer-3" style="transform: translateZ(-600px);"></div>
+    </div>
+
+    <canvas id="synaesthetic-feedback"></canvas>
+    
+    <div id="dimension-count">4D</div>
+
+    <div id="control-nexus">
+        <div class="control-section">
+            <h4>Dimensional Folding</h4>
+            <input type="range" class="dimension-slider" id="fold-intensity" min="0" max="100" value="50">
+            <input type="range" class="dimension-slider" id="paradox-complexity" min="0" max="100" value="30">
+            <input type="range" class="dimension-slider" id="synaesthetic-strength" min="0" max="100" value="70">
+        </div>
+        
+        <div class="control-section">
+            <h4>Bootstrap Operations</h4>
+            <button class="paradox-button" onclick="createBootstrapParadox()">Create Paradox</button>
+            <button class="paradox-button" onclick="foldDimension()">Fold Space</button>
+            <button class="paradox-button" onclick="causaityLoop()">Causality Loop</button>
+        </div>
+        
+        <div class="control-section">
+            <h4>Temporal Controls</h4>
+            <button class="paradox-button" onclick="reverseTime()">Reverse Time</button>
+            <button class="paradox-button" onclick="resetDimensions()">Reset Reality</button>
+        </div>
+    </div>
+
+    <div id="paradox-status">
+        <h4 style="color: #64ffff; margin-bottom: 15px;">Paradox Status</h4>
+        <div class="status-row">
+            <span class="status-label">Active Paradoxes:</span>
+            <span class="status-value" id="paradox-count">0</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">Causality Integrity:</span>
+            <span class="status-value" id="causality-integrity">100%</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">Dimensional Folds:</span>
+            <span class="status-value" id="fold-count">0</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">Synesthetic Intensity:</span>
+            <span class="status-value" id="synesthetic-level">70%</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">Bootstrap Loops:</span>
+            <span class="status-value" id="bootstrap-count">0</span>
+        </div>
+    </div>
+
+    <div id="temporal-wave">
+        <h4 style="color: #ffff64; margin-bottom: 10px;">Temporal Causality Wave</h4>
+        <div class="wave-display">
+            <div class="causality-indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('synaesthetic-feedback');
+        const ctx = canvas.getContext('2d');
+        const dimensionalSpace = document.getElementById('dimensional-space');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Core state
+        let activeParadoxes = [];
+        let dimensionalNodes = [];
+        let foldLines = [];
+        let causalityThreads = [];
+        let bootstrapEffects = [];
+        let synaestheticEvents = [];
+        
+        let foldIntensity = 0.5;
+        let paradoxComplexity = 0.3;
+        let synaestheticStrength = 0.7;
+        let causalityIntegrity = 1.0;
+        let currentDimensions = 4;
+        
+        // Sensory mapping for synaesthesia
+        const sensoryMappings = {
+            fold: { color: '#ff64ff', sound: 440, texture: 'smooth' },
+            paradox: { color: '#64ffff', sound: 660, texture: 'ripple' },
+            bootstrap: { color: '#ffff64', sound: 880, texture: 'crystalline' },
+            causality: { color: '#64ff64', sound: 220, texture: 'flowing' }
+        };
+
+        class DimensionalNode {
+            constructor(x, y, z, layer) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.layer = layer;
+                this.id = Math.random().toString(36).substr(2, 9);
+                this.connections = [];
+                this.isParadoxSource = false;
+                this.bootstrapOrigin = null;
+                this.element = this.createElement();
+                this.foldHistory = [];
+            }
+            
+            createElement() {
+                const node = document.createElement('div');
+                node.className = 'dimensional-node';
+                node.style.left = this.x + 'px';
+                node.style.top = this.y + 'px';
+                node.style.transform = `translateZ(${this.z}px)`;
+                node.style.background = `radial-gradient(circle, 
+                    rgba(255, 100, 255, 0.6) 0%, 
+                    rgba(100, 255, 255, 0.3) 50%, 
+                    transparent 100%)`;
+                
+                node.addEventListener('click', () => this.activate());
+                node.addEventListener('mouseenter', () => this.hover());
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(node);
+                
+                return node;
+            }
+            
+            activate() {
+                this.isParadoxSource = !this.isParadoxSource;
+                this.element.style.boxShadow = this.isParadoxSource ? 
+                    '0 0 50px rgba(255, 100, 255, 1)' : 
+                    '0 0 20px rgba(255, 255, 255, 0.5)';
+                
+                if (this.isParadoxSource) {
+                    this.createBootstrapLoop();
+                }
+                
+                this.triggerSynaesthesia('paradox');
+                updateStatus();
+            }
+            
+            hover() {
+                const ripple = document.createElement('div');
+                ripple.className = 'bootstrap-effect';
+                ripple.style.left = (this.x - 100) + 'px';
+                ripple.style.top = (this.y - 100) + 'px';
+                ripple.style.transform = `translateZ(${this.z}px)`;
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 5000);
+                
+                this.triggerSynaesthesia('fold');
+            }
+            
+            createBootstrapLoop() {
+                // Create a causal loop that creates its own origin
+                const futureNode = new DimensionalNode(
+                    this.x + Math.random() * 200 - 100,
+                    this.y + Math.random() * 200 - 100,
+                    this.z - 100,
+                    Math.max(0, this.layer - 1)
+                );
+                
+                futureNode.bootstrapOrigin = this;
+                this.bootstrapOrigin = futureNode;
+                
+                dimensionalNodes.push(futureNode);
+                
+                // Create causality thread
+                this.createCausalityThread(futureNode);
+                
+                bootstrapEffects.push({
+                    origin: this,
+                    destination: futureNode,
+                    created: Date.now()
+                });
+                
+                this.triggerSynaesthesia('bootstrap');
+            }
+            
+            createCausalityThread(target) {
+                const thread = document.createElement('div');
+                thread.className = 'causality-thread';
+                
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                
+                thread.style.width = distance + 'px';
+                thread.style.left = this.x + 'px';
+                thread.style.top = this.y + 'px';
+                thread.style.transform = `translateZ(${this.z}px) rotate(${angle}rad)`;
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(thread);
+                
+                causalityThreads.push({
+                    element: thread,
+                    from: this,
+                    to: target,
+                    created: Date.now()
+                });
+                
+                // Self-destruct after paradox resolves
+                setTimeout(() => {
+                    if (thread.parentNode) {
+                        thread.remove();
+                    }
+                }, 10000 + Math.random() * 5000);
+            }
+            
+            triggerSynaesthesia(type) {
+                const mapping = sensoryMappings[type];
+                
+                // Visual synaesthesia
+                this.createSensoryBloom(mapping.color);
+                
+                // Auditory->Visual synaesthesia
+                this.createSoundVisualization(mapping.sound);
+                
+                // Tactile->Visual synaesthesia
+                this.createTextureEffect(mapping.texture);
+                
+                synaestheticEvents.push({
+                    type: type,
+                    intensity: synaestheticStrength,
+                    created: Date.now(),
+                    node: this
+                });
+            }
+            
+            createSensoryBloom(color) {
+                const bloom = document.createElement('div');
+                bloom.className = 'sensory-bloom';
+                bloom.style.left = this.x + 'px';
+                bloom.style.top = this.y + 'px';
+                bloom.style.width = '50px';
+                bloom.style.height = '50px';
+                bloom.style.background = `radial-gradient(circle, ${color} 0%, transparent 70%)`;
+                bloom.style.transform = `translateZ(${this.z}px)`;
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(bloom);
+                
+                setTimeout(() => bloom.remove(), 2000);
+            }
+            
+            createSoundVisualization(frequency) {
+                // Convert sound frequency to visual ripples
+                const rippleCount = Math.floor(frequency / 220);
+                
+                for (let i = 0; i < rippleCount; i++) {
+                    setTimeout(() => {
+                        const ripple = document.createElement('div');
+                        ripple.style.position = 'absolute';
+                        ripple.style.left = this.x + 'px';
+                        ripple.style.top = this.y + 'px';
+                        ripple.style.width = '20px';
+                        ripple.style.height = '20px';
+                        ripple.style.borderRadius = '50%';
+                        ripple.style.border = '2px solid rgba(255, 255, 255, 0.6)';
+                        ripple.style.animation = 'sensoryExpansion 1s ease-out forwards';
+                        ripple.style.transform = `translateZ(${this.z}px)`;
+                        
+                        const layerElement = document.getElementById(`layer-${this.layer}`);
+                        layerElement.appendChild(ripple);
+                        
+                        setTimeout(() => ripple.remove(), 1000);
+                    }, i * 100);
+                }
+            }
+            
+            createTextureEffect(texture) {
+                const overlay = document.createElement('div');
+                overlay.className = 'synaesthetic-overlay';
+                overlay.style.left = this.x - 100 + 'px';
+                overlay.style.top = this.y - 100 + 'px';
+                overlay.style.width = '200px';
+                overlay.style.height = '200px';
+                overlay.style.transform = `translateZ(${this.z}px)`;
+                
+                switch (texture) {
+                    case 'smooth':
+                        overlay.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 100%)';
+                        break;
+                    case 'ripple':
+                        overlay.style.background = 'repeating-radial-gradient(circle, transparent 0px, rgba(255, 255, 255, 0.1) 10px, transparent 20px)';
+                        break;
+                    case 'crystalline':
+                        overlay.style.background = 'conic-gradient(from 0deg, rgba(255, 255, 255, 0.1) 0deg, transparent 60deg, rgba(255, 255, 255, 0.1) 120deg, transparent 180deg)';
+                        break;
+                    case 'flowing':
+                        overlay.style.background = 'linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 25%, rgba(255, 255, 255, 0.1) 50%, transparent 75%)';
+                        break;
+                }
+                
+                overlay.style.opacity = '1';
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(overlay);
+                
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 500);
+                }, 1000);
+            }
+        }
+
+        class FoldLine {
+            constructor(x1, y1, x2, y2, layer) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.layer = layer;
+                this.foldAngle = 0;
+                this.element = this.createElement();
+                this.foldPoints = [];
+                this.createFoldPoints();
+            }
+            
+            createElement() {
+                const line = document.createElement('div');
+                line.className = 'fold-line';
+                
+                const dx = this.x2 - this.x1;
+                const dy = this.y2 - this.y1;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                
+                line.style.width = length + 'px';
+                line.style.left = this.x1 + 'px';
+                line.style.top = this.y1 + 'px';
+                line.style.transform = `translateZ(${this.layer * -200}px) rotate(${angle}rad)`;
+                
+                line.addEventListener('click', () => this.fold());
+                
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.appendChild(line);
+                
+                return line;
+            }
+            
+            createFoldPoints() {
+                const numPoints = 3;
+                for (let i = 0; i < numPoints; i++) {
+                    const t = (i + 1) / (numPoints + 1);
+                    const x = this.x1 + (this.x2 - this.x1) * t;
+                    const y = this.y1 + (this.y2 - this.y1) * t;
+                    
+                    const point = document.createElement('div');
+                    point.className = 'fold-point';
+                    point.style.left = (x - 10) + 'px';
+                    point.style.top = (y - 10) + 'px';
+                    point.style.transform = `translateZ(${this.layer * -200}px)`;
+                    
+                    let isDragging = false;
+                    point.addEventListener('mousedown', (e) => {
+                        isDragging = true;
+                        this.startFoldDrag(x, y, point);
+                    });
+                    
+                    const layerElement = document.getElementById(`layer-${this.layer}`);
+                    layerElement.appendChild(point);
+                    
+                    this.foldPoints.push(point);
+                }
+            }
+            
+            startFoldDrag(startX, startY, point) {
+                const handleMouseMove = (e) => {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const foldIntensity = Math.sqrt(dx * dx + dy * dy) / 100;
+                    
+                    this.createDimensionalFold(startX, startY, dx, dy, foldIntensity);
+                };
+                
+                const handleMouseUp = () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            }
+            
+            createDimensionalFold(x, y, dx, dy, intensity) {
+                const foldAngle = Math.atan2(dy, dx);
+                
+                // Affect nearby dimensional nodes
+                dimensionalNodes.forEach(node => {
+                    const dist = Math.sqrt(
+                        (node.x - x) * (node.x - x) + 
+                        (node.y - y) * (node.y - y)
+                    );
+                    
+                    if (dist < 200) {
+                        const influence = (200 - dist) / 200 * intensity;
+                        node.element.style.transform = `translateZ(${node.z}px) 
+                            rotateX(${Math.sin(foldAngle) * influence * 45}deg) 
+                            rotateY(${Math.cos(foldAngle) * influence * 45}deg)`;
+                        
+                        node.foldHistory.push({
+                            angle: foldAngle,
+                            intensity: influence,
+                            timestamp: Date.now()
+                        });
+                        
+                        node.triggerSynaesthesia('fold');
+                    }
+                });
+                
+                // Update dimensional layer transforms
+                const layerElement = document.getElementById(`layer-${this.layer}`);
+                layerElement.style.transform = `translateZ(${this.layer * -200}px) 
+                    rotateX(${Math.sin(foldAngle) * intensity * 15}deg) 
+                    rotateY(${Math.cos(foldAngle) * intensity * 15}deg)`;
+                
+                foldLines.push({
+                    x: x, y: y, angle: foldAngle, 
+                    intensity: intensity, created: Date.now()
+                });
+                
+                updateStatus();
+            }
+            
+            fold() {
+                this.foldAngle += 45;
+                this.element.style.transform += ` rotateZ(${this.foldAngle}deg)`;
+                
+                // Create bootstrap paradox through folding
+                if (Math.random() < paradoxComplexity) {
+                    this.createFoldParadox();
+                }
+                
+                // Trigger synaesthetic feedback
+                dimensionalNodes.forEach(node => {
+                    const dist = Math.sqrt(
+                        (node.x - this.x1) * (node.x - this.x1) + 
+                        (node.y - this.y1) * (node.y - this.y1)
+                    );
+                    if (dist < 300) {
+                        node.triggerSynaesthesia('fold');
+                    }
+                });
+            }
+            
+            createFoldParadox() {
+                // The fold creates a paradox that causes itself
+                const paradoxNode = new DimensionalNode(
+                    this.x1 + (this.x2 - this.x1) / 2,
+                    this.y1 + (this.y2 - this.y1) / 2,
+                    this.layer * -200 - 100,
+                    Math.min(3, this.layer + 1)
+                );
+                
+                paradoxNode.isParadoxSource = true;
+                paradoxNode.element.style.background = 'radial-gradient(circle, rgba(255, 255, 100, 0.8) 0%, transparent 70%)';
+                
+                dimensionalNodes.push(paradoxNode);
+                
+                // Create self-causing effect
+                setTimeout(() => {
+                    if (Math.random() < 0.5) {
+                        this.fold(); // The paradox causes the fold that created it
+                    }
+                }, 2000);
+                
+                activeParadoxes.push({
+                    node: paradoxNode,
+                    foldLine: this,
+                    created: Date.now(),
+                    type: 'bootstrap_fold'
+                });
+                
+                causalityIntegrity *= 0.95;
+                updateStatus();
+            }
+        }
+
+        function initializeDimensions() {
+            // Clear existing elements
+            dimensionalNodes = [];
+            foldLines = [];
+            activeParadoxes = [];
+            
+            document.querySelectorAll('.dimension-layer').forEach(layer => {
+                layer.innerHTML = '';
+            });
+            
+            // Create dimensional nodes
+            for (let layer = 0; layer < 4; layer++) {
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const radius = 200 + layer * 50;
+                    const x = window.innerWidth / 2 + Math.cos(angle) * radius;
+                    const y = window.innerHeight / 2 + Math.sin(angle) * radius;
+                    
+                    dimensionalNodes.push(new DimensionalNode(x, y, layer * -200, layer));
+                }
+            }
+            
+            // Create fold lines
+            for (let layer = 0; layer < 4; layer++) {
+                for (let i = 0; i < 4; i++) {
+                    const x1 = Math.random() * window.innerWidth;
+                    const y1 = Math.random() * window.innerHeight;
+                    const x2 = x1 + (Math.random() - 0.5) * 400;
+                    const y2 = y1 + (Math.random() - 0.5) * 400;
+                    
+                    foldLines.push(new FoldLine(x1, y1, x2, y2, layer));
+                }
+            }
+            
+            causalityIntegrity = 1.0;
+            updateStatus();
+        }
+
+        function createBootstrapParadox() {
+            const randomNode = dimensionalNodes[Math.floor(Math.random() * dimensionalNodes.length)];
+            randomNode.activate();
+            
+            // Intensify synaesthetic feedback based on paradox complexity
+            const intensityMultiplier = 1 + paradoxComplexity;
+            synaestheticStrength = Math.min(1, synaestheticStrength * intensityMultiplier);
+            
+            updateStatus();
+        }
+
+        function foldDimension() {
+            const randomFold = foldLines[Math.floor(Math.random() * foldLines.length)];
+            randomFold.fold();
+            
+            // Dimensional folding increases synaesthetic crossover
+            dimensionalNodes.forEach(node => {
+                if (Math.random() < foldIntensity) {
+                    node.triggerSynaesthesia('fold');
+                }
+            });
+        }
+
+        function causaityLoop() {
+            // Create a causality loop that affects past events
+            const node1 = dimensionalNodes[Math.floor(Math.random() * dimensionalNodes.length)];
+            const node2 = dimensionalNodes[Math.floor(Math.random() * dimensionalNodes.length)];
+            
+            if (node1 !== node2) {
+                node1.createCausalityThread(node2);
+                node2.createCausalityThread(node1);
+                
+                // Both nodes trigger each other's activation
+                setTimeout(() => node1.activate(), 1000);
+                setTimeout(() => node2.activate(), 2000);
+                
+                causalityIntegrity *= 0.9;
+                updateStatus();
+            }
+        }
+
+        function reverseTime() {
+            // Reverse recent paradox effects
+            const now = Date.now();
+            
+            activeParadoxes = activeParadoxes.filter(paradox => {
+                if (now - paradox.created < 10000) {
+                    if (paradox.node.element && paradox.node.element.parentNode) {
+                        paradox.node.element.remove();
+                    }
+                    return false;
+                }
+                return true;
+            });
+            
+            // Restore causality integrity
+            causalityIntegrity = Math.min(1, causalityIntegrity + 0.1);
+            
+            // Reverse synaesthetic effects
+            synaestheticEvents = synaestheticEvents.filter(event => {
+                return now - event.created > 5000;
+            });
+            
+            updateStatus();
+        }
+
+        function resetDimensions() {
+            initializeDimensions();
+            synaestheticEvents = [];
+            bootstrapEffects = [];
+            currentDimensions = 4;
+            document.getElementById('dimension-count').textContent = '4D';
+        }
+
+        function updateStatus() {
+            document.getElementById('paradox-count').textContent = activeParadoxes.length;
+            document.getElementById('causality-integrity').textContent = Math.round(causalityIntegrity * 100) + '%';
+            document.getElementById('fold-count').textContent = foldLines.length;
+            document.getElementById('synesthetic-level').textContent = Math.round(synaestheticStrength * 100) + '%';
+            document.getElementById('bootstrap-count').textContent = bootstrapEffects.length;
+            
+            // Update dimension count based on complexity
+            const totalComplexity = activeParadoxes.length + foldLines.length + bootstrapEffects.length;
+            currentDimensions = Math.min(11, 4 + Math.floor(totalComplexity / 3));
+            document.getElementById('dimension-count').textContent = currentDimensions + 'D';
+        }
+
+        function animateParadoxes() {
+            // Update active paradoxes
+            const now = Date.now();
+            
+            activeParadoxes.forEach(paradox => {
+                const age = now - paradox.created;
+                const intensity = Math.sin(age * 0.001) * 0.5 + 0.5;
+                
+                if (paradox.node.element) {
+                    paradox.node.element.style.opacity = intensity;
+                }
+            });
+            
+            // Clean up old effects
+            bootstrapEffects = bootstrapEffects.filter(effect => {
+                return now - effect.created < 30000;
+            });
+            
+            causalityThreads = causalityThreads.filter(thread => {
+                if (now - thread.created > 15000) {
+                    if (thread.element.parentNode) {
+                        thread.element.remove();
+                    }
+                    return false;
+                }
+                return true;
+            });
+            
+            // Synaesthetic canvas effects
+            drawSynaestheticEffects();
+            
+            requestAnimationFrame(animateParadoxes);
+        }
+
+        function drawSynaestheticEffects() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const now = Date.now();
+            
+            synaestheticEvents.forEach(event => {
+                const age = now - event.created;
+                const maxAge = 5000;
+                
+                if (age < maxAge) {
+                    const progress = age / maxAge;
+                    const alpha = (1 - progress) * synaestheticStrength;
+                    
+                    const mapping = sensoryMappings[event.type];
+                    
+                    // Convert hex color to RGB
+                    const r = parseInt(mapping.color.substr(1, 2), 16);
+                    const g = parseInt(mapping.color.substr(3, 2), 16);
+                    const b = parseInt(mapping.color.substr(5, 2), 16);
+                    
+                    // Create expanding synaesthetic waves
+                    const radius = progress * 300;
+                    const gradient = ctx.createRadialGradient(
+                        event.node.x, event.node.y, 0,
+                        event.node.x, event.node.y, radius
+                    );
+                    
+                    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+                    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(event.node.x, event.node.y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add texture patterns based on type
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`;
+                    ctx.lineWidth = 2;
+                    
+                    switch (event.type) {
+                        case 'fold':
+                            // Geometric fold patterns
+                            for (let i = 0; i < 8; i++) {
+                                const angle = (i / 8) * Math.PI * 2;
+                                ctx.beginPath();
+                                ctx.moveTo(event.node.x, event.node.y);
+                                ctx.lineTo(
+                                    event.node.x + Math.cos(angle) * radius,
+                                    event.node.y + Math.sin(angle) * radius
+                                );
+                                ctx.stroke();
+                            }
+                            break;
+                            
+                        case 'paradox':
+                            // Spiral paradox patterns
+                            ctx.beginPath();
+                            for (let i = 0; i < radius; i++) {
+                                const angle = i * 0.1;
+                                const r = i;
+                                const x = event.node.x + Math.cos(angle) * r;
+                                const y = event.node.y + Math.sin(angle) * r;
+                                if (i === 0) ctx.moveTo(x, y);
+                                else ctx.lineTo(x, y);
+                            }
+                            ctx.stroke();
+                            break;
+                            
+                        case 'bootstrap':
+                            // Recursive bootstrap loops
+                            const loops = 5;
+                            for (let loop = 0; loop < loops; loop++) {
+                                const loopRadius = (radius / loops) * (loop + 1);
+                                ctx.beginPath();
+                                ctx.arc(event.node.x, event.node.y, loopRadius, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                            break;
+                    }
+                }
+            });
+            
+            // Clean up old events
+            synaestheticEvents = synaestheticEvents.filter(event => {
+                return now - event.created < 5000;
+            });
+        }
+
+        // Event listeners
+        document.getElementById('fold-intensity').addEventListener('input', (e) => {
+            foldIntensity = e.target.value / 100;
+        });
+
+        document.getElementById('paradox-complexity').addEventListener('input', (e) => {
+            paradoxComplexity = e.target.value / 100;
+        });
+
+        document.getElementById('synaesthetic-strength').addEventListener('input', (e) => {
+            synaestheticStrength = e.target.value / 100;
+            updateStatus();
+        });
+
+        // Mouse interaction for dimensional manipulation
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+
+        dimensionalSpace.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStart.x = e.clientX;
+            dragStart.y = e.clientY;
+        });
+
+        dimensionalSpace.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const dx = e.clientX - dragStart.x;
+                const dy = e.clientY - dragStart.y;
+                
+                // Rotate dimensional space
+                const rotateX = dy * 0.5;
+                const rotateY = dx * 0.5;
+                
+                dimensionalSpace.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+        });
+
+        dimensionalSpace.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Initialize
+        initializeDimensions();
+        animateParadoxes();
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

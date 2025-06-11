@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symbiosis Multiplayer - Ecosystem Evolution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #ecosystem {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #0a1a2a 0%, #000511 100%);
+        }
+
+        .symbiont {
+            position: absolute;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .symbiont-producer {
+            background: radial-gradient(circle, #2d5a2d, #1a3a1a);
+            border: 2px solid #4a7c4a;
+        }
+
+        .symbiont-consumer {
+            background: radial-gradient(circle, #5a2d2d, #3a1a1a);
+            border: 2px solid #7c4a4a;
+        }
+
+        .symbiont-decomposer {
+            background: radial-gradient(circle, #5a5a2d, #3a3a1a);
+            border: 2px solid #7c7c4a;
+        }
+
+        .symbiont-pollinator {
+            background: radial-gradient(circle, #2d2d5a, #1a1a3a);
+            border: 2px solid #4a4a7c;
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+
+        .connection-strong {
+            background: linear-gradient(90deg, transparent, rgba(100, 255, 100, 0.6), transparent);
+            height: 3px;
+        }
+
+        .connection-weak {
+            background: linear-gradient(90deg, transparent, rgba(255, 100, 100, 0.3), transparent);
+            height: 1px;
+            opacity: 0.5;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .resource {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite linear;
+        }
+
+        .resource-energy {
+            background: radial-gradient(circle, #ffff00, #ff9900);
+            box-shadow: 0 0 10px #ffaa00;
+        }
+
+        .resource-nutrient {
+            background: radial-gradient(circle, #00ff00, #00aa00);
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .resource-water {
+            background: radial-gradient(circle, #00aaff, #0066ff);
+            box-shadow: 0 0 10px #0088ff;
+        }
+
+        @keyframes float {
+            from { transform: translateY(100vh) rotate(0deg); }
+            to { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 300px;
+        }
+
+        .ecosystem-health {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00);
+            transition: width 0.5s ease;
+        }
+
+        .relationship-matrix {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .relationship-row {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+            align-items: center;
+        }
+
+        .relationship-cell {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .mutualism { background: rgba(0, 255, 0, 0.3); }
+        .commensalism { background: rgba(255, 255, 0, 0.3); }
+        .parasitism { background: rgba(255, 0, 0, 0.3); }
+        .neutral { background: rgba(128, 128, 128, 0.3); }
+
+        .evolution-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .generation-counter {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .adaptation {
+            position: absolute;
+            pointer-events: none;
+            animation: adaptation-pulse 2s ease-out;
+        }
+
+        @keyframes adaptation-pulse {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .player-indicator {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid #00ff88;
+            animation: player-pulse 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes player-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .symbiont-info {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="ecosystem">
+        <div id="info-panel">
+            <h2>Ecosystem Status</h2>
+            <div class="ecosystem-health">
+                <div>Biodiversity: <span id="biodiversity">0</span></div>
+                <div>Stability: <span id="stability">0%</span></div>
+                <div>Resources: <span id="resources">0</span></div>
+                <div class="health-bar">
+                    <div class="health-fill" id="health-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relationship-matrix" id="relationship-matrix">
+            <h3>Symbiotic Network</h3>
+            <div id="matrix-content"></div>
+        </div>
+
+        <div id="controls">
+            <button class="control-button" onclick="game.addSymbiont('producer')">Add Producer 🌿</button>
+            <button class="control-button" onclick="game.addSymbiont('consumer')">Add Consumer 🦋</button>
+            <button class="control-button" onclick="game.addSymbiont('decomposer')">Add Decomposer 🍄</button>
+            <button class="control-button" onclick="game.addSymbiont('pollinator')">Add Pollinator 🐝</button>
+        </div>
+
+        <div class="evolution-indicator">
+            <div>Generation: <span class="generation-counter" id="generation">1</span></div>
+            <div>Evolution Rate: <span id="evolution-rate">0</span>/min</div>
+        </div>
+    </div>
+
+    <script>
+        class SymbiosisGame {
+            constructor() {
+                this.ecosystem = document.getElementById('ecosystem');
+                this.symbionts = [];
+                this.connections = [];
+                this.resources = [];
+                this.generation = 1;
+                this.ecosystemHealth = 50;
+                this.playerSymbiont = null;
+                this.relationships = {};
+                this.evolutionTimer = 0;
+                
+                this.init();
+            }
+
+            init() {
+                // Create initial symbionts
+                this.addSymbiont('producer', { x: 200, y: 300, isPlayer: true });
+                this.addSymbiont('consumer', { x: 400, y: 200 });
+                this.addSymbiont('decomposer', { x: 600, y: 400 });
+                this.addSymbiont('pollinator', { x: 300, y: 500 });
+
+                // Start game loops
+                this.startResourceGeneration();
+                this.startEvolutionCycle();
+                this.startSymbiosisCheck();
+                
+                // Mouse tracking for player symbiont
+                document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+            }
+
+            addSymbiont(type, options = {}) {
+                const symbiont = {
+                    id: Date.now() + Math.random(),
+                    type: type,
+                    x: options.x || Math.random() * (window.innerWidth - 100) + 50,
+                    y: options.y || Math.random() * (window.innerHeight - 100) + 50,
+                    size: 40,
+                    energy: 100,
+                    age: 0,
+                    traits: this.generateTraits(type),
+                    partners: [],
+                    isPlayer: options.isPlayer || false
+                };
+
+                const element = document.createElement('div');
+                element.className = `symbiont symbiont-${type}`;
+                element.id = `symbiont-${symbiont.id}`;
+                element.style.width = `${symbiont.size}px`;
+                element.style.height = `${symbiont.size}px`;
+                element.style.left = `${symbiont.x}px`;
+                element.style.top = `${symbiont.y}px`;
+                element.innerHTML = this.getSymbiontEmoji(type);
+
+                if (symbiont.isPlayer) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'player-indicator';
+                    element.appendChild(indicator);
+                    this.playerSymbiont = symbiont;
+                }
+
+                element.addEventListener('mouseenter', (e) => this.showSymbiontInfo(symbiont, e));
+                element.addEventListener('mouseleave', () => this.hideSymbiontInfo());
+
+                this.ecosystem.appendChild(element);
+                this.symbionts.push(symbiont);
+                
+                this.updateRelationships();
+                this.updateDisplay();
+            }
+
+            generateTraits(type) {
+                const baseTraits = {
+                    producer: { photosynthesis: 1, growth: 0.5, defense: 0.3 },
+                    consumer: { mobility: 1, hunger: 0.8, cooperation: 0.5 },
+                    decomposer: { recycling: 1, patience: 0.8, network: 0.6 },
+                    pollinator: { speed: 1, memory: 0.7, efficiency: 0.6 }
+                };
+
+                const traits = { ...baseTraits[type] };
+                
+                // Add mutations
+                Object.keys(traits).forEach(trait => {
+                    traits[trait] += (Math.random() - 0.5) * 0.2;
+                    traits[trait] = Math.max(0.1, Math.min(1, traits[trait]));
+                });
+
+                return traits;
+            }
+
+            getSymbiontEmoji(type) {
+                const emojis = {
+                    producer: '🌿',
+                    consumer: '🦋',
+                    decomposer: '🍄',
+                    pollinator: '🐝'
+                };
+                return emojis[type];
+            }
+
+            handleMouseMove(e) {
+                if (this.playerSymbiont) {
+                    const element = document.getElementById(`symbiont-${this.playerSymbiont.id}`);
+                    if (element) {
+                        this.playerSymbiont.x = e.clientX - this.playerSymbiont.size / 2;
+                        this.playerSymbiont.y = e.clientY - this.playerSymbiont.size / 2;
+                        element.style.left = `${this.playerSymbiont.x}px`;
+                        element.style.top = `${this.playerSymbiont.y}px`;
+                        this.checkSymbioticInteractions();
+                    }
+                }
+            }
+
+            checkSymbioticInteractions() {
+                // Clear existing connections
+                document.querySelectorAll('.connection').forEach(conn => conn.remove());
+                this.connections = [];
+
+                // Check all symbiont pairs
+                for (let i = 0; i < this.symbionts.length; i++) {
+                    for (let j = i + 1; j < this.symbionts.length; j++) {
+                        const s1 = this.symbionts[i];
+                        const s2 = this.symbionts[j];
+                        const distance = this.getDistance(s1, s2);
+
+                        if (distance < 150) {
+                            const relationship = this.determineRelationship(s1, s2);
+                            this.createConnection(s1, s2, relationship);
+                            this.applySymbioticEffect(s1, s2, relationship);
+                        }
+                    }
+                }
+            }
+
+            determineRelationship(s1, s2) {
+                const relationships = {
+                    'producer-pollinator': 'mutualism',
+                    'producer-consumer': 'parasitism',
+                    'decomposer-producer': 'mutualism',
+                    'consumer-decomposer': 'commensalism',
+                    'pollinator-consumer': 'neutral',
+                    'decomposer-pollinator': 'commensalism'
+                };
+
+                const key = [s1.type, s2.type].sort().join('-');
+                return relationships[key] || 'neutral';
+            }
+
+            createConnection(s1, s2, relationship) {
+                const connection = document.createElement('div');
+                connection.className = `connection connection-${relationship === 'mutualism' ? 'strong' : 'weak'}`;
+                
+                const dx = s2.x - s1.x;
+                const dy = s2.y - s1.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                connection.style.width = `${distance}px`;
+                connection.style.left = `${s1.x + s1.size / 2}px`;
+                connection.style.top = `${s1.y + s1.size / 2}px`;
+                connection.style.transform = `rotate(${angle}deg)`;
+
+                this.ecosystem.appendChild(connection);
+                this.connections.push({ s1, s2, relationship, element: connection });
+            }
+
+            applySymbioticEffect(s1, s2, relationship) {
+                switch (relationship) {
+                    case 'mutualism':
+                        s1.energy = Math.min(100, s1.energy + 2);
+                        s2.energy = Math.min(100, s2.energy + 2);
+                        this.ecosystemHealth = Math.min(100, this.ecosystemHealth + 0.5);
+                        break;
+                    case 'parasitism':
+                        if (s1.type === 'consumer') {
+                            s1.energy = Math.min(100, s1.energy + 3);
+                            s2.energy = Math.max(0, s2.energy - 2);
+                        } else {
+                            s2.energy = Math.min(100, s2.energy + 3);
+                            s1.energy = Math.max(0, s1.energy - 2);
+                        }
+                        this.ecosystemHealth = Math.max(0, this.ecosystemHealth - 0.3);
+                        break;
+                    case 'commensalism':
+                        const beneficiary = Math.random() > 0.5 ? s1 : s2;
+                        beneficiary.energy = Math.min(100, beneficiary.energy + 1);
+                        break;
+                }
+
+                // Update symbiont partners
+                if (!s1.partners.includes(s2.id)) s1.partners.push(s2.id);
+                if (!s2.partners.includes(s1.id)) s2.partners.push(s1.id);
+            }
+
+            startResourceGeneration() {
+                setInterval(() => {
+                    if (Math.random() > 0.7) {
+                        const types = ['energy', 'nutrient', 'water'];
+                        const type = types[Math.floor(Math.random() * types.length)];
+                        this.createResource(type);
+                    }
+                }, 2000);
+            }
+
+            createResource(type) {
+                const resource = document.createElement('div');
+                resource.className = `resource resource-${type}`;
+                resource.style.left = `${Math.random() * window.innerWidth}px`;
+                this.ecosystem.appendChild(resource);
+
+                setTimeout(() => resource.remove(), 20000);
+            }
+
+            startEvolutionCycle() {
+                setInterval(() => {
+                    this.evolutionTimer++;
+                    
+                    // Evolution happens every 30 seconds
+                    if (this.evolutionTimer % 30 === 0) {
+                        this.evolveSymbionts();
+                        this.generation++;
+                        document.getElementById('generation').textContent = this.generation;
+                    }
+
+                    // Update evolution rate
+                    const evolutionRate = this.symbionts.filter(s => s.partners.length > 0).length;
+                    document.getElementById('evolution-rate').textContent = evolutionRate * 2;
+                }, 1000);
+            }
+
+            evolveSymbionts() {
+                this.symbionts.forEach(symbiont => {
+                    // Evolve based on partnerships
+                    if (symbiont.partners.length > 2) {
+                        // Successful symbiont - enhance traits
+                        Object.keys(symbiont.traits).forEach(trait => {
+                            symbiont.traits[trait] = Math.min(1, symbiont.traits[trait] + 0.1);
+                        });
+
+                        // Visual feedback
+                        this.showAdaptation(symbiont);
+                    }
+
+                    // Age symbionts
+                    symbiont.age++;
+                    symbiont.energy = Math.max(0, symbiont.energy - 0.5);
+
+                    // Remove dead symbionts
+                    if (symbiont.energy <= 0) {
+                        this.removeSymbiont(symbiont);
+                    }
+                });
+            }
+
+            showAdaptation(symbiont) {
+                const adapt = document.createElement('div');
+                adapt.className = 'adaptation';
+                adapt.style.left = `${symbiont.x + symbiont.size / 2}px`;
+                adapt.style.top = `${symbiont.y + symbiont.size / 2}px`;
+                adapt.style.width = `${symbiont.size}px`;
+                adapt.style.height = `${symbiont.size}px`;
+                adapt.style.border = '2px solid #00ff88';
+                adapt.style.borderRadius = '50%';
+                
+                this.ecosystem.appendChild(adapt);
+                setTimeout(() => adapt.remove(), 2000);
+            }
+
+            removeSymbiont(symbiont) {
+                const element = document.getElementById(`symbiont-${symbiont.id}`);
+                if (element) element.remove();
+                
+                const index = this.symbionts.indexOf(symbiont);
+                if (index > -1) this.symbionts.splice(index, 1);
+
+                // If player died, respawn
+                if (symbiont.isPlayer) {
+                    setTimeout(() => {
+                        this.addSymbiont(symbiont.type, { isPlayer: true });
+                    }, 2000);
+                }
+            }
+
+            startSymbiosisCheck() {
+                setInterval(() => {
+                    this.checkSymbioticInteractions();
+                    this.updateDisplay();
+                }, 100);
+            }
+
+            updateRelationships() {
+                const matrix = document.getElementById('matrix-content');
+                matrix.innerHTML = '';
+
+                const types = ['producer', 'consumer', 'decomposer', 'pollinator'];
+                const counts = {};
+
+                types.forEach(type => {
+                    counts[type] = this.symbionts.filter(s => s.type === type).length;
+                });
+
+                types.forEach(type => {
+                    if (counts[type] > 0) {
+                        const row = document.createElement('div');
+                        row.className = 'relationship-row';
+                        row.innerHTML = `
+                            <span style="width: 80px">${this.getSymbiontEmoji(type)} ${counts[type]}</span>
+                            <div class="relationship-cell mutualism">${this.countRelationships(type, 'mutualism')}</div>
+                            <div class="relationship-cell parasitism">${this.countRelationships(type, 'parasitism')}</div>
+                            <div class="relationship-cell commensalism">${this.countRelationships(type, 'commensalism')}</div>
+                        `;
+                        matrix.appendChild(row);
+                    }
+                });
+            }
+
+            countRelationships(type, relationship) {
+                return this.connections.filter(conn => 
+                    (conn.s1.type === type || conn.s2.type === type) && 
+                    conn.relationship === relationship
+                ).length;
+            }
+
+            updateDisplay() {
+                document.getElementById('biodiversity').textContent = this.symbionts.length;
+                document.getElementById('stability').textContent = Math.round(this.ecosystemHealth) + '%';
+                document.getElementById('resources').textContent = document.querySelectorAll('.resource').length;
+                document.getElementById('health-fill').style.width = `${this.ecosystemHealth}%`;
+
+                this.updateRelationships();
+            }
+
+            showSymbiontInfo(symbiont, event) {
+                const info = document.createElement('div');
+                info.className = 'symbiont-info';
+                info.innerHTML = `
+                    <strong>${symbiont.type.toUpperCase()}</strong><br>
+                    Energy: ${Math.round(symbiont.energy)}%<br>
+                    Age: ${symbiont.age} cycles<br>
+                    Partners: ${symbiont.partners.length}<br>
+                    Traits: ${Object.entries(symbiont.traits)
+                        .map(([k, v]) => `${k}: ${Math.round(v * 100)}%`)
+                        .join(', ')}
+                `;
+                info.style.left = `${event.pageX + 10}px`;
+                info.style.top = `${event.pageY + 10}px`;
+                info.id = 'symbiont-info-popup';
+                document.body.appendChild(info);
+            }
+
+            hideSymbiontInfo() {
+                const info = document.getElementById('symbiont-info-popup');
+                if (info) info.remove();
+            }
+
+            getDistance(s1, s2) {
+                const dx = s2.x - s1.x;
+                const dy = s2.y - s1.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        // Initialize game
+        const game = new SymbiosisGame();
+    </script>
+</body>
+</html>

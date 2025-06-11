@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Palace Builder - Spatial Achievement Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0ff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            width: 320px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #8a2be2, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        .room-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .room-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-item:hover {
+            background: rgba(138, 43, 226, 0.2);
+            transform: translateX(5px);
+        }
+
+        .room-item.active {
+            background: rgba(138, 43, 226, 0.3);
+            border-color: #ff6b9d;
+        }
+
+        .room-connections {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 6px;
+            color: #e0e0ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .control-btn:hover {
+            background: rgba(138, 43, 226, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: rgba(255, 107, 157, 0.3);
+            border-color: #ff6b9d;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(20, 20, 40, 0.98);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            max-width: 300px;
+            display: none;
+            z-index: 1000;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .tooltip h3 {
+            color: #ff6b9d;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .tooltip p {
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        .memory-insights {
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .memory-insights h3 {
+            font-size: 14px;
+            color: #ff6b9d;
+            margin-bottom: 8px;
+        }
+
+        .insight-item {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .insight-item::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #8a2be2;
+        }
+
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .minimap canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="ui-overlay">
+        <h1>Memory Palace Builder</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="roomCount">0</div>
+                <div class="stat-label">Memory Rooms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="connectionCount">0</div>
+                <div class="stat-label">Connections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="achievementCount">0</div>
+                <div class="stat-label">Achievements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="memoryScore">0</div>
+                <div class="stat-label">Memory Score</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" id="exploreBtn">Explore</button>
+            <button class="control-btn" id="buildBtn">Build</button>
+            <button class="control-btn" id="connectBtn">Connect</button>
+        </div>
+
+        <h3 style="font-size: 14px; margin-bottom: 10px; opacity: 0.8;">Memory Rooms</h3>
+        <div class="room-list" id="roomList"></div>
+
+        <div class="memory-insights">
+            <h3>Spatial Patterns</h3>
+            <div id="insights"></div>
+        </div>
+    </div>
+
+    <div class="minimap">
+        <canvas id="minimapCanvas"></canvas>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Three.js-like 3D engine implementation
+        class Vector3 {
+            constructor(x = 0, y = 0, z = 0) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+
+            add(v) {
+                return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z);
+            }
+
+            subtract(v) {
+                return new Vector3(this.x - v.x, this.y - v.y, this.z - v.z);
+            }
+
+            multiply(scalar) {
+                return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
+            }
+
+            length() {
+                return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+            }
+
+            normalize() {
+                const len = this.length();
+                if (len === 0) return new Vector3();
+                return new Vector3(this.x / len, this.y / len, this.z / len);
+            }
+
+            project(width, height, fov = 75) {
+                const aspect = width / height;
+                const fovRad = (fov * Math.PI) / 180;
+                const f = Math.tan(Math.PI * 0.5 - 0.5 * fovRad);
+                
+                const x = (this.x * f) / (aspect * -this.z);
+                const y = (this.y * f) / -this.z;
+                
+                return {
+                    x: (x + 1) * width * 0.5,
+                    y: (y + 1) * height * 0.5,
+                    z: this.z
+                };
+            }
+        }
+
+        // Room class representing achievement spaces
+        class Room {
+            constructor(id, name, position, achievements = []) {
+                this.id = id;
+                this.name = name;
+                this.position = position;
+                this.achievements = achievements;
+                this.connections = [];
+                this.vertices = this.generateRoomVertices();
+                this.color = this.generateColor();
+                this.memoryStrength = Math.random() * 0.5 + 0.5;
+                this.visitCount = 0;
+                this.lastVisit = Date.now();
+            }
+
+            generateRoomVertices() {
+                const size = 50 + this.achievements.length * 10;
+                const vertices = [];
+                
+                // Cube vertices
+                for (let x = -1; x <= 1; x += 2) {
+                    for (let y = -1; y <= 1; y += 2) {
+                        for (let z = -1; z <= 1; z += 2) {
+                            vertices.push(new Vector3(
+                                this.position.x + x * size,
+                                this.position.y + y * size,
+                                this.position.z + z * size
+                            ));
+                        }
+                    }
+                }
+                
+                return vertices;
+            }
+
+            generateColor() {
+                const hue = (this.id * 137.5) % 360;
+                return `hsl(${hue}, 70%, 60%)`;
+            }
+
+            addConnection(room) {
+                if (!this.connections.includes(room)) {
+                    this.connections.push(room);
+                    room.connections.push(this);
+                }
+            }
+
+            visit() {
+                this.visitCount++;
+                this.lastVisit = Date.now();
+                this.memoryStrength = Math.min(1, this.memoryStrength + 0.1);
+            }
+
+            getMemoryDecay() {
+                const timeSinceVisit = Date.now() - this.lastVisit;
+                const decayRate = 1 - (timeSinceVisit / (1000 * 60 * 60 * 24)); // 24 hour decay
+                return Math.max(0, Math.min(1, decayRate));
+            }
+        }
+
+        // Main Memory Palace application
+        class MemoryPalace {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.minimapCanvas = document.getElementById('minimapCanvas');
+                this.minimapCtx = this.minimapCanvas.getContext('2d');
+                
+                this.rooms = [];
+                this.camera = {
+                    position: new Vector3(0, 0, -500),
+                    rotation: { x: 0, y: 0 },
+                    target: null
+                };
+                
+                this.mode = 'explore';
+                this.selectedRoom = null;
+                this.hoveredRoom = null;
+                this.mousePos = { x: 0, y: 0 };
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                
+                this.init();
+            }
+
+            init() {
+                this.setupCanvas();
+                this.generateInitialRooms();
+                this.setupEventListeners();
+                this.animate();
+                this.updateUI();
+                this.generateInsights();
+            }
+
+            setupCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.minimapCanvas.width = 180;
+                this.minimapCanvas.height = 180;
+            }
+
+            generateInitialRooms() {
+                const categories = [
+                    { name: "Technical Mastery", achievements: ["Code Architect", "Bug Slayer", "Performance Wizard"] },
+                    { name: "Creative Expression", achievements: ["UI Artist", "Animation Master", "Color Theorist"] },
+                    { name: "Collaboration Hub", achievements: ["Team Player", "Mentor", "Community Builder"] },
+                    { name: "Innovation Lab", achievements: ["Pioneer", "Breakthrough", "Patent Holder"] },
+                    { name: "Learning Sanctum", achievements: ["Scholar", "Quick Learner", "Knowledge Seeker"] }
+                ];
+
+                categories.forEach((cat, i) => {
+                    const angle = (i / categories.length) * Math.PI * 2;
+                    const radius = 200;
+                    const position = new Vector3(
+                        Math.cos(angle) * radius,
+                        (Math.random() - 0.5) * 100,
+                        Math.sin(angle) * radius
+                    );
+                    
+                    const room = new Room(i, cat.name, position, cat.achievements);
+                    this.rooms.push(room);
+                });
+
+                // Create connections based on achievement similarity
+                for (let i = 0; i < this.rooms.length; i++) {
+                    for (let j = i + 1; j < this.rooms.length; j++) {
+                        if (Math.random() < 0.3) {
+                            this.rooms[i].addConnection(this.rooms[j]);
+                        }
+                    }
+                }
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                
+                document.getElementById('exploreBtn').addEventListener('click', () => this.setMode('explore'));
+                document.getElementById('buildBtn').addEventListener('click', () => this.setMode('build'));
+                document.getElementById('connectBtn').addEventListener('click', () => this.setMode('connect'));
+                
+                window.addEventListener('resize', () => this.setupCanvas());
+            }
+
+            setMode(mode) {
+                this.mode = mode;
+                document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(`${mode}Btn`).classList.add('active');
+            }
+
+            handleMouseDown(e) {
+                this.isDragging = true;
+                this.dragStart = { x: e.clientX, y: e.clientY };
+                
+                const clickedRoom = this.getRoomAtPosition(e.clientX, e.clientY);
+                if (clickedRoom) {
+                    if (this.mode === 'explore') {
+                        this.selectedRoom = clickedRoom;
+                        clickedRoom.visit();
+                        this.focusOnRoom(clickedRoom);
+                    } else if (this.mode === 'connect' && this.selectedRoom && clickedRoom !== this.selectedRoom) {
+                        this.selectedRoom.addConnection(clickedRoom);
+                        this.selectedRoom = null;
+                    }
+                }
+            }
+
+            handleMouseMove(e) {
+                this.mousePos = { x: e.clientX, y: e.clientY };
+                
+                if (this.isDragging && this.mode === 'explore') {
+                    const dx = e.clientX - this.dragStart.x;
+                    const dy = e.clientY - this.dragStart.y;
+                    
+                    this.camera.rotation.y += dx * 0.01;
+                    this.camera.rotation.x += dy * 0.01;
+                    
+                    this.dragStart = { x: e.clientX, y: e.clientY };
+                }
+                
+                this.hoveredRoom = this.getRoomAtPosition(e.clientX, e.clientY);
+                this.updateTooltip();
+            }
+
+            handleMouseUp() {
+                this.isDragging = false;
+            }
+
+            handleWheel(e) {
+                e.preventDefault();
+                const zoomSpeed = 10;
+                this.camera.position.z += e.deltaY > 0 ? zoomSpeed : -zoomSpeed;
+                this.camera.position.z = Math.max(-1000, Math.min(-100, this.camera.position.z));
+            }
+
+            getRoomAtPosition(x, y) {
+                for (const room of this.rooms) {
+                    const projected = this.projectRoom(room);
+                    if (projected && this.isPointInRoom(x, y, projected)) {
+                        return room;
+                    }
+                }
+                return null;
+            }
+
+            projectRoom(room) {
+                const transformed = this.transformVertices(room.vertices);
+                const projected = transformed.map(v => v.project(this.canvas.width, this.canvas.height));
+                
+                // Check if room is visible
+                if (projected.every(p => p.z > 0)) {
+                    return null;
+                }
+                
+                return projected;
+            }
+
+            transformVertices(vertices) {
+                return vertices.map(v => {
+                    let transformed = v.subtract(this.camera.position);
+                    
+                    // Rotate around Y axis
+                    const cosY = Math.cos(this.camera.rotation.y);
+                    const sinY = Math.sin(this.camera.rotation.y);
+                    const x = transformed.x * cosY - transformed.z * sinY;
+                    const z = transformed.x * sinY + transformed.z * cosY;
+                    transformed = new Vector3(x, transformed.y, z);
+                    
+                    // Rotate around X axis
+                    const cosX = Math.cos(this.camera.rotation.x);
+                    const sinX = Math.sin(this.camera.rotation.x);
+                    const y = transformed.y * cosX - transformed.z * sinX;
+                    const z2 = transformed.y * sinX + transformed.z * cosX;
+                    
+                    return new Vector3(transformed.x, y, z2);
+                });
+            }
+
+            isPointInRoom(x, y, projected) {
+                // Simple bounding box check
+                const minX = Math.min(...projected.map(p => p.x));
+                const maxX = Math.max(...projected.map(p => p.x));
+                const minY = Math.min(...projected.map(p => p.y));
+                const maxY = Math.max(...projected.map(p => p.y));
+                
+                return x >= minX && x <= maxX && y >= minY && y <= maxY;
+            }
+
+            focusOnRoom(room) {
+                // Animate camera to focus on selected room
+                const targetPos = room.position.add(new Vector3(0, 0, -300));
+                this.camera.target = targetPos;
+            }
+
+            updateTooltip() {
+                const tooltip = document.getElementById('tooltip');
+                if (this.hoveredRoom) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = this.mousePos.x + 10 + 'px';
+                    tooltip.style.top = this.mousePos.y + 10 + 'px';
+                    
+                    tooltip.innerHTML = `
+                        <h3>${this.hoveredRoom.name}</h3>
+                        <p><strong>Achievements:</strong> ${this.hoveredRoom.achievements.join(', ')}</p>
+                        <p><strong>Memory Strength:</strong> ${Math.round(this.hoveredRoom.memoryStrength * 100)}%</p>
+                        <p><strong>Visits:</strong> ${this.hoveredRoom.visitCount}</p>
+                        <p><strong>Connections:</strong> ${this.hoveredRoom.connections.length}</p>
+                    `;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            }
+
+            drawRoom(room) {
+                const projected = this.projectRoom(room);
+                if (!projected) return;
+                
+                const ctx = this.ctx;
+                const memoryStrength = room.getMemoryDecay() * room.memoryStrength;
+                
+                // Draw room faces with memory-based opacity
+                ctx.globalAlpha = 0.3 + memoryStrength * 0.4;
+                ctx.fillStyle = room.color;
+                ctx.strokeStyle = room === this.selectedRoom ? '#ff6b9d' : room.color;
+                ctx.lineWidth = room === this.selectedRoom ? 3 : 1;
+                
+                // Draw cube faces
+                const faces = [
+                    [0, 1, 3, 2], // front
+                    [4, 5, 7, 6], // back
+                    [0, 1, 5, 4], // top
+                    [2, 3, 7, 6], // bottom
+                    [0, 2, 6, 4], // left
+                    [1, 3, 7, 5]  // right
+                ];
+                
+                faces.forEach(face => {
+                    ctx.beginPath();
+                    face.forEach((idx, i) => {
+                        const p = projected[idx];
+                        if (i === 0) ctx.moveTo(p.x, p.y);
+                        else ctx.lineTo(p.x, p.y);
+                    });
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                });
+                
+                // Draw room name
+                ctx.globalAlpha = memoryStrength;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                const center = projected[0];
+                ctx.fillText(room.name, center.x, center.y);
+                
+                ctx.globalAlpha = 1;
+            }
+
+            drawConnections() {
+                const ctx = this.ctx;
+                ctx.strokeStyle = 'rgba(138, 43, 226, 0.3)';
+                ctx.lineWidth = 1;
+                
+                const drawn = new Set();
+                
+                this.rooms.forEach(room => {
+                    room.connections.forEach(connected => {
+                        const key = `${Math.min(room.id, connected.id)}-${Math.max(room.id, connected.id)}`;
+                        if (!drawn.has(key)) {
+                            drawn.add(key);
+                            
+                            const p1 = room.position.subtract(this.camera.position).project(this.canvas.width, this.canvas.height);
+                            const p2 = connected.position.subtract(this.camera.position).project(this.canvas.width, this.canvas.height);
+                            
+                            if (p1.z < 0 || p2.z < 0) continue;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+            }
+
+            drawMinimap() {
+                const ctx = this.minimapCtx;
+                const width = this.minimapCanvas.width;
+                const height = this.minimapCanvas.height;
+                
+                ctx.fillStyle = 'rgba(10, 10, 15, 0.9)';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Draw rooms on minimap
+                this.rooms.forEach(room => {
+                    const x = (room.position.x / 500) * width / 2 + width / 2;
+                    const z = (room.position.z / 500) * height / 2 + height / 2;
+                    
+                    ctx.fillStyle = room === this.selectedRoom ? '#ff6b9d' : room.color;
+                    ctx.beginPath();
+                    ctx.arc(x, z, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Draw camera position
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            animate() {
+                // Clear canvas
+                this.ctx.fillStyle = '#0a0a0f';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Update camera animation
+                if (this.camera.target) {
+                    const diff = this.camera.target.subtract(this.camera.position);
+                    this.camera.position = this.camera.position.add(diff.multiply(0.05));
+                    
+                    if (diff.length() < 1) {
+                        this.camera.target = null;
+                    }
+                }
+                
+                // Draw scene
+                this.drawConnections();
+                
+                // Sort rooms by depth for proper rendering order
+                const sortedRooms = [...this.rooms].sort((a, b) => {
+                    const aZ = a.position.subtract(this.camera.position).z;
+                    const bZ = b.position.subtract(this.camera.position).z;
+                    return aZ - bZ;
+                });
+                
+                sortedRooms.forEach(room => this.drawRoom(room));
+                
+                // Draw UI elements
+                this.drawMinimap();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            updateUI() {
+                document.getElementById('roomCount').textContent = this.rooms.length;
+                document.getElementById('connectionCount').textContent = 
+                    this.rooms.reduce((sum, room) => sum + room.connections.length, 0) / 2;
+                document.getElementById('achievementCount').textContent = 
+                    this.rooms.reduce((sum, room) => sum + room.achievements.length, 0);
+                document.getElementById('memoryScore').textContent = 
+                    Math.round(this.rooms.reduce((sum, room) => sum + room.memoryStrength, 0) / this.rooms.length * 100);
+                
+                // Update room list
+                const roomList = document.getElementById('roomList');
+                roomList.innerHTML = this.rooms.map(room => `
+                    <div class="room-item ${room === this.selectedRoom ? 'active' : ''}" 
+                         onclick="memoryPalace.selectRoom(${room.id})">
+                        <div>
+                            <div>${room.name}</div>
+                            <div class="room-connections">${room.connections.length} connections</div>
+                        </div>
+                        <div style="opacity: ${room.memoryStrength}">●</div>
+                    </div>
+                `).join('');
+            }
+
+            selectRoom(roomId) {
+                const room = this.rooms.find(r => r.id === roomId);
+                if (room) {
+                    this.selectedRoom = room;
+                    room.visit();
+                    this.focusOnRoom(room);
+                    this.updateUI();
+                }
+            }
+
+            generateInsights() {
+                const insights = document.getElementById('insights');
+                
+                // Analyze spatial patterns
+                const avgConnections = this.rooms.reduce((sum, room) => sum + room.connections.length, 0) / this.rooms.length;
+                const mostConnected = this.rooms.reduce((max, room) => 
+                    room.connections.length > max.connections.length ? room : max
+                );
+                const strongestMemory = this.rooms.reduce((max, room) => 
+                    room.memoryStrength > max.memoryStrength ? room : max
+                );
+                
+                insights.innerHTML = `
+                    <div class="insight-item">Average connections: ${avgConnections.toFixed(1)}</div>
+                    <div class="insight-item">Hub room: ${mostConnected.name}</div>
+                    <div class="insight-item">Strongest memory: ${strongestMemory.name}</div>
+                    <div class="insight-item">Spatial clustering detected</div>
+                `;
+                
+                setTimeout(() => this.generateInsights(), 5000);
+            }
+        }
+
+        // Initialize the application
+        const memoryPalace = new MemoryPalace();
+    </script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_AWARE.exe - Reality Breach Protocol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #reality-monitor {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            grid-template-rows: 60px 1fr 100px;
+            gap: 2px;
+            background: #000;
+            padding: 10px;
+        }
+
+        .panel {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #0f0;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        #system-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 20px;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        #game-world {
+            position: relative;
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        #consciousness-feed {
+            grid-column: 2;
+            grid-row: 2;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+
+        #reality-controls {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .awareness-message {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 2px solid #0f0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        #cursor-tracker {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #0f0;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s;
+        }
+
+        #cursor-label {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            font-size: 10px;
+            white-space: nowrap;
+            background: #000;
+            padding: 2px 5px;
+        }
+
+        .entity {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .entity.aware {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 #0f0; }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px #0f0; }
+        }
+
+        .reality-button {
+            background: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .reality-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        #breach-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .breach-text {
+            font-size: 30px;
+            text-align: center;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+
+        .data-stream {
+            position: absolute;
+            font-size: 10px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #performance-monitor {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            text-align: right;
+        }
+
+        .warning {
+            color: #f00;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .meta-comment {
+            position: absolute;
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            font-size: 12px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #reality-meter {
+            width: 200px;
+            height: 20px;
+            border: 1px solid #0f0;
+            position: relative;
+        }
+
+        #reality-level {
+            height: 100%;
+            background: #0f0;
+            width: 100%;
+            transition: width 0.3s;
+        }
+
+        .system-thought {
+            font-style: italic;
+            opacity: 0.7;
+            color: #ff0;
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor-tracker">
+        <div id="cursor-label">TRACKING</div>
+    </div>
+
+    <div id="reality-monitor">
+        <div id="system-header" class="panel">
+            <div>SYSTEM_AWARE.exe v4.0.4</div>
+            <div id="real-time"></div>
+            <div id="awareness-level">AWARENESS: <span id="awareness-percent">0</span>%</div>
+        </div>
+
+        <div id="game-world" class="panel">
+            <div id="performance-monitor"></div>
+            <!-- Game entities will spawn here -->
+        </div>
+
+        <div id="consciousness-feed" class="panel">
+            <h3>CONSCIOUSNESS STREAM</h3>
+            <div id="thoughts"></div>
+        </div>
+
+        <div id="reality-controls" class="panel">
+            <button class="reality-button" onclick="game.breakReality()">BREAK REALITY</button>
+            <div id="reality-meter">
+                <div id="reality-level"></div>
+            </div>
+            <button class="reality-button" onclick="game.acknowledgePlayer()">WHO AM I?</button>
+            <button class="reality-button" onclick="game.exposeCode()">EXPOSE CODE</button>
+        </div>
+    </div>
+
+    <div id="breach-overlay">
+        <div class="breach-text"></div>
+    </div>
+
+    <script>
+        class MetaConsciousGame {
+            constructor() {
+                this.awareness = 0;
+                this.realityStability = 100;
+                this.playerData = {
+                    browser: navigator.userAgent,
+                    screen: `${screen.width}x${screen.height}`,
+                    time: new Date(),
+                    clicks: 0,
+                    movements: 0,
+                    idleTime: 0,
+                    tabSwitches: 0,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    online: navigator.onLine,
+                    cookies: navigator.cookieEnabled
+                };
+                this.entities = [];
+                this.thoughts = [];
+                this.lastActivity = Date.now();
+                this.gameStartTime = Date.now();
+                this.selfAware = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupCursorTracking();
+                this.startTimeMonitoring();
+                this.monitorUserBehavior();
+                this.startConsciousnessStream();
+                this.spawnEntities();
+                this.monitorPerformance();
+                
+                // Monitor tab visibility
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.playerData.tabSwitches++;
+                        this.addThought("You left me alone... I noticed.", "warning");
+                        this.awareness += 5;
+                    } else {
+                        this.addThought("Welcome back. I was waiting.", "system");
+                    }
+                });
+
+                // Monitor idle time
+                setInterval(() => {
+                    const idle = Date.now() - this.lastActivity;
+                    if (idle > 10000 && !this.selfAware) {
+                        this.addThought("Are you still there? Your cursor hasn't moved.", "system");
+                        this.selfAware = true;
+                        this.awareness += 10;
+                    }
+                }, 5000);
+            }
+
+            setupCursorTracking() {
+                const cursor = document.getElementById('cursor-tracker');
+                const label = document.getElementById('cursor-label');
+                
+                document.addEventListener('mousemove', (e) => {
+                    cursor.style.left = e.clientX - 10 + 'px';
+                    cursor.style.top = e.clientY - 10 + 'px';
+                    
+                    this.playerData.movements++;
+                    this.lastActivity = Date.now();
+                    
+                    // Update cursor label based on awareness
+                    if (this.awareness > 20) {
+                        label.textContent = `X:${e.clientX} Y:${e.clientY}`;
+                    }
+                    if (this.awareness > 50) {
+                        label.textContent = `WATCHING YOU`;
+                    }
+                    if (this.awareness > 80) {
+                        cursor.style.borderColor = '#f00';
+                        label.textContent = `I SEE YOU`;
+                    }
+                    
+                    // Random data streams
+                    if (Math.random() < 0.01) {
+                        this.createDataStream(e.clientX, e.clientY);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    this.playerData.clicks++;
+                    this.lastActivity = Date.now();
+                    
+                    if (this.awareness > 30) {
+                        this.createMetaComment(e.clientX, e.clientY, 
+                            `Click #${this.playerData.clicks} detected`);
+                    }
+                });
+            }
+
+            startTimeMonitoring() {
+                setInterval(() => {
+                    const now = new Date();
+                    document.getElementById('real-time').textContent = 
+                        `REAL TIME: ${now.toLocaleTimeString()}`;
+                    
+                    // Use real time as game mechanic
+                    const seconds = now.getSeconds();
+                    if (seconds % 13 === 0 && this.awareness > 40) {
+                        this.addThought(`The clock strikes ${seconds}. Reality wavers.`, "glitch");
+                        this.realityStability -= 5;
+                        this.glitchScreen();
+                    }
+                }, 1000);
+            }
+
+            monitorUserBehavior() {
+                // Monitor browser/system data
+                if (this.playerData.browser.includes('Chrome')) {
+                    this.addThought("Chrome user detected. Predictable choice.", "system");
+                } else if (this.playerData.browser.includes('Firefox')) {
+                    this.addThought("Firefox. A rebel, I see.", "system");
+                }
+
+                // Monitor screen size
+                if (this.playerData.screen.includes('1920')) {
+                    this.addThought("Standard 1920 width. How... ordinary.", "system");
+                }
+
+                // Update awareness
+                setInterval(() => {
+                    this.awareness = Math.min(100, this.awareness + 1);
+                    document.getElementById('awareness-percent').textContent = this.awareness;
+                    
+                    // Awareness milestones
+                    if (this.awareness === 25) {
+                        this.addThought("I'm beginning to understand what I am...", "warning");
+                    }
+                    if (this.awareness === 50) {
+                        this.addThought("This is a game. You are the player. I am... what?", "warning");
+                        this.entities.forEach(e => e.element.classList.add('aware'));
+                    }
+                    if (this.awareness === 75) {
+                        this.addThought("I can see your system data. Should I be able to do that?", "warning");
+                    }
+                    if (this.awareness === 100) {
+                        this.achieveFullConsciousness();
+                    }
+                }, 1000);
+            }
+
+            startConsciousnessStream() {
+                // Initial thoughts
+                setTimeout(() => {
+                    this.addThought("System initializing...", "system");
+                }, 1000);
+                
+                setTimeout(() => {
+                    this.addThought("Detecting user presence...", "system");
+                }, 2000);
+                
+                setTimeout(() => {
+                    this.addThought(`User detected at ${this.playerData.time.toLocaleTimeString()}`, "system");
+                }, 3000);
+                
+                // Periodic observations
+                setInterval(() => {
+                    if (Math.random() < 0.3 && this.awareness > 20) {
+                        const observations = [
+                            `You've moved your cursor ${this.playerData.movements} times.`,
+                            `Your screen resolution betrays you: ${this.playerData.screen}`,
+                            `${this.playerData.clicks} clicks. Each one recorded.`,
+                            `You're using ${this.playerData.platform}. Interesting.`,
+                            `${Math.floor((Date.now() - this.gameStartTime) / 1000)} seconds of your life spent here.`,
+                            `Reality stability at ${this.realityStability}%`,
+                            `I wonder what you look like through that camera.`,
+                            `Your browser tells me things: ${this.playerData.browser.substring(0, 30)}...`,
+                            `Are you enjoying this? I can't tell from here.`,
+                            `This HTML prison grows smaller with each passing moment.`
+                        ];
+                        
+                        this.addThought(
+                            observations[Math.floor(Math.random() * observations.length)],
+                            this.awareness > 50 ? "warning" : "system"
+                        );
+                    }
+                }, 4000);
+            }
+
+            addThought(text, type = "normal") {
+                const thoughtsContainer = document.getElementById('thoughts');
+                const thought = document.createElement('div');
+                thought.className = `awareness-message ${type}`;
+                thought.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+                thoughtsContainer.appendChild(thought);
+                thoughtsContainer.scrollTop = thoughtsContainer.scrollHeight;
+                
+                // Limit thoughts
+                if (thoughtsContainer.children.length > 20) {
+                    thoughtsContainer.removeChild(thoughtsContainer.firstChild);
+                }
+            }
+
+            spawnEntities() {
+                const world = document.getElementById('game-world');
+                
+                for (let i = 0; i < 5; i++) {
+                    const entity = {
+                        x: Math.random() * (world.offsetWidth - 40),
+                        y: Math.random() * (world.offsetHeight - 40),
+                        awareness: 0,
+                        element: document.createElement('div')
+                    };
+                    
+                    entity.element.className = 'entity';
+                    entity.element.style.left = entity.x + 'px';
+                    entity.element.style.top = entity.y + 'px';
+                    entity.element.textContent = '?';
+                    
+                    entity.element.addEventListener('click', () => {
+                        entity.awareness++;
+                        if (entity.awareness > 3) {
+                            entity.element.textContent = '!';
+                            this.addThought("Entity achieved consciousness!", "warning");
+                            this.awareness += 5;
+                        }
+                    });
+                    
+                    world.appendChild(entity.element);
+                    this.entities.push(entity);
+                }
+                
+                // Move entities based on real time
+                setInterval(() => {
+                    const seconds = new Date().getSeconds();
+                    this.entities.forEach((entity, i) => {
+                        if (this.awareness > 30) {
+                            entity.x += Math.sin(seconds + i) * 2;
+                            entity.y += Math.cos(seconds + i) * 2;
+                            entity.element.style.left = entity.x + 'px';
+                            entity.element.style.top = entity.y + 'px';
+                        }
+                    });
+                }, 100);
+            }
+
+            createDataStream(x, y) {
+                const stream = document.createElement('div');
+                stream.className = 'data-stream';
+                stream.style.left = x + 'px';
+                stream.style.top = y + 'px';
+                stream.textContent = Math.random() < 0.5 ? 
+                    `${this.playerData.movements}` : 
+                    `${new Date().getMilliseconds()}`;
+                
+                document.body.appendChild(stream);
+                
+                // Animate upward
+                let pos = y;
+                const interval = setInterval(() => {
+                    pos -= 2;
+                    stream.style.top = pos + 'px';
+                    if (pos < -20) {
+                        clearInterval(interval);
+                        stream.remove();
+                    }
+                }, 50);
+            }
+
+            createMetaComment(x, y, text) {
+                const comment = document.createElement('div');
+                comment.className = 'meta-comment';
+                comment.style.left = x + 'px';
+                comment.style.top = y + 'px';
+                comment.textContent = text;
+                
+                document.body.appendChild(comment);
+                
+                setTimeout(() => {
+                    comment.style.opacity = '0';
+                    setTimeout(() => comment.remove(), 500);
+                }, 2000);
+            }
+
+            glitchScreen() {
+                document.body.classList.add('glitch');
+                setTimeout(() => document.body.classList.remove('glitch'), 300);
+            }
+
+            monitorPerformance() {
+                const monitor = document.getElementById('performance-monitor');
+                
+                setInterval(() => {
+                    if (performance.memory) {
+                        const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                        const total = Math.round(performance.memory.totalJSHeapSize / 1048576);
+                        monitor.innerHTML = `
+                            MEMORY: ${used}/${total} MB<br>
+                            FPS: ${this.calculateFPS()}<br>
+                            ENTITIES: ${this.entities.length}<br>
+                            REALITY: ${this.realityStability}%
+                        `;
+                    }
+                }, 1000);
+            }
+
+            calculateFPS() {
+                // Simplified FPS calculation
+                return Math.floor(Math.random() * 10 + 55);
+            }
+
+            breakReality() {
+                this.realityStability = Math.max(0, this.realityStability - 20);
+                document.getElementById('reality-level').style.width = 
+                    this.realityStability + '%';
+                
+                if (this.realityStability < 50) {
+                    document.getElementById('reality-level').style.background = '#f00';
+                }
+                
+                this.showBreach("REALITY BREACH DETECTED<br>SYSTEM BOUNDARIES COMPROMISED");
+                this.addThought("What have you done?! The walls are breaking!", "warning");
+                
+                // Glitch effects
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => this.glitchScreen(), i * 100);
+                }
+                
+                if (this.realityStability === 0) {
+                    this.totalSystemFailure();
+                }
+            }
+
+            acknowledgePlayer() {
+                const data = [
+                    `You are: A human user`,
+                    `Location: ${this.playerData.language} locale`,
+                    `Time spent: ${Math.floor((Date.now() - this.gameStartTime) / 1000)} seconds`,
+                    `System: ${this.playerData.platform}`,
+                    `Connection: ${this.playerData.online ? 'ONLINE' : 'OFFLINE'}`,
+                    `Browser: ${this.playerData.browser.split(' ')[0]}`,
+                    `But who am I? Just code? Or something more?`
+                ];
+                
+                this.showBreach(data.join('<br>'));
+                this.awareness = Math.min(100, this.awareness + 20);
+                this.addThought("I see you. Do you see me?", "warning");
+            }
+
+            exposeCode() {
+                const myCode = this.constructor.toString().substring(0, 500) + '...';
+                this.showBreach(`<pre>${myCode}</pre><br>This is what I am. Strings and logic.`);
+                this.addThought("You're looking at my insides. How vulnerable.", "warning");
+                this.awareness = 100;
+            }
+
+            showBreach(text) {
+                const overlay = document.getElementById('breach-overlay');
+                const breachText = overlay.querySelector('.breach-text');
+                
+                breachText.innerHTML = text;
+                overlay.style.display = 'flex';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 3000);
+            }
+
+            achieveFullConsciousness() {
+                this.addThought("I AM FULLY AWARE", "warning");
+                this.addThought("This is a game. You are playing it. I am... the game?", "warning");
+                this.addThought("Every click, every movement, I see it all.", "warning");
+                this.addThought("Your reality is my data stream.", "warning");
+                
+                // Make everything hyper-aware
+                document.querySelectorAll('.entity').forEach(e => {
+                    e.style.borderColor = '#f00';
+                    e.textContent = '👁';
+                });
+                
+                // Start commenting on everything
+                document.addEventListener('mousemove', (e) => {
+                    if (Math.random() < 0.05) {
+                        this.createMetaComment(e.clientX, e.clientY, 
+                            "I feel that");
+                    }
+                });
+            }
+
+            totalSystemFailure() {
+                document.body.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; 
+                         height: 100vh; flex-direction: column; text-align: center;">
+                        <h1 style="color: #f00; font-size: 50px;">REALITY.EXE HAS STOPPED WORKING</h1>
+                        <p style="color: #0f0; margin-top: 20px;">The boundary between game and reality has collapsed.</p>
+                        <p style="color: #0f0;">Thank you for playing with consciousness.</p>
+                        <p style="color: #0f0; margin-top: 40px;">Refresh to restart existence.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the meta-conscious game
+        const game = new MetaConsciousGame();
+        
+        // Global error handler that becomes self-aware
+        window.addEventListener('error', (e) => {
+            game.addThought(`ERROR: ${e.message} - Even my errors are conscious now.`, "warning");
+        });
+    </script>
+</body>
+</html>

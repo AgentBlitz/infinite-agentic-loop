@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Paradox Engine - Iteration 7</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .temporal-field {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(138, 43, 226, 0.1), transparent);
+            pointer-events: none;
+            animation: temporal-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes temporal-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .paradox-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .consistency-meter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+        }
+
+        .meter-label {
+            font-size: 12px;
+            color: #8a2be2;
+            margin-bottom: 5px;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #8a2be2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8a2be2, #ff00ff);
+            width: 100%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .meter-fill.unstable {
+            animation: glitch 0.2s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            50% { transform: translateX(2px); }
+            75% { transform: translateX(-1px); }
+            100% { transform: translateX(0); }
+        }
+
+        .paradox-warnings {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff0000;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        .warning-item {
+            color: #ff6666;
+            margin-bottom: 5px;
+            animation: warning-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes warning-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .causal-loop-canvas {
+            width: 600px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #8a2be2;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .temporal-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #8a2be2, transparent);
+            border: 2px solid #ff00ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .temporal-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #ff00ff;
+        }
+
+        .temporal-node.future {
+            border-color: #00ff00;
+            animation: future-phase 2s linear infinite;
+        }
+
+        .temporal-node.past {
+            border-color: #ff0000;
+            animation: past-phase 2s linear infinite reverse;
+        }
+
+        @keyframes future-phase {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes past-phase {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .causal-link {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #8a2be2, transparent);
+            height: 2px;
+            transform-origin: left center;
+            pointer-events: none;
+            animation: causal-flow 2s linear infinite;
+        }
+
+        @keyframes causal-flow {
+            0% { background-position: -100px 0; }
+            100% { background-position: 100px 0; }
+        }
+
+        .causal-link.paradox {
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            height: 4px;
+            animation: paradox-flow 0.5s linear infinite;
+        }
+
+        @keyframes paradox-flow {
+            0% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.5; transform: scaleY(2); }
+            100% { opacity: 1; transform: scaleY(1); }
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8a2be2;
+            border-radius: 10px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(138, 43, 226, 0.3);
+            border: 1px solid #8a2be2;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .control-btn:hover {
+            background: rgba(138, 43, 226, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.5);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .control-btn.active {
+            background: #8a2be2;
+            box-shadow: 0 0 20px #8a2be2;
+        }
+
+        .paradox-resolver {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff00ff;
+            padding: 20px;
+            display: none;
+        }
+
+        .paradox-resolver.active {
+            display: block;
+            animation: resolver-appear 0.5s ease-out;
+        }
+
+        @keyframes resolver-appear {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .resolver-title {
+            font-size: 16px;
+            color: #ff00ff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .resolution-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .resolution-option {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #8a2be2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .resolution-option:hover {
+            background: rgba(138, 43, 226, 0.3);
+            transform: translateX(5px);
+        }
+
+        .timeline-visualizer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8a2be2;
+            padding: 10px;
+        }
+
+        .timeline-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(138, 43, 226, 0.3);
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #8a2be2;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: left 0.3s ease;
+        }
+
+        .self-reference-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .self-reference-indicator.active {
+            opacity: 1;
+            animation: self-reference-spin 4s linear infinite;
+        }
+
+        @keyframes self-reference-spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        .infinity-symbol {
+            width: 100%;
+            height: 100%;
+            stroke: #ff00ff;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 10px #ff00ff);
+        }
+
+        .meta-rule-display {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            width: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8a2be2;
+            padding: 15px;
+            font-size: 11px;
+        }
+
+        .rule-item {
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(138, 43, 226, 0.2);
+            border-left: 2px solid #8a2be2;
+            transition: all 0.3s ease;
+        }
+
+        .rule-item.modified {
+            animation: rule-modify 1s ease;
+            border-left-color: #ff00ff;
+        }
+
+        @keyframes rule-modify {
+            0% { background: rgba(255, 0, 255, 0.5); }
+            100% { background: rgba(138, 43, 226, 0.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="temporal-field"></div>
+    
+    <div class="paradox-container">
+        <div class="consistency-meter">
+            <div class="meter-label">TEMPORAL CONSISTENCY</div>
+            <div class="meter-bar">
+                <div class="meter-fill" id="consistencyFill"></div>
+            </div>
+        </div>
+
+        <div class="paradox-warnings" id="warningsPanel">
+            <div style="color: #ff00ff; margin-bottom: 10px;">PARADOX WARNINGS:</div>
+        </div>
+
+        <div class="causal-loop-canvas" id="causalCanvas">
+            <div class="self-reference-indicator" id="selfReference">
+                <svg class="infinity-symbol" viewBox="0 0 100 50">
+                    <path d="M25,25 Q5,5 25,25 T50,25 Q70,5 50,25 T75,25 Q95,45 75,25 T50,25 Q30,45 50,25 T25,25"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button class="control-btn" id="createNodeBtn">Create Event</button>
+            <button class="control-btn" id="linkModeBtn">Link Causality</button>
+            <button class="control-btn" id="paradoxModeBtn">Paradox Mode</button>
+            <button class="control-btn" id="resolveBtn">Resolve Timeline</button>
+        </div>
+
+        <div class="paradox-resolver" id="resolver">
+            <div class="resolver-title">PARADOX DETECTED</div>
+            <div class="resolution-options" id="resolutionOptions"></div>
+        </div>
+
+        <div class="timeline-visualizer">
+            <div style="font-size: 10px; color: #8a2be2;">TIMELINE INTEGRITY</div>
+            <div class="timeline-track">
+                <div class="timeline-marker" id="timelineMarker"></div>
+            </div>
+            <div class="timeline-track">
+                <div class="timeline-marker" id="alternateMarker" style="background: #ff00ff;"></div>
+            </div>
+        </div>
+
+        <div class="meta-rule-display" id="rulesDisplay">
+            <div style="color: #8a2be2; margin-bottom: 10px;">ACTIVE RULES:</div>
+            <div class="rule-item" id="rule1">Causality flows forward</div>
+            <div class="rule-item" id="rule2">Effects follow causes</div>
+            <div class="rule-item" id="rule3">Time is linear</div>
+            <div class="rule-item" id="rule4">Paradoxes collapse</div>
+        </div>
+    </div>
+
+    <script>
+        class BootstrapParadoxEngine {
+            constructor() {
+                this.nodes = [];
+                this.links = [];
+                this.consistency = 100;
+                this.mode = 'create';
+                this.selectedNode = null;
+                this.paradoxCount = 0;
+                this.rules = {
+                    causalityForward: true,
+                    effectsFollowCauses: true,
+                    timeLinear: true,
+                    paradoxesCollapse: true
+                };
+                this.timelinePosition = 50;
+                this.alternatePosition = 50;
+                this.init();
+            }
+
+            init() {
+                this.canvas = document.getElementById('causalCanvas');
+                this.consistencyFill = document.getElementById('consistencyFill');
+                this.warningsPanel = document.getElementById('warningsPanel');
+                this.resolver = document.getElementById('resolver');
+                this.selfReference = document.getElementById('selfReference');
+                
+                this.setupEventListeners();
+                this.startTemporalEngine();
+            }
+
+            setupEventListeners() {
+                document.getElementById('createNodeBtn').addEventListener('click', () => {
+                    this.mode = 'create';
+                    this.updateButtonStates();
+                });
+
+                document.getElementById('linkModeBtn').addEventListener('click', () => {
+                    this.mode = 'link';
+                    this.updateButtonStates();
+                });
+
+                document.getElementById('paradoxModeBtn').addEventListener('click', () => {
+                    this.mode = 'paradox';
+                    this.updateButtonStates();
+                });
+
+                document.getElementById('resolveBtn').addEventListener('click', () => {
+                    this.resolveTimeline();
+                });
+
+                this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+            }
+
+            updateButtonStates() {
+                document.querySelectorAll('.control-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                if (this.mode === 'create') {
+                    document.getElementById('createNodeBtn').classList.add('active');
+                } else if (this.mode === 'link') {
+                    document.getElementById('linkModeBtn').classList.add('active');
+                } else if (this.mode === 'paradox') {
+                    document.getElementById('paradoxModeBtn').classList.add('active');
+                }
+            }
+
+            handleCanvasClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (this.mode === 'create') {
+                    this.createTemporalNode(x, y);
+                } else if (this.mode === 'link' || this.mode === 'paradox') {
+                    const clickedNode = this.getNodeAtPosition(x, y);
+                    if (clickedNode) {
+                        this.handleNodeSelection(clickedNode);
+                    }
+                }
+            }
+
+            createTemporalNode(x, y) {
+                const node = {
+                    id: Date.now(),
+                    x: x - 30,
+                    y: y - 30,
+                    time: Math.random() * 100,
+                    type: Math.random() > 0.5 ? 'future' : 'past',
+                    label: `T${this.nodes.length + 1}`
+                };
+
+                this.nodes.push(node);
+                this.renderNode(node);
+                this.checkTemporalConsistency();
+            }
+
+            renderNode(node) {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `temporal-node ${node.type}`;
+                nodeEl.style.left = `${node.x}px`;
+                nodeEl.style.top = `${node.y}px`;
+                nodeEl.textContent = node.label;
+                nodeEl.dataset.nodeId = node.id;
+                
+                nodeEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.mode === 'link' || this.mode === 'paradox') {
+                        this.handleNodeSelection(node);
+                    }
+                });
+
+                this.canvas.appendChild(nodeEl);
+            }
+
+            handleNodeSelection(node) {
+                if (!this.selectedNode) {
+                    this.selectedNode = node;
+                    this.highlightNode(node.id, true);
+                } else {
+                    if (this.selectedNode.id !== node.id) {
+                        this.createCausalLink(this.selectedNode, node);
+                    }
+                    this.highlightNode(this.selectedNode.id, false);
+                    this.selectedNode = null;
+                }
+            }
+
+            highlightNode(nodeId, highlight) {
+                const nodeEl = this.canvas.querySelector(`[data-node-id="${nodeId}"]`);
+                if (nodeEl) {
+                    nodeEl.style.boxShadow = highlight ? '0 0 30px #ff00ff' : '';
+                }
+            }
+
+            createCausalLink(node1, node2) {
+                const link = {
+                    id: Date.now(),
+                    from: node1,
+                    to: node2,
+                    type: this.mode === 'paradox' ? 'paradox' : 'normal'
+                };
+
+                this.links.push(link);
+                this.renderLink(link);
+                
+                if (this.mode === 'paradox' || this.detectBootstrapParadox(link)) {
+                    this.handleParadox(link);
+                }
+                
+                this.checkTemporalConsistency();
+            }
+
+            renderLink(link) {
+                const linkEl = document.createElement('div');
+                linkEl.className = `causal-link ${link.type}`;
+                
+                const dx = link.to.x - link.from.x;
+                const dy = link.to.y - link.from.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                linkEl.style.left = `${link.from.x + 30}px`;
+                linkEl.style.top = `${link.from.y + 30}px`;
+                linkEl.style.width = `${length}px`;
+                linkEl.style.transform = `rotate(${angle}deg)`;
+                
+                this.canvas.appendChild(linkEl);
+            }
+
+            detectBootstrapParadox(newLink) {
+                // Check for circular causality
+                const visited = new Set();
+                const path = [newLink.from.id];
+                
+                const hasCycle = (nodeId) => {
+                    if (visited.has(nodeId)) return path.includes(nodeId);
+                    visited.add(nodeId);
+                    
+                    const outgoingLinks = this.links.filter(l => l.from.id === nodeId);
+                    for (const link of outgoingLinks) {
+                        path.push(link.to.id);
+                        if (hasCycle(link.to.id)) return true;
+                        path.pop();
+                    }
+                    
+                    return false;
+                };
+                
+                return hasCycle(newLink.to.id);
+            }
+
+            handleParadox(link) {
+                this.paradoxCount++;
+                this.consistency = Math.max(0, this.consistency - 20);
+                this.updateConsistencyMeter();
+                
+                this.addWarning(`Bootstrap paradox detected: ${link.from.label} → ${link.to.label}`);
+                
+                if (this.paradoxCount > 2) {
+                    this.triggerSelfReference();
+                }
+                
+                if (this.consistency < 30) {
+                    this.showParadoxResolver();
+                }
+                
+                // Modify rules based on paradox
+                this.modifyTemporalRules();
+            }
+
+            modifyTemporalRules() {
+                const ruleKeys = Object.keys(this.rules);
+                const ruleToModify = ruleKeys[Math.floor(Math.random() * ruleKeys.length)];
+                
+                this.rules[ruleToModify] = !this.rules[ruleToModify];
+                
+                const ruleElements = {
+                    causalityForward: 'rule1',
+                    effectsFollowCauses: 'rule2',
+                    timeLinear: 'rule3',
+                    paradoxesCollapse: 'rule4'
+                };
+                
+                const element = document.getElementById(ruleElements[ruleToModify]);
+                if (element) {
+                    element.classList.add('modified');
+                    element.textContent = this.rules[ruleToModify] ? 
+                        element.textContent : 
+                        `¬${element.textContent}`;
+                    
+                    setTimeout(() => element.classList.remove('modified'), 1000);
+                }
+            }
+
+            triggerSelfReference() {
+                this.selfReference.classList.add('active');
+                setTimeout(() => this.selfReference.classList.remove('active'), 3000);
+                
+                // Create meta-paradox by having the system reference itself
+                this.addWarning('SELF-REFERENCE: System modifying own causality rules');
+            }
+
+            checkTemporalConsistency() {
+                // Complex consistency calculation based on paradoxes and timeline integrity
+                let consistency = 100;
+                
+                // Check for time-ordering violations
+                this.links.forEach(link => {
+                    if (link.from.type === 'future' && link.to.type === 'past') {
+                        consistency -= 5;
+                    }
+                    if (link.type === 'paradox') {
+                        consistency -= 15;
+                    }
+                });
+                
+                // Check for causal loops
+                const loops = this.detectAllCausalLoops();
+                consistency -= loops.length * 10;
+                
+                this.consistency = Math.max(0, Math.min(100, consistency));
+                this.updateConsistencyMeter();
+            }
+
+            detectAllCausalLoops() {
+                const loops = [];
+                const visited = new Set();
+                
+                this.nodes.forEach(node => {
+                    if (!visited.has(node.id)) {
+                        const path = [];
+                        this.dfsForLoops(node.id, visited, path, loops);
+                    }
+                });
+                
+                return loops;
+            }
+
+            dfsForLoops(nodeId, visited, path, loops) {
+                if (path.includes(nodeId)) {
+                    loops.push([...path.slice(path.indexOf(nodeId))]);
+                    return;
+                }
+                
+                visited.add(nodeId);
+                path.push(nodeId);
+                
+                const outgoing = this.links.filter(l => l.from.id === nodeId);
+                outgoing.forEach(link => {
+                    this.dfsForLoops(link.to.id, visited, path, loops);
+                });
+                
+                path.pop();
+            }
+
+            updateConsistencyMeter() {
+                this.consistencyFill.style.width = `${this.consistency}%`;
+                
+                if (this.consistency < 30) {
+                    this.consistencyFill.classList.add('unstable');
+                } else {
+                    this.consistencyFill.classList.remove('unstable');
+                }
+            }
+
+            addWarning(message) {
+                const warning = document.createElement('div');
+                warning.className = 'warning-item';
+                warning.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                this.warningsPanel.appendChild(warning);
+                
+                if (this.warningsPanel.children.length > 10) {
+                    this.warningsPanel.removeChild(this.warningsPanel.children[1]);
+                }
+            }
+
+            showParadoxResolver() {
+                this.resolver.classList.add('active');
+                
+                const options = [
+                    'Collapse timeline to most stable state',
+                    'Create alternate timeline branch',
+                    'Reverse causality flow',
+                    'Embrace the paradox (risky)',
+                    'Quantum superposition resolution'
+                ];
+                
+                const optionsContainer = document.getElementById('resolutionOptions');
+                optionsContainer.innerHTML = '';
+                
+                options.forEach((option, index) => {
+                    const optionEl = document.createElement('div');
+                    optionEl.className = 'resolution-option';
+                    optionEl.textContent = option;
+                    optionEl.addEventListener('click', () => this.resolveParadox(index));
+                    optionsContainer.appendChild(optionEl);
+                });
+            }
+
+            resolveParadox(optionIndex) {
+                this.resolver.classList.remove('active');
+                
+                switch(optionIndex) {
+                    case 0: // Collapse timeline
+                        this.collapseTimeline();
+                        break;
+                    case 1: // Create alternate branch
+                        this.createAlternateBranch();
+                        break;
+                    case 2: // Reverse causality
+                        this.reverseCausality();
+                        break;
+                    case 3: // Embrace paradox
+                        this.embraceParadox();
+                        break;
+                    case 4: // Quantum resolution
+                        this.quantumResolution();
+                        break;
+                }
+                
+                this.checkTemporalConsistency();
+            }
+
+            collapseTimeline() {
+                // Remove paradox links
+                this.links = this.links.filter(link => link.type !== 'paradox');
+                this.canvas.querySelectorAll('.causal-link.paradox').forEach(el => el.remove());
+                this.consistency = Math.min(100, this.consistency + 30);
+                this.updateConsistencyMeter();
+                this.addWarning('Timeline collapsed to stable configuration');
+            }
+
+            createAlternateBranch() {
+                this.alternatePosition = Math.random() * 100;
+                this.addWarning('Alternate timeline created - reality branching');
+                this.consistency = Math.min(100, this.consistency + 20);
+                this.updateConsistencyMeter();
+            }
+
+            reverseCausality() {
+                this.links.forEach(link => {
+                    const temp = link.from;
+                    link.from = link.to;
+                    link.to = temp;
+                });
+                
+                // Re-render all links
+                this.canvas.querySelectorAll('.causal-link').forEach(el => el.remove());
+                this.links.forEach(link => this.renderLink(link));
+                
+                this.addWarning('Causality reversed - effects now precede causes');
+                this.modifyTemporalRules();
+            }
+
+            embraceParadox() {
+                this.paradoxCount *= 2;
+                this.consistency = Math.max(0, this.consistency - 40);
+                this.updateConsistencyMeter();
+                this.addWarning('PARADOX EMBRACED - Reality unstable!');
+                this.triggerSelfReference();
+                
+                // Make all links paradoxical
+                this.links.forEach(link => link.type = 'paradox');
+                this.canvas.querySelectorAll('.causal-link').forEach(el => {
+                    el.classList.add('paradox');
+                });
+            }
+
+            quantumResolution() {
+                // Create superposition of all possible states
+                this.nodes.forEach(node => {
+                    node.type = Math.random() > 0.5 ? 'future' : 'past';
+                    const nodeEl = this.canvas.querySelector(`[data-node-id="${node.id}"]`);
+                    if (nodeEl) {
+                        nodeEl.className = `temporal-node ${node.type}`;
+                    }
+                });
+                
+                this.consistency = 75;
+                this.updateConsistencyMeter();
+                this.addWarning('Quantum superposition achieved - all timelines coexist');
+            }
+
+            resolveTimeline() {
+                if (this.consistency < 50) {
+                    this.showParadoxResolver();
+                } else {
+                    this.consistency = 100;
+                    this.paradoxCount = 0;
+                    this.updateConsistencyMeter();
+                    this.addWarning('Timeline successfully resolved');
+                }
+            }
+
+            startTemporalEngine() {
+                setInterval(() => {
+                    // Update timeline positions
+                    this.timelinePosition = (this.timelinePosition + 1) % 100;
+                    document.getElementById('timelineMarker').style.left = `${this.timelinePosition}%`;
+                    document.getElementById('alternateMarker').style.left = `${this.alternatePosition}%`;
+                    
+                    // Random temporal fluctuations
+                    if (Math.random() < 0.02 && this.paradoxCount > 0) {
+                        this.consistency = Math.max(0, this.consistency - 1);
+                        this.updateConsistencyMeter();
+                    }
+                    
+                    // Self-modifying behavior
+                    if (this.consistency < 20 && Math.random() < 0.1) {
+                        this.modifyTemporalRules();
+                    }
+                }, 100);
+            }
+        }
+
+        // Initialize the Bootstrap Paradox Engine
+        const paradoxEngine = new BootstrapParadoxEngine();
+
+        // Meta-level self-reference: The engine can modify its own initialization
+        window.paradoxEngine = paradoxEngine;
+    </script>
+</body>
+</html>

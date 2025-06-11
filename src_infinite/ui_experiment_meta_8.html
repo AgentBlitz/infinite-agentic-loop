@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMechanics Lab - Iteration 8</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #gameCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #001122 0%, #000000 100%);
+        }
+
+        .rule-node {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: move;
+            transition: all 0.3s ease;
+            font-size: 10px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .rule-node.active {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 30px #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #00ff88, #0088ff);
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .connection.feedback {
+            background: linear-gradient(90deg, #ff0088, #8800ff);
+            height: 3px;
+            opacity: 0.8;
+        }
+
+        #ruleDesigner {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff88;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #ruleDesigner h3 {
+            margin-bottom: 15px;
+            color: #00ff88;
+            text-align: center;
+        }
+
+        .design-element {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .design-element:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .design-element.creating {
+            animation: creating 1s ease-out;
+        }
+
+        @keyframes creating {
+            0% { 
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        #emergentRules {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #0088ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        #emergentRules h4 {
+            color: #0088ff;
+            margin-bottom: 10px;
+        }
+
+        .emergent-rule {
+            margin: 5px 0;
+            padding: 8px;
+            background: rgba(0, 136, 255, 0.1);
+            border: 1px solid #0088ff;
+            border-radius: 3px;
+            font-size: 11px;
+            animation: emerge 0.5s ease-out;
+        }
+
+        @keyframes emerge {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #playerEntity {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ff00ff, #8800ff);
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ff00ff;
+            transition: all 0.1s ease;
+            pointer-events: none;
+        }
+
+        .meta-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: translateY(-30px) scale(1.5);
+                opacity: 0.3;
+            }
+        }
+
+        #recursionIndicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 14px;
+            color: #ff00ff;
+        }
+
+        .recursion-level {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            border-radius: 50%;
+            line-height: 26px;
+            transition: all 0.3s ease;
+        }
+
+        .recursion-level.active {
+            background: rgba(255, 0, 255, 0.6);
+            transform: scale(1.2);
+        }
+
+        #metaScore {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #0088ff;
+        }
+
+        #tutorialOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #tutorialContent {
+            max-width: 600px;
+            padding: 30px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #tutorialContent h2 {
+            margin-bottom: 20px;
+            color: #00ff88;
+        }
+
+        #tutorialContent p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        #startButton {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #startButton:hover {
+            background: #00ffaa;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="playerEntity"></div>
+    
+    <div id="ruleDesigner">
+        <h3>RULE DESIGNER</h3>
+        <div id="designElements"></div>
+    </div>
+    
+    <div id="emergentRules">
+        <h4>EMERGENT RULES</h4>
+        <div id="rulesList"></div>
+    </div>
+    
+    <div id="metaScore">
+        <div class="score-label">META SCORE</div>
+        <div id="scoreValue">0</div>
+    </div>
+    
+    <div id="recursionIndicator">
+        <div class="score-label">RECURSION DEPTH</div>
+        <div id="recursionLevels"></div>
+    </div>
+    
+    <div id="tutorialOverlay">
+        <div id="tutorialContent">
+            <h2>METAMECHANICS LAB</h2>
+            <p>Welcome to a game that designs itself as you play.</p>
+            <p>Your actions create rules. Rules create mechanics. Mechanics create emergence.</p>
+            <p>Move with your mouse. Connect rule nodes. Design while playing.</p>
+            <p>The game you're playing is the game you're making.</p>
+            <button id="startButton">BEGIN RECURSION</button>
+        </div>
+    </div>
+
+    <script>
+        class MetaMechanicsGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.playerEntity = document.getElementById('playerEntity');
+                
+                this.rules = new Map();
+                this.connections = [];
+                this.emergentRules = [];
+                this.particles = [];
+                this.score = 0;
+                this.recursionDepth = 0;
+                this.maxRecursion = 5;
+                
+                this.playerPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+                this.playerVelocity = { x: 0, y: 0 };
+                
+                this.designElements = [
+                    { name: "ATTRACT", type: "force", color: "#00ff88" },
+                    { name: "REPEL", type: "force", color: "#ff0088" },
+                    { name: "MULTIPLY", type: "spawn", color: "#0088ff" },
+                    { name: "TRANSFORM", type: "morph", color: "#ff8800" },
+                    { name: "CONNECT", type: "link", color: "#8800ff" },
+                    { name: "DESTROY", type: "remove", color: "#ff0000" }
+                ];
+                
+                this.behaviorPatterns = [];
+                this.feedbackLoops = new Map();
+                
+                this.init();
+            }
+            
+            init() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                document.getElementById('startButton').addEventListener('click', () => {
+                    document.getElementById('tutorialOverlay').style.display = 'none';
+                    this.start();
+                });
+                
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+                
+                window.addEventListener('mousemove', (e) => {
+                    this.handleMouseMove(e);
+                });
+                
+                this.setupDesigner();
+                this.setupRecursionIndicator();
+            }
+            
+            start() {
+                this.createInitialRules();
+                this.gameLoop();
+                this.analyzePlayerBehavior();
+            }
+            
+            createInitialRules() {
+                // Create starter rule nodes
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i / 3) * Math.PI * 2;
+                    const radius = 200;
+                    const x = window.innerWidth / 2 + Math.cos(angle) * radius;
+                    const y = window.innerHeight / 2 + Math.sin(angle) * radius;
+                    
+                    this.createRuleNode(x, y, this.designElements[i]);
+                }
+            }
+            
+            createRuleNode(x, y, element) {
+                const node = document.createElement('div');
+                node.className = 'rule-node';
+                node.innerHTML = `<strong>${element.name}</strong><br><span>${element.type}</span>`;
+                node.style.left = x - 60 + 'px';
+                node.style.top = y - 60 + 'px';
+                node.style.borderColor = element.color;
+                node.dataset.id = Date.now() + Math.random();
+                node.dataset.type = element.type;
+                node.dataset.name = element.name;
+                
+                document.body.appendChild(node);
+                
+                this.rules.set(node.dataset.id, {
+                    element: node,
+                    type: element.type,
+                    name: element.name,
+                    x: x,
+                    y: y,
+                    connections: [],
+                    activations: 0
+                });
+                
+                this.makeNodeDraggable(node);
+                this.enableNodeConnection(node);
+                
+                // Animate creation
+                node.classList.add('creating');
+                setTimeout(() => node.classList.remove('creating'), 1000);
+            }
+            
+            makeNodeDraggable(node) {
+                let isDragging = false;
+                let offsetX, offsetY;
+                
+                node.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - node.offsetLeft;
+                    offsetY = e.clientY - node.offsetTop;
+                    node.style.zIndex = 1000;
+                });
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const x = e.clientX - offsetX;
+                        const y = e.clientY - offsetY;
+                        node.style.left = x + 'px';
+                        node.style.top = y + 'px';
+                        
+                        const rule = this.rules.get(node.dataset.id);
+                        rule.x = x + 60;
+                        rule.y = y + 60;
+                        
+                        this.updateConnections();
+                        this.checkRuleProximity(rule);
+                    }
+                });
+                
+                window.addEventListener('mouseup', () => {
+                    isDragging = false;
+                    node.style.zIndex = '';
+                });
+            }
+            
+            enableNodeConnection(node) {
+                let isConnecting = false;
+                let tempLine = null;
+                
+                node.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    isConnecting = true;
+                    
+                    tempLine = document.createElement('div');
+                    tempLine.className = 'connection';
+                    tempLine.style.left = node.offsetLeft + 60 + 'px';
+                    tempLine.style.top = node.offsetTop + 60 + 'px';
+                    document.body.appendChild(tempLine);
+                });
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (isConnecting && tempLine) {
+                        const startX = parseFloat(tempLine.style.left);
+                        const startY = parseFloat(tempLine.style.top);
+                        const endX = e.clientX;
+                        const endY = e.clientY;
+                        
+                        const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+                        const angle = Math.atan2(endY - startY, endX - startX);
+                        
+                        tempLine.style.width = distance + 'px';
+                        tempLine.style.transform = `rotate(${angle}rad)`;
+                    }
+                });
+                
+                window.addEventListener('mouseup', (e) => {
+                    if (isConnecting && tempLine) {
+                        const targetNode = document.elementFromPoint(e.clientX, e.clientY);
+                        
+                        if (targetNode && targetNode.classList.contains('rule-node') && targetNode !== node) {
+                            this.createConnection(node, targetNode);
+                            this.generateEmergentRule(node, targetNode);
+                        }
+                        
+                        tempLine.remove();
+                        isConnecting = false;
+                        tempLine = null;
+                    }
+                });
+            }
+            
+            createConnection(node1, node2) {
+                const connection = document.createElement('div');
+                connection.className = 'connection';
+                document.body.appendChild(connection);
+                
+                this.connections.push({
+                    element: connection,
+                    node1: node1.dataset.id,
+                    node2: node2.dataset.id
+                });
+                
+                this.updateConnections();
+                
+                // Create feedback loop possibility
+                if (Math.random() > 0.7) {
+                    connection.classList.add('feedback');
+                    this.createFeedbackLoop(node1.dataset.id, node2.dataset.id);
+                }
+            }
+            
+            updateConnections() {
+                this.connections.forEach(conn => {
+                    const rule1 = this.rules.get(conn.node1);
+                    const rule2 = this.rules.get(conn.node2);
+                    
+                    if (rule1 && rule2) {
+                        const distance = Math.sqrt((rule2.x - rule1.x) ** 2 + (rule2.y - rule1.y) ** 2);
+                        const angle = Math.atan2(rule2.y - rule1.y, rule2.x - rule1.x);
+                        
+                        conn.element.style.left = rule1.x + 'px';
+                        conn.element.style.top = rule1.y + 'px';
+                        conn.element.style.width = distance + 'px';
+                        conn.element.style.transform = `rotate(${angle}rad)`;
+                    }
+                });
+            }
+            
+            generateEmergentRule(node1, node2) {
+                const rule1 = this.rules.get(node1.dataset.id);
+                const rule2 = this.rules.get(node2.dataset.id);
+                
+                const emergentName = `${rule1.name} + ${rule2.name}`;
+                const emergentType = this.combineTypes(rule1.type, rule2.type);
+                
+                const emergentRule = {
+                    name: emergentName,
+                    type: emergentType,
+                    description: this.generateRuleDescription(rule1, rule2),
+                    created: Date.now(),
+                    activations: 0
+                };
+                
+                this.emergentRules.push(emergentRule);
+                this.displayEmergentRule(emergentRule);
+                
+                // Meta-rule creation affects game mechanics
+                this.applyEmergentMechanics(emergentRule);
+                
+                // Increase recursion depth
+                if (this.recursionDepth < this.maxRecursion) {
+                    this.recursionDepth++;
+                    this.updateRecursionIndicator();
+                }
+            }
+            
+            combineTypes(type1, type2) {
+                const combinations = {
+                    'force_force': 'mega-force',
+                    'force_spawn': 'force-spawn',
+                    'spawn_morph': 'spawn-morph',
+                    'link_remove': 'conditional-link',
+                    'morph_morph': 'meta-morph'
+                };
+                
+                const key = `${type1}_${type2}`;
+                return combinations[key] || 'hybrid';
+            }
+            
+            generateRuleDescription(rule1, rule2) {
+                const descriptions = [
+                    `When ${rule1.name} meets ${rule2.name}, reality bends`,
+                    `${rule1.name} recursively applies ${rule2.name}`,
+                    `Players near this combo gain ${rule1.type} powers`,
+                    `This connection spawns new ${rule2.type} mechanics`
+                ];
+                
+                return descriptions[Math.floor(Math.random() * descriptions.length)];
+            }
+            
+            displayEmergentRule(rule) {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'emergent-rule';
+                ruleElement.innerHTML = `<strong>${rule.name}</strong><br>${rule.description}`;
+                
+                document.getElementById('rulesList').appendChild(ruleElement);
+                
+                // Remove old rules if too many
+                const rulesList = document.getElementById('rulesList');
+                if (rulesList.children.length > 10) {
+                    rulesList.removeChild(rulesList.firstChild);
+                }
+            }
+            
+            applyEmergentMechanics(rule) {
+                switch (rule.type) {
+                    case 'mega-force':
+                        this.playerVelocity.x *= 1.5;
+                        this.playerVelocity.y *= 1.5;
+                        break;
+                    case 'force-spawn':
+                        this.spawnMetaParticles(10);
+                        break;
+                    case 'spawn-morph':
+                        this.morphNearbyRules();
+                        break;
+                    case 'meta-morph':
+                        this.createNewDesignElement();
+                        break;
+                }
+                
+                this.score += 100 * this.recursionDepth;
+                this.updateScore();
+            }
+            
+            spawnMetaParticles(count) {
+                for (let i = 0; i < count; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'meta-particle';
+                    particle.style.left = this.playerPos.x + (Math.random() - 0.5) * 100 + 'px';
+                    particle.style.top = this.playerPos.y + (Math.random() - 0.5) * 100 + 'px';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    
+                    document.body.appendChild(particle);
+                    this.particles.push(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                        this.particles = this.particles.filter(p => p !== particle);
+                    }, 3000);
+                }
+            }
+            
+            morphNearbyRules() {
+                this.rules.forEach(rule => {
+                    const distance = Math.sqrt(
+                        (rule.x - this.playerPos.x) ** 2 + 
+                        (rule.y - this.playerPos.y) ** 2
+                    );
+                    
+                    if (distance < 200) {
+                        rule.element.classList.add('active');
+                        setTimeout(() => rule.element.classList.remove('active'), 2000);
+                        
+                        // Swap rule type
+                        const newType = this.designElements[
+                            Math.floor(Math.random() * this.designElements.length)
+                        ];
+                        rule.type = newType.type;
+                        rule.name = newType.name;
+                        rule.element.innerHTML = `<strong>${newType.name}</strong><br><span>${newType.type}</span>`;
+                        rule.element.style.borderColor = newType.color;
+                    }
+                });
+            }
+            
+            createNewDesignElement() {
+                const metaElements = [
+                    { name: "RECURSE", type: "meta", color: "#ff00ff" },
+                    { name: "INVERT", type: "reverse", color: "#00ffff" },
+                    { name: "EMERGE", type: "chaos", color: "#ffff00" }
+                ];
+                
+                const element = metaElements[Math.floor(Math.random() * metaElements.length)];
+                this.designElements.push(element);
+                this.updateDesignPanel();
+                
+                // Auto-create a node for the new element
+                const x = this.playerPos.x + (Math.random() - 0.5) * 300;
+                const y = this.playerPos.y + (Math.random() - 0.5) * 300;
+                this.createRuleNode(x, y, element);
+            }
+            
+            createFeedbackLoop(id1, id2) {
+                this.feedbackLoops.set(`${id1}-${id2}`, {
+                    source: id1,
+                    target: id2,
+                    strength: 0.5,
+                    phase: 0
+                });
+            }
+            
+            processFeedbackLoops() {
+                this.feedbackLoops.forEach((loop, key) => {
+                    loop.phase += 0.05;
+                    const strength = Math.sin(loop.phase) * loop.strength;
+                    
+                    const sourceRule = this.rules.get(loop.source);
+                    const targetRule = this.rules.get(loop.target);
+                    
+                    if (sourceRule && targetRule) {
+                        // Feedback affects player movement
+                        const dx = targetRule.x - sourceRule.x;
+                        const dy = targetRule.y - sourceRule.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 0) {
+                            this.playerVelocity.x += (dx / distance) * strength * 0.1;
+                            this.playerVelocity.y += (dy / distance) * strength * 0.1;
+                        }
+                    }
+                });
+            }
+            
+            handleMouseMove(e) {
+                const targetX = e.clientX;
+                const targetY = e.clientY;
+                
+                // Player follows mouse with inertia
+                this.playerVelocity.x += (targetX - this.playerPos.x) * 0.02;
+                this.playerVelocity.y += (targetY - this.playerPos.y) * 0.02;
+                
+                // Apply damping
+                this.playerVelocity.x *= 0.95;
+                this.playerVelocity.y *= 0.95;
+                
+                // Record behavior for pattern analysis
+                this.behaviorPatterns.push({
+                    x: targetX,
+                    y: targetY,
+                    time: Date.now(),
+                    velocity: Math.sqrt(this.playerVelocity.x ** 2 + this.playerVelocity.y ** 2)
+                });
+                
+                // Keep only recent patterns
+                if (this.behaviorPatterns.length > 100) {
+                    this.behaviorPatterns.shift();
+                }
+            }
+            
+            analyzePlayerBehavior() {
+                setInterval(() => {
+                    if (this.behaviorPatterns.length < 50) return;
+                    
+                    // Analyze movement patterns
+                    const avgVelocity = this.behaviorPatterns.reduce((sum, p) => sum + p.velocity, 0) / this.behaviorPatterns.length;
+                    
+                    // Generate rules based on behavior
+                    if (avgVelocity > 10) {
+                        this.generateBehaviorRule("SPEED DEMON", "Your fast movement creates acceleration zones");
+                    } else if (avgVelocity < 2) {
+                        this.generateBehaviorRule("ZEN MASTER", "Your calm creates stability fields");
+                    }
+                    
+                    // Check for circular patterns
+                    if (this.detectCircularMovement()) {
+                        this.generateBehaviorRule("VORTEX CREATOR", "Circular movement spawns gravity wells");
+                        this.createGravityWell();
+                    }
+                }, 5000);
+            }
+            
+            detectCircularMovement() {
+                if (this.behaviorPatterns.length < 20) return false;
+                
+                const recent = this.behaviorPatterns.slice(-20);
+                const centerX = recent.reduce((sum, p) => sum + p.x, 0) / recent.length;
+                const centerY = recent.reduce((sum, p) => sum + p.y, 0) / recent.length;
+                
+                const distances = recent.map(p => 
+                    Math.sqrt((p.x - centerX) ** 2 + (p.y - centerY) ** 2)
+                );
+                
+                const avgDistance = distances.reduce((sum, d) => sum + d, 0) / distances.length;
+                const variance = distances.reduce((sum, d) => sum + Math.abs(d - avgDistance), 0) / distances.length;
+                
+                return variance < avgDistance * 0.3;
+            }
+            
+            createGravityWell() {
+                const well = {
+                    x: this.playerPos.x,
+                    y: this.playerPos.y,
+                    strength: 50,
+                    radius: 200
+                };
+                
+                // Visual representation
+                const wellVisual = document.createElement('div');
+                wellVisual.style.position = 'absolute';
+                wellVisual.style.left = well.x - well.radius + 'px';
+                wellVisual.style.top = well.y - well.radius + 'px';
+                wellVisual.style.width = well.radius * 2 + 'px';
+                wellVisual.style.height = well.radius * 2 + 'px';
+                wellVisual.style.border = '2px dashed #ff00ff';
+                wellVisual.style.borderRadius = '50%';
+                wellVisual.style.pointerEvents = 'none';
+                wellVisual.style.animation = 'pulse 2s infinite';
+                
+                document.body.appendChild(wellVisual);
+                
+                // Affect nearby rules
+                this.rules.forEach(rule => {
+                    const dx = rule.x - well.x;
+                    const dy = rule.y - well.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < well.radius && distance > 0) {
+                        const force = well.strength / distance;
+                        rule.x -= (dx / distance) * force;
+                        rule.y -= (dy / distance) * force;
+                        rule.element.style.left = rule.x - 60 + 'px';
+                        rule.element.style.top = rule.y - 60 + 'px';
+                    }
+                });
+                
+                setTimeout(() => wellVisual.remove(), 5000);
+            }
+            
+            generateBehaviorRule(name, description) {
+                const behaviorRule = {
+                    name: name,
+                    type: 'behavior',
+                    description: description,
+                    created: Date.now()
+                };
+                
+                this.emergentRules.push(behaviorRule);
+                this.displayEmergentRule(behaviorRule);
+                
+                // Create a new design element based on behavior
+                const element = {
+                    name: name.split(' ')[0],
+                    type: 'behavior',
+                    color: `hsl(${Math.random() * 360}, 80%, 50%)`
+                };
+                
+                this.designElements.push(element);
+                this.updateDesignPanel();
+            }
+            
+            checkRuleProximity(movingRule) {
+                this.rules.forEach((rule, id) => {
+                    if (id === movingRule.element.dataset.id) return;
+                    
+                    const distance = Math.sqrt(
+                        (rule.x - movingRule.x) ** 2 + 
+                        (rule.y - movingRule.y) ** 2
+                    );
+                    
+                    if (distance < 150) {
+                        // Rules affect each other when close
+                        rule.element.classList.add('active');
+                        movingRule.element.classList.add('active');
+                        
+                        setTimeout(() => {
+                            rule.element.classList.remove('active');
+                            movingRule.element.classList.remove('active');
+                        }, 1000);
+                        
+                        // Chance to create spontaneous connection
+                        if (Math.random() > 0.9 && !this.areConnected(rule, movingRule)) {
+                            this.createConnection(rule.element, movingRule.element);
+                        }
+                    }
+                });
+            }
+            
+            areConnected(rule1, rule2) {
+                return this.connections.some(conn => 
+                    (conn.node1 === rule1.element.dataset.id && conn.node2 === rule2.element.dataset.id) ||
+                    (conn.node1 === rule2.element.dataset.id && conn.node2 === rule1.element.dataset.id)
+                );
+            }
+            
+            setupDesigner() {
+                this.updateDesignPanel();
+                
+                // Make design elements draggable to create nodes
+                document.getElementById('designElements').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('design-element')) {
+                        const index = parseInt(e.target.dataset.index);
+                        const element = this.designElements[index];
+                        
+                        const x = this.playerPos.x + (Math.random() - 0.5) * 200;
+                        const y = this.playerPos.y + (Math.random() - 0.5) * 200;
+                        
+                        this.createRuleNode(x, y, element);
+                        this.score += 50;
+                        this.updateScore();
+                    }
+                });
+            }
+            
+            updateDesignPanel() {
+                const container = document.getElementById('designElements');
+                container.innerHTML = '';
+                
+                this.designElements.forEach((element, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'design-element';
+                    div.dataset.index = index;
+                    div.innerHTML = `<strong>${element.name}</strong> - ${element.type}`;
+                    div.style.borderColor = element.color;
+                    container.appendChild(div);
+                });
+            }
+            
+            setupRecursionIndicator() {
+                this.updateRecursionIndicator();
+            }
+            
+            updateRecursionIndicator() {
+                const container = document.getElementById('recursionLevels');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < this.maxRecursion; i++) {
+                    const level = document.createElement('div');
+                    level.className = 'recursion-level';
+                    if (i < this.recursionDepth) {
+                        level.classList.add('active');
+                    }
+                    level.textContent = i + 1;
+                    container.appendChild(level);
+                }
+            }
+            
+            updateScore() {
+                document.getElementById('scoreValue').textContent = Math.floor(this.score);
+            }
+            
+            gameLoop() {
+                // Update player position
+                this.playerPos.x += this.playerVelocity.x;
+                this.playerPos.y += this.playerVelocity.y;
+                
+                // Keep player on screen
+                this.playerPos.x = Math.max(20, Math.min(window.innerWidth - 20, this.playerPos.x));
+                this.playerPos.y = Math.max(20, Math.min(window.innerHeight - 20, this.playerPos.y));
+                
+                // Update player visual
+                this.playerEntity.style.left = this.playerPos.x - 20 + 'px';
+                this.playerEntity.style.top = this.playerPos.y - 20 + 'px';
+                
+                // Process feedback loops
+                this.processFeedbackLoops();
+                
+                // Check rule activations
+                this.checkRuleActivations();
+                
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw meta-connections
+                this.drawMetaConnections();
+                
+                // Continue loop
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            checkRuleActivations() {
+                this.rules.forEach(rule => {
+                    const distance = Math.sqrt(
+                        (rule.x - this.playerPos.x) ** 2 + 
+                        (rule.y - this.playerPos.y) ** 2
+                    );
+                    
+                    if (distance < 100) {
+                        rule.activations++;
+                        rule.element.classList.add('active');
+                        
+                        // Apply rule effect
+                        this.applyRuleEffect(rule);
+                        
+                        setTimeout(() => rule.element.classList.remove('active'), 500);
+                    }
+                });
+            }
+            
+            applyRuleEffect(rule) {
+                switch (rule.type) {
+                    case 'force':
+                        const angle = Math.atan2(rule.y - this.playerPos.y, rule.x - this.playerPos.x);
+                        const force = rule.name === 'ATTRACT' ? -2 : 2;
+                        this.playerVelocity.x += Math.cos(angle) * force;
+                        this.playerVelocity.y += Math.sin(angle) * force;
+                        break;
+                    
+                    case 'spawn':
+                        if (rule.activations % 5 === 0) {
+                            this.spawnMetaParticles(3);
+                        }
+                        break;
+                    
+                    case 'morph':
+                        if (rule.activations % 10 === 0) {
+                            this.morphNearbyRules();
+                        }
+                        break;
+                    
+                    case 'link':
+                        this.createRandomConnection(rule);
+                        break;
+                    
+                    case 'meta':
+                        this.enterMetaMode();
+                        break;
+                }
+                
+                this.score += 10 * (this.recursionDepth + 1);
+                this.updateScore();
+            }
+            
+            createRandomConnection(fromRule) {
+                const otherRules = Array.from(this.rules.values()).filter(r => r !== fromRule);
+                if (otherRules.length > 0) {
+                    const targetRule = otherRules[Math.floor(Math.random() * otherRules.length)];
+                    if (!this.areConnected(fromRule, targetRule)) {
+                        this.createConnection(fromRule.element, targetRule.element);
+                    }
+                }
+            }
+            
+            enterMetaMode() {
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = '';
+                }, 2000);
+                
+                // Double recursion depth temporarily
+                const oldDepth = this.recursionDepth;
+                this.recursionDepth = Math.min(this.recursionDepth * 2, this.maxRecursion);
+                this.updateRecursionIndicator();
+                
+                setTimeout(() => {
+                    this.recursionDepth = oldDepth;
+                    this.updateRecursionIndicator();
+                }, 5000);
+            }
+            
+            drawMetaConnections() {
+                this.ctx.strokeStyle = 'rgba(255, 0, 255, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                // Draw connections between player and active rules
+                this.rules.forEach(rule => {
+                    if (rule.element.classList.contains('active')) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(this.playerPos.x, this.playerPos.y);
+                        this.ctx.lineTo(rule.x, rule.y);
+                        this.ctx.stroke();
+                    }
+                });
+                
+                // Draw feedback loop visuals
+                this.feedbackLoops.forEach(loop => {
+                    const source = this.rules.get(loop.source);
+                    const target = this.rules.get(loop.target);
+                    
+                    if (source && target) {
+                        const opacity = (Math.sin(loop.phase) + 1) / 2 * 0.3;
+                        this.ctx.strokeStyle = `rgba(136, 0, 255, ${opacity})`;
+                        this.ctx.lineWidth = 3;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(source.x, source.y);
+                        this.ctx.lineTo(target.x, target.y);
+                        this.ctx.stroke();
+                    }
+                });
+            }
+        }
+        
+        // Initialize game
+        const game = new MetaMechanicsGame();
+    </script>
+</body>
+</html>

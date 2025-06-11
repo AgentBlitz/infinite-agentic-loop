@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Identity Collapse - Iteration 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #0a0a0a, #1a0a1a, #0a1a0a, #0a0a1a);
+            background-size: 400% 400%;
+            animation: quantumShift 8s ease-in-out infinite;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            cursor: none;
+        }
+
+        @keyframes quantumShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        .quantum-field {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .identity-avatar {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+            animation: quantumFloat 3s ease-in-out infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes quantumFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+
+        .avatar-authentic {
+            background: radial-gradient(circle, #ff6b6b, #ee5a24);
+            border-color: #ff3742;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .avatar-performed {
+            background: radial-gradient(circle, #4ecdc4, #00d2d3);
+            border-color: #00cec9;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        .avatar-shadow {
+            background: radial-gradient(circle, #8b5cf6, #6366f1);
+            border-color: #7c3aed;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .avatar-quantum {
+            background: radial-gradient(circle, #f39c12, #e74c3c, #9b59b6, #3498db);
+            background-size: 200% 200%;
+            animation: quantumShimmer 1s ease-in-out infinite alternate;
+            border-color: #fff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+        }
+
+        @keyframes quantumShimmer {
+            0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+            100% { background-position: 100% 50%; filter: hue-rotate(180deg); }
+        }
+
+        .collapsed {
+            animation: collapseEffect 1s ease-out;
+            transform: scale(1.5);
+            opacity: 1 !important;
+            z-index: 20;
+        }
+
+        @keyframes collapseEffect {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(0.5) rotate(180deg); opacity: 0.3; }
+            100% { transform: scale(1.5) rotate(360deg); }
+        }
+
+        .quantum-path {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffffff40, transparent);
+            animation: quantumPulse 2s ease-in-out infinite;
+            z-index: 5;
+        }
+
+        @keyframes quantumPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(1); }
+            50% { opacity: 0.8; transform: scaleY(2); }
+        }
+
+        .dashboard {
+            width: 300px;
+            background: rgba(10, 10, 10, 0.9);
+            border-left: 2px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard h2 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: rgba(255, 107, 107, 0.5);
+            transform: translateX(5px);
+        }
+
+        .metric-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .choice-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 30;
+        }
+
+        .choice-button {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 25px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .choice-button:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .quantum-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 30;
+        }
+
+        .superposition-counter {
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .observation-warning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 40;
+        }
+
+        .observation-warning.active {
+            opacity: 1;
+        }
+
+        .identity-trail {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: trailFade 2s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.2); }
+        }
+
+        .authenticity-meter {
+            position: relative;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .authenticity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .authenticity-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .game-instructions {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            max-width: 600px;
+            z-index: 30;
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff6b6b;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            opacity: 0.8;
+        }
+
+        .cursor-observing {
+            border-color: #ffff00;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+            transform: scale(1.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="customCursor"></div>
+    
+    <div class="game-container">
+        <div class="quantum-field" id="quantumField">
+            <div class="quantum-indicator">
+                <div class="superposition-counter" id="superpositionCounter">∞ States Active</div>
+            </div>
+            
+            <div class="game-instructions">
+                <p>You exist in quantum superposition. Multiple versions of yourself navigate simultaneously.</p>
+                <p>Your cursor's observation will collapse the wave function - choose wisely.</p>
+            </div>
+
+            <div class="observation-warning" id="observationWarning">
+                <h3>⚠ OBSERVATION DETECTED ⚠</h3>
+                <p>Wave function collapse imminent!</p>
+            </div>
+
+            <div class="choice-panel">
+                <button class="choice-button" onclick="makeChoice('authentic')">Act Authentically</button>
+                <button class="choice-button" onclick="makeChoice('perform')">Perform Identity</button>
+                <button class="choice-button" onclick="makeChoice('quantum')">Maintain Superposition</button>
+                <button class="choice-button" onclick="resetExperiment()">Reset Quantum State</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <h2>Research Dashboard</h2>
+            
+            <div class="metric-card">
+                <div class="metric-title">Authenticity Index</div>
+                <div class="metric-value" id="authenticityIndex">0.50</div>
+                <div class="authenticity-meter">
+                    <div class="authenticity-fill" id="authenticityFill" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Performance Score</div>
+                <div class="metric-value" id="performanceScore">0.50</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Quantum Coherence</div>
+                <div class="metric-value" id="quantumCoherence">1.00</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Observer Effect</div>
+                <div class="metric-value" id="observerEffect">0%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Identity Stability</div>
+                <div class="metric-value" id="identityStability">Superposed</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Choices Made</div>
+                <div class="metric-value" id="choicesMade">0</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Collapse Events</div>
+                <div class="metric-value" id="collapseEvents">0</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Session Time</div>
+                <div class="metric-value" id="sessionTime">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            avatars: [],
+            choices: [],
+            authenticity: 0.5,
+            performance: 0.5,
+            coherence: 1.0,
+            observerEffect: 0,
+            collapseEvents: 0,
+            sessionStart: Date.now(),
+            isObserving: false,
+            trailEffects: []
+        };
+
+        // Initialize quantum field
+        function initializeQuantumField() {
+            const field = document.getElementById('quantumField');
+            
+            // Create multiple identity avatars in superposition
+            const identityTypes = ['authentic', 'performed', 'shadow', 'quantum'];
+            
+            identityTypes.forEach((type, index) => {
+                const avatar = document.createElement('div');
+                avatar.className = `identity-avatar avatar-${type}`;
+                avatar.id = `avatar-${type}`;
+                avatar.textContent = ['A', 'P', 'S', '?'][index];
+                avatar.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+                avatar.style.top = Math.random() * (window.innerHeight - 200) + 100 + 'px';
+                
+                // Add movement behavior
+                avatar.addEventListener('mouseover', () => handleObservation(avatar));
+                avatar.addEventListener('click', () => selectIdentity(type));
+                
+                field.appendChild(avatar);
+                gameState.avatars.push({
+                    element: avatar,
+                    type: type,
+                    x: parseFloat(avatar.style.left),
+                    y: parseFloat(avatar.style.top),
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2
+                });
+            });
+
+            // Create quantum connection paths
+            createQuantumPaths();
+            
+            // Start quantum animation loop
+            animateQuantumField();
+            
+            // Update dashboard
+            updateDashboard();
+        }
+
+        function createQuantumPaths() {
+            const field = document.getElementById('quantumField');
+            
+            // Create connecting paths between avatars
+            for (let i = 0; i < 8; i++) {
+                const path = document.createElement('div');
+                path.className = 'quantum-path';
+                path.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+                path.style.top = Math.random() * window.innerHeight + 'px';
+                path.style.width = Math.random() * 200 + 100 + 'px';
+                path.style.transform = `rotate(${Math.random() * 360}deg)`;
+                field.appendChild(path);
+            }
+        }
+
+        function animateQuantumField() {
+            gameState.avatars.forEach(avatar => {
+                // Quantum movement - multiple states simultaneously
+                avatar.x += avatar.vx;
+                avatar.y += avatar.vy;
+                
+                // Boundary bouncing
+                if (avatar.x <= 0 || avatar.x >= window.innerWidth - 360) avatar.vx *= -1;
+                if (avatar.y <= 0 || avatar.y >= window.innerHeight - 60) avatar.vy *= -1;
+                
+                // Add quantum uncertainty
+                avatar.vx += (Math.random() - 0.5) * 0.1;
+                avatar.vy += (Math.random() - 0.5) * 0.1;
+                
+                // Limit speed
+                const speed = Math.sqrt(avatar.vx * avatar.vx + avatar.vy * avatar.vy);
+                if (speed > 3) {
+                    avatar.vx = (avatar.vx / speed) * 3;
+                    avatar.vy = (avatar.vy / speed) * 3;
+                }
+                
+                // Update visual position
+                avatar.element.style.left = avatar.x + 'px';
+                avatar.element.style.top = avatar.y + 'px';
+                
+                // Create trails
+                if (Math.random() < 0.1) {
+                    createIdentityTrail(avatar.x, avatar.y);
+                }
+            });
+
+            // Update coherence based on avatar positions
+            updateQuantumCoherence();
+            
+            requestAnimationFrame(animateQuantumField);
+        }
+
+        function createIdentityTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'identity-trail';
+            trail.style.left = x + 30 + 'px';
+            trail.style.top = y + 30 + 'px';
+            
+            document.getElementById('quantumField').appendChild(trail);
+            
+            setTimeout(() => {
+                if (trail.parentNode) {
+                    trail.parentNode.removeChild(trail);
+                }
+            }, 2000);
+        }
+
+        function handleObservation(avatar) {
+            if (!gameState.isObserving) {
+                gameState.isObserving = true;
+                gameState.observerEffect += 10;
+                
+                // Show observation warning
+                const warning = document.getElementById('observationWarning');
+                warning.classList.add('active');
+                
+                // Update cursor
+                document.getElementById('customCursor').classList.add('cursor-observing');
+                
+                setTimeout(() => {
+                    warning.classList.remove('active');
+                    gameState.isObserving = false;
+                    document.getElementById('customCursor').classList.remove('cursor-observing');
+                }, 2000);
+                
+                updateDashboard();
+            }
+        }
+
+        function makeChoice(choiceType) {
+            gameState.choices.push({
+                type: choiceType,
+                timestamp: Date.now() - gameState.sessionStart,
+                coherence: gameState.coherence
+            });
+
+            // Update metrics based on choice
+            switch (choiceType) {
+                case 'authentic':
+                    gameState.authenticity = Math.min(1, gameState.authenticity + 0.1);
+                    gameState.performance = Math.max(0, gameState.performance - 0.05);
+                    break;
+                case 'perform':
+                    gameState.performance = Math.min(1, gameState.performance + 0.1);
+                    gameState.authenticity = Math.max(0, gameState.authenticity - 0.05);
+                    break;
+                case 'quantum':
+                    gameState.coherence = Math.min(1, gameState.coherence + 0.05);
+                    break;
+            }
+
+            // Trigger wave function collapse if observed
+            if (gameState.isObserving && choiceType !== 'quantum') {
+                collapseWaveFunction(choiceType);
+            }
+
+            updateDashboard();
+        }
+
+        function collapseWaveFunction(dominantType) {
+            gameState.collapseEvents++;
+            gameState.coherence = Math.max(0, gameState.coherence - 0.3);
+            
+            // Animate collapse
+            gameState.avatars.forEach(avatar => {
+                if (avatar.type === dominantType) {
+                    avatar.element.classList.add('collapsed');
+                } else {
+                    avatar.element.style.opacity = '0.2';
+                }
+            });
+
+            // Reset after collapse animation
+            setTimeout(() => {
+                gameState.avatars.forEach(avatar => {
+                    avatar.element.classList.remove('collapsed');
+                    avatar.element.style.opacity = '0.8';
+                });
+            }, 1000);
+
+            document.getElementById('superpositionCounter').textContent = 
+                gameState.coherence > 0.5 ? '∞ States Active' : 'Wave Function Collapsed';
+        }
+
+        function updateQuantumCoherence() {
+            // Calculate coherence based on avatar proximity
+            let avgDistance = 0;
+            let comparisons = 0;
+            
+            for (let i = 0; i < gameState.avatars.length; i++) {
+                for (let j = i + 1; j < gameState.avatars.length; j++) {
+                    const dx = gameState.avatars[i].x - gameState.avatars[j].x;
+                    const dy = gameState.avatars[i].y - gameState.avatars[j].y;
+                    avgDistance += Math.sqrt(dx * dx + dy * dy);
+                    comparisons++;
+                }
+            }
+            
+            if (comparisons > 0) {
+                avgDistance /= comparisons;
+                const maxDistance = Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight);
+                const proximityCoherence = 1 - (avgDistance / maxDistance);
+                gameState.coherence = Math.max(0, Math.min(1, proximityCoherence + 0.3));
+            }
+        }
+
+        function updateDashboard() {
+            document.getElementById('authenticityIndex').textContent = gameState.authenticity.toFixed(2);
+            document.getElementById('performanceScore').textContent = gameState.performance.toFixed(2);
+            document.getElementById('quantumCoherence').textContent = gameState.coherence.toFixed(2);
+            document.getElementById('observerEffect').textContent = Math.min(100, gameState.observerEffect) + '%';
+            document.getElementById('choicesMade').textContent = gameState.choices.length;
+            document.getElementById('collapseEvents').textContent = gameState.collapseEvents;
+            
+            // Update authenticity meter
+            const authenticityPercent = (gameState.authenticity * 100);
+            document.getElementById('authenticityFill').style.width = authenticityPercent + '%';
+            
+            // Update identity stability
+            const stability = gameState.coherence > 0.7 ? 'Superposed' : 
+                             gameState.coherence > 0.3 ? 'Partially Collapsed' : 'Collapsed';
+            document.getElementById('identityStability').textContent = stability;
+            
+            // Update session time
+            const sessionTime = Math.floor((Date.now() - gameState.sessionStart) / 1000);
+            const minutes = Math.floor(sessionTime / 60);
+            const seconds = sessionTime % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function selectIdentity(type) {
+            // Direct avatar interaction
+            makeChoice(type);
+            
+            // Visual feedback
+            const avatar = document.getElementById(`avatar-${type}`);
+            avatar.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                avatar.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        function resetExperiment() {
+            // Reset game state
+            gameState = {
+                avatars: gameState.avatars, // Keep avatar references
+                choices: [],
+                authenticity: 0.5,
+                performance: 0.5,
+                coherence: 1.0,
+                observerEffect: 0,
+                collapseEvents: 0,
+                sessionStart: Date.now(),
+                isObserving: false,
+                trailEffects: []
+            };
+
+            // Reset avatars
+            gameState.avatars.forEach(avatar => {
+                avatar.element.style.opacity = '0.8';
+                avatar.element.classList.remove('collapsed');
+                avatar.x = Math.random() * (window.innerWidth - 300);
+                avatar.y = Math.random() * (window.innerHeight - 200) + 100;
+                avatar.vx = (Math.random() - 0.5) * 2;
+                avatar.vy = (Math.random() - 0.5) * 2;
+            });
+
+            document.getElementById('superpositionCounter').textContent = '∞ States Active';
+            updateDashboard();
+        }
+
+        // Custom cursor tracking
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.getElementById('customCursor');
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+        });
+
+        // Export research data
+        function exportResearchData() {
+            const researchData = {
+                sessionId: 'qi_' + Date.now(),
+                totalTime: Date.now() - gameState.sessionStart,
+                choices: gameState.choices,
+                finalMetrics: {
+                    authenticity: gameState.authenticity,
+                    performance: gameState.performance,
+                    coherence: gameState.coherence,
+                    observerEffect: gameState.observerEffect,
+                    collapseEvents: gameState.collapseEvents
+                },
+                identityPatterns: analyzeIdentityPatterns()
+            };
+            
+            console.log('Research Data Export:', researchData);
+            return researchData;
+        }
+
+        function analyzeIdentityPatterns() {
+            const patterns = {
+                authenticityTrend: gameState.choices.map(c => c.type === 'authentic' ? 1 : 0),
+                performanceTrend: gameState.choices.map(c => c.type === 'perform' ? 1 : 0),
+                quantumMaintenanceAttempts: gameState.choices.filter(c => c.type === 'quantum').length,
+                averageResponseTime: 0,
+                consistencyScore: 0
+            };
+            
+            // Calculate response times
+            if (gameState.choices.length > 1) {
+                const responseTimes = [];
+                for (let i = 1; i < gameState.choices.length; i++) {
+                    responseTimes.push(gameState.choices[i].timestamp - gameState.choices[i-1].timestamp);
+                }
+                patterns.averageResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+            }
+            
+            return patterns;
+        }
+
+        // Initialize the experiment
+        window.addEventListener('load', () => {
+            initializeQuantumField();
+            
+            // Auto-export data every 30 seconds for research
+            setInterval(() => {
+                if (gameState.choices.length > 0) {
+                    exportResearchData();
+                }
+            }, 30000);
+        });
+
+        // Keyboard shortcuts for advanced users
+        document.addEventListener('keydown', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'a':
+                    makeChoice('authentic');
+                    break;
+                case 'p':
+                    makeChoice('perform');
+                    break;
+                case 'q':
+                    makeChoice('quantum');
+                    break;
+                case 'r':
+                    resetExperiment();
+                    break;
+                case 'e':
+                    exportResearchData();
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotional Gravity Narrative Kaleidoscope - Iteration 17</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #gravityCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .emotion-well {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            user-select: none;
+        }
+
+        .emotion-well.joy {
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+        }
+
+        .emotion-well.sorrow {
+            background: radial-gradient(circle, rgba(70, 130, 180, 0.3), transparent);
+            border: 2px solid rgba(70, 130, 180, 0.6);
+        }
+
+        .emotion-well.rage {
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.3), transparent);
+            border: 2px solid rgba(220, 20, 60, 0.6);
+        }
+
+        .emotion-well.peace {
+            background: radial-gradient(circle, rgba(144, 238, 144, 0.3), transparent);
+            border: 2px solid rgba(144, 238, 144, 0.6);
+        }
+
+        .emotion-well.fear {
+            background: radial-gradient(circle, rgba(148, 0, 211, 0.3), transparent);
+            border: 2px solid rgba(148, 0, 211, 0.6);
+        }
+
+        .emotion-well.love {
+            background: radial-gradient(circle, rgba(255, 105, 180, 0.3), transparent);
+            border: 2px solid rgba(255, 105, 180, 0.6);
+        }
+
+        .narrative-fragment {
+            position: absolute;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 250px;
+            cursor: move;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .narrative-fragment:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .narrative-fragment.entangled {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .symbiotic-link {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        #kaleidoscope-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .kaleidoscope-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
+            overflow: hidden;
+            clip-path: polygon(0 0, 50% 0, 0 50%);
+        }
+
+        #control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .user-avatar {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        #collective-resonance {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .resonance-bar {
+            width: 300px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .resonance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .emotion-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 15px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gravityCanvas"></canvas>
+    
+    <div id="kaleidoscope-overlay"></div>
+    
+    <div id="control-panel">
+        <div class="control-group">
+            <label>Emotional Gravity Strength</label>
+            <input type="range" id="gravityStrength" min="0.1" max="3" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+            <label>Narrative Entanglement</label>
+            <input type="range" id="entanglementLevel" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <div class="control-group">
+            <label>Symbiosis Mode</label>
+            <button id="symbiosisToggle">Enable Symbiosis</button>
+        </div>
+        <div class="control-group">
+            <label>Active Users: <span id="userCount">1</span></label>
+            <button id="simulateUser">Add User</button>
+        </div>
+    </div>
+    
+    <div id="collective-resonance">
+        <div>Collective Emotional Resonance</div>
+        <div class="resonance-bar">
+            <div class="resonance-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        class EmotionalGravitySystem {
+            constructor() {
+                this.canvas = document.getElementById('gravityCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.emotionWells = [];
+                this.narrativeFragments = [];
+                this.users = [];
+                this.symbioticLinks = [];
+                this.gravityStrength = 1;
+                this.entanglementLevel = 0.5;
+                this.symbiosisEnabled = false;
+                this.collectiveResonance = 0;
+                
+                this.emotions = [
+                    { type: 'joy', emoji: '☀️', color: '#FFD700' },
+                    { type: 'sorrow', emoji: '💧', color: '#4682B4' },
+                    { type: 'rage', emoji: '🔥', color: '#DC143C' },
+                    { type: 'peace', emoji: '🕊️', color: '#90EE90' },
+                    { type: 'fear', emoji: '🌙', color: '#9400D3' },
+                    { type: 'love', emoji: '💖', color: '#FF69B4' }
+                ];
+                
+                this.narrativePool = [
+                    { text: "In the beginning, there was only silence and possibility.", tags: ['origin', 'peace'] },
+                    { text: "The storm raged within, matching the chaos without.", tags: ['rage', 'fear'] },
+                    { text: "Light danced through the darkness, bringing hope.", tags: ['joy', 'love'] },
+                    { text: "Tears fell like rain, washing away the past.", tags: ['sorrow', 'peace'] },
+                    { text: "Hearts connected across the void of understanding.", tags: ['love', 'joy'] },
+                    { text: "Fear whispered secrets that courage dared not speak.", tags: ['fear', 'sorrow'] },
+                    { text: "Anger burned bright, a beacon of change.", tags: ['rage', 'joy'] },
+                    { text: "In stillness, truth revealed itself slowly.", tags: ['peace', 'love'] },
+                    { text: "The journey ended where it began, transformed.", tags: ['peace', 'joy'] },
+                    { text: "Shadows danced with light in eternal balance.", tags: ['fear', 'joy'] },
+                    { text: "Love conquered the impossible distance between souls.", tags: ['love', 'peace'] },
+                    { text: "Rage gave birth to unexpected beauty.", tags: ['rage', 'love'] }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.createEmotionWells();
+                this.createInitialNarratives();
+                this.createKaleidoscope();
+                this.addUser('You');
+                this.setupEventListeners();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+            }
+            
+            createEmotionWells() {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const radius = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+                
+                this.emotions.forEach((emotion, i) => {
+                    const angle = (i / this.emotions.length) * Math.PI * 2;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    const well = document.createElement('div');
+                    well.className = `emotion-well ${emotion.type}`;
+                    well.style.left = `${x - 50}px`;
+                    well.style.top = `${y - 50}px`;
+                    well.style.width = '100px';
+                    well.style.height = '100px';
+                    well.textContent = emotion.emoji;
+                    well.dataset.emotion = emotion.type;
+                    
+                    const indicator = document.createElement('div');
+                    indicator.className = 'emotion-indicator';
+                    indicator.textContent = emotion.type;
+                    well.appendChild(indicator);
+                    
+                    document.body.appendChild(well);
+                    
+                    this.emotionWells.push({
+                        element: well,
+                        x: x,
+                        y: y,
+                        type: emotion.type,
+                        color: emotion.color,
+                        mass: 50,
+                        activeUsers: new Set()
+                    });
+                    
+                    well.addEventListener('click', () => this.amplifyEmotion(emotion.type));
+                });
+            }
+            
+            createInitialNarratives() {
+                for (let i = 0; i < 8; i++) {
+                    const narrative = this.narrativePool[Math.floor(Math.random() * this.narrativePool.length)];
+                    this.createNarrativeFragment(narrative);
+                }
+            }
+            
+            createNarrativeFragment(narrative) {
+                const fragment = document.createElement('div');
+                fragment.className = 'narrative-fragment';
+                fragment.textContent = narrative.text;
+                fragment.style.left = `${Math.random() * (window.innerWidth - 250)}px`;
+                fragment.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
+                
+                document.body.appendChild(fragment);
+                
+                const fragmentData = {
+                    element: fragment,
+                    x: parseFloat(fragment.style.left),
+                    y: parseFloat(fragment.style.top),
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    tags: narrative.tags,
+                    entangledWith: [],
+                    symbioticPartners: []
+                };
+                
+                this.narrativeFragments.push(fragmentData);
+                this.makeFragmentDraggable(fragment, fragmentData);
+            }
+            
+            makeFragmentDraggable(element, data) {
+                let isDragging = false;
+                let startX, startY;
+                
+                element.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX - data.x;
+                    startY = e.clientY - data.y;
+                    element.style.zIndex = 1000;
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    data.x = e.clientX - startX;
+                    data.y = e.clientY - startY;
+                    element.style.left = `${data.x}px`;
+                    element.style.top = `${data.y}px`;
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        element.style.zIndex = '';
+                    }
+                });
+            }
+            
+            createKaleidoscope() {
+                const overlay = document.getElementById('kaleidoscope-overlay');
+                for (let i = 0; i < 8; i++) {
+                    const segment = document.createElement('div');
+                    segment.className = 'kaleidoscope-segment';
+                    segment.style.transform = `rotate(${i * 45}deg)`;
+                    overlay.appendChild(segment);
+                }
+            }
+            
+            addUser(name) {
+                const user = {
+                    id: Date.now() + Math.random(),
+                    name: name,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    emotionalState: this.emotions[Math.floor(Math.random() * this.emotions.length)].type,
+                    avatar: document.createElement('div')
+                };
+                
+                user.avatar.className = 'user-avatar';
+                user.avatar.textContent = name[0];
+                user.avatar.style.left = `${user.x}px`;
+                user.avatar.style.top = `${user.y}px`;
+                document.body.appendChild(user.avatar);
+                
+                this.users.push(user);
+                document.getElementById('userCount').textContent = this.users.length;
+                
+                // Animate user movement
+                this.animateUser(user);
+            }
+            
+            animateUser(user) {
+                setInterval(() => {
+                    user.x += (Math.random() - 0.5) * 10;
+                    user.y += (Math.random() - 0.5) * 10;
+                    
+                    user.x = Math.max(0, Math.min(window.innerWidth - 30, user.x));
+                    user.y = Math.max(0, Math.min(window.innerHeight - 30, user.y));
+                    
+                    user.avatar.style.left = `${user.x}px`;
+                    user.avatar.style.top = `${user.y}px`;
+                    
+                    // Update emotional state based on proximity to wells
+                    this.updateUserEmotion(user);
+                }, 100);
+            }
+            
+            updateUserEmotion(user) {
+                let closestWell = null;
+                let minDistance = Infinity;
+                
+                this.emotionWells.forEach(well => {
+                    const dx = user.x - well.x;
+                    const dy = user.y - well.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestWell = well;
+                    }
+                });
+                
+                if (closestWell && minDistance < 150) {
+                    user.emotionalState = closestWell.type;
+                    closestWell.activeUsers.add(user.id);
+                } else {
+                    this.emotionWells.forEach(well => {
+                        well.activeUsers.delete(user.id);
+                    });
+                }
+            }
+            
+            amplifyEmotion(emotionType) {
+                const well = this.emotionWells.find(w => w.type === emotionType);
+                if (well) {
+                    well.mass += 20;
+                    well.element.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        well.element.style.transform = 'scale(1)';
+                        well.mass = Math.max(50, well.mass - 10);
+                    }, 500);
+                    
+                    // Create narrative ripple
+                    this.createNarrativeRipple(emotionType);
+                }
+            }
+            
+            createNarrativeRipple(emotionType) {
+                const matchingNarratives = this.narrativePool.filter(n => n.tags.includes(emotionType));
+                if (matchingNarratives.length > 0) {
+                    const narrative = matchingNarratives[Math.floor(Math.random() * matchingNarratives.length)];
+                    this.createNarrativeFragment(narrative);
+                }
+            }
+            
+            updateGravity() {
+                this.narrativeFragments.forEach(fragment => {
+                    let fx = 0, fy = 0;
+                    
+                    this.emotionWells.forEach(well => {
+                        const dx = well.x - fragment.x - 125;
+                        const dy = well.y - fragment.y - 50;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 10) {
+                            const force = (well.mass * this.gravityStrength) / (distance * distance);
+                            const attraction = fragment.tags.includes(well.type) ? 2 : 0.5;
+                            
+                            fx += (dx / distance) * force * attraction;
+                            fy += (dy / distance) * force * attraction;
+                        }
+                    });
+                    
+                    // Apply entanglement forces
+                    if (this.entanglementLevel > 0) {
+                        fragment.entangledWith.forEach(otherId => {
+                            const other = this.narrativeFragments.find(f => f.element.id === otherId);
+                            if (other) {
+                                const dx = other.x - fragment.x;
+                                const dy = other.y - fragment.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (distance > 50) {
+                                    const force = this.entanglementLevel * 10 / distance;
+                                    fx += (dx / distance) * force;
+                                    fy += (dy / distance) * force;
+                                }
+                            }
+                        });
+                    }
+                    
+                    fragment.vx = fragment.vx * 0.95 + fx * 0.01;
+                    fragment.vy = fragment.vy * 0.95 + fy * 0.01;
+                    
+                    fragment.x += fragment.vx;
+                    fragment.y += fragment.vy;
+                    
+                    // Boundary checking
+                    if (fragment.x < 0 || fragment.x > window.innerWidth - 250) {
+                        fragment.vx *= -0.8;
+                        fragment.x = Math.max(0, Math.min(window.innerWidth - 250, fragment.x));
+                    }
+                    if (fragment.y < 0 || fragment.y > window.innerHeight - 100) {
+                        fragment.vy *= -0.8;
+                        fragment.y = Math.max(0, Math.min(window.innerHeight - 100, fragment.y));
+                    }
+                    
+                    fragment.element.style.left = `${fragment.x}px`;
+                    fragment.element.style.top = `${fragment.y}px`;
+                });
+            }
+            
+            updateSymbiosis() {
+                if (!this.symbiosisEnabled) return;
+                
+                this.narrativeFragments.forEach((fragment, i) => {
+                    this.narrativeFragments.forEach((other, j) => {
+                        if (i >= j) return;
+                        
+                        const dx = other.x - fragment.x;
+                        const dy = other.y - fragment.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 200) {
+                            const sharedTags = fragment.tags.filter(tag => other.tags.includes(tag));
+                            if (sharedTags.length > 0 && !fragment.symbioticPartners.includes(j)) {
+                                fragment.symbioticPartners.push(j);
+                                other.symbioticPartners.push(i);
+                                
+                                // Create symbiotic narrative
+                                this.createSymbioticNarrative(fragment, other);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            createSymbioticNarrative(fragment1, fragment2) {
+                const newText = `${fragment1.element.textContent.split('.')[0]} meets ${fragment2.element.textContent.split('.')[0]}.`;
+                const narrative = {
+                    text: newText,
+                    tags: [...new Set([...fragment1.tags, ...fragment2.tags])]
+                };
+                
+                this.createNarrativeFragment(narrative);
+            }
+            
+            updateCollectiveResonance() {
+                let totalResonance = 0;
+                
+                this.emotionWells.forEach(well => {
+                    totalResonance += well.activeUsers.size * 0.1;
+                });
+                
+                this.collectiveResonance = Math.min(1, totalResonance);
+                const fill = document.querySelector('.resonance-fill');
+                fill.style.width = `${this.collectiveResonance * 100}%`;
+            }
+            
+            drawConnections() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.globalAlpha = 0.3;
+                
+                // Draw gravity lines
+                this.narrativeFragments.forEach(fragment => {
+                    this.emotionWells.forEach(well => {
+                        if (fragment.tags.includes(well.type)) {
+                            const dx = well.x - fragment.x - 125;
+                            const dy = well.y - fragment.y - 50;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < 300) {
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(fragment.x + 125, fragment.y + 50);
+                                this.ctx.lineTo(well.x, well.y);
+                                this.ctx.strokeStyle = well.color;
+                                this.ctx.lineWidth = (300 - distance) / 100;
+                                this.ctx.stroke();
+                            }
+                        }
+                    });
+                });
+                
+                // Draw entanglement lines
+                if (this.entanglementLevel > 0) {
+                    this.ctx.globalAlpha = this.entanglementLevel * 0.5;
+                    this.narrativeFragments.forEach(fragment => {
+                        fragment.entangledWith.forEach(otherId => {
+                            const other = this.narrativeFragments.find(f => f.element.id === otherId);
+                            if (other) {
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(fragment.x + 125, fragment.y + 50);
+                                this.ctx.lineTo(other.x + 125, other.y + 50);
+                                this.ctx.strokeStyle = '#ffffff';
+                                this.ctx.lineWidth = 1;
+                                this.ctx.setLineDash([5, 5]);
+                                this.ctx.stroke();
+                                this.ctx.setLineDash([]);
+                            }
+                        });
+                    });
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('gravityStrength').addEventListener('input', (e) => {
+                    this.gravityStrength = parseFloat(e.target.value);
+                });
+                
+                document.getElementById('entanglementLevel').addEventListener('input', (e) => {
+                    this.entanglementLevel = parseFloat(e.target.value);
+                    this.updateEntanglements();
+                });
+                
+                document.getElementById('symbiosisToggle').addEventListener('click', () => {
+                    this.symbiosisEnabled = !this.symbiosisEnabled;
+                    document.getElementById('symbiosisToggle').textContent = 
+                        this.symbiosisEnabled ? 'Disable Symbiosis' : 'Enable Symbiosis';
+                });
+                
+                document.getElementById('simulateUser').addEventListener('click', () => {
+                    this.addUser(`User${this.users.length}`);
+                });
+            }
+            
+            updateEntanglements() {
+                // Clear existing entanglements
+                this.narrativeFragments.forEach(fragment => {
+                    fragment.entangledWith = [];
+                    fragment.element.classList.remove('entangled');
+                });
+                
+                if (this.entanglementLevel > 0) {
+                    // Create new entanglements based on proximity and shared tags
+                    this.narrativeFragments.forEach((fragment, i) => {
+                        this.narrativeFragments.forEach((other, j) => {
+                            if (i >= j) return;
+                            
+                            const sharedTags = fragment.tags.filter(tag => other.tags.includes(tag));
+                            if (sharedTags.length > 0 && Math.random() < this.entanglementLevel) {
+                                fragment.entangledWith.push(other.element.id);
+                                other.entangledWith.push(fragment.element.id);
+                                fragment.element.classList.add('entangled');
+                                other.element.classList.add('entangled');
+                            }
+                        });
+                    });
+                }
+            }
+            
+            animate() {
+                this.updateGravity();
+                this.updateSymbiosis();
+                this.updateCollectiveResonance();
+                this.drawConnections();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize the system
+        const system = new EmotionalGravitySystem();
+        
+        // Add unique IDs to narrative fragments for entanglement tracking
+        let fragmentId = 0;
+        document.querySelectorAll('.narrative-fragment').forEach(fragment => {
+            fragment.id = `fragment-${fragmentId++}`;
+        });
+    </script>
+</body>
+</html>

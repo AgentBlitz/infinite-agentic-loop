@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono-Emotional Workspace - Time Dilation + Emotional Weather Hybrid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Weather Background System */
+        #weatherCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        /* Time Dilation Overlay */
+        .time-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                rgba(255, 136, 0, 0.1) 0%, 
+                transparent 70%);
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        /* Header with Metrics */
+        .header {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff8800, #ff4400);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Biometric Panel */
+        .biometric-panel {
+            background: rgba(30, 30, 40, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .biometric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .biometric-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .biometric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .focus-icon {
+            background: linear-gradient(135deg, #ff8800, #ff6600);
+        }
+
+        .emotion-icon {
+            background: linear-gradient(135deg, #4488ff, #2266ff);
+        }
+
+        .biometric-data {
+            flex: 1;
+        }
+
+        .biometric-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .biometric-label {
+            font-size: 0.875rem;
+            color: #888;
+        }
+
+        /* Work Area */
+        .work-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+        }
+
+        .main-workspace {
+            background: rgba(25, 25, 35, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-input {
+            width: 100%;
+            background: rgba(40, 40, 50, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #ff8800;
+            background: rgba(50, 50, 60, 0.8);
+        }
+
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: rgba(40, 40, 50, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .task-item:hover {
+            background: rgba(50, 50, 60, 0.5);
+            border-color: rgba(255, 136, 0, 0.3);
+        }
+
+        .task-text {
+            flex: 1;
+            margin-right: 1rem;
+        }
+
+        .task-time {
+            font-size: 0.875rem;
+            color: #ff8800;
+            font-weight: 600;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-panel {
+            background: rgba(25, 25, 35, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ff8800;
+        }
+
+        .weather-states {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .weather-btn {
+            background: rgba(40, 40, 50, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.75rem;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .weather-btn:hover {
+            background: rgba(50, 50, 60, 0.8);
+            border-color: #ff8800;
+        }
+
+        .weather-btn.active {
+            background: rgba(255, 136, 0, 0.2);
+            border-color: #ff8800;
+        }
+
+        /* Time Control Slider */
+        .time-control {
+            margin-top: 1.5rem;
+        }
+
+        .time-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(40, 40, 50, 0.5);
+            outline: none;
+            margin: 1rem 0;
+        }
+
+        .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff8800;
+            cursor: pointer;
+        }
+
+        .time-display {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ff8800;
+        }
+
+        /* Correlation Graph */
+        .correlation-graph {
+            background: rgba(25, 25, 35, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #correlationCanvas {
+            width: 100%;
+            height: 150px;
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Productivity Pulse */
+        .productivity-pulse {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 136, 0, 0.1) 0%, 
+                transparent 70%);
+            pointer-events: none;
+            z-index: 3;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="weatherCanvas"></canvas>
+    <div class="time-field" id="timeField"></div>
+    <div class="productivity-pulse" id="productivityPulse"></div>
+
+    <div class="container">
+        <!-- Header Metrics -->
+        <div class="header">
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value" id="timeRatio">1.0x</div>
+                    <div class="metric-label">Time Dilation</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="emotionalState">Neutral</div>
+                    <div class="metric-label">Emotional Weather</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="productivityScore">0%</div>
+                    <div class="metric-label">Productivity Score</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="flowState">Idle</div>
+                    <div class="metric-label">Flow State</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biometric Panel -->
+        <div class="biometric-panel">
+            <div class="biometric-grid">
+                <div class="biometric-item">
+                    <div class="biometric-icon focus-icon">🧠</div>
+                    <div class="biometric-data">
+                        <div class="biometric-value" id="focusLevel">50%</div>
+                        <div class="biometric-label">Focus Level</div>
+                    </div>
+                </div>
+                <div class="biometric-item">
+                    <div class="biometric-icon emotion-icon">💭</div>
+                    <div class="biometric-data">
+                        <div class="biometric-value" id="emotionIntensity">Calm</div>
+                        <div class="biometric-label">Emotional Intensity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Area -->
+        <div class="work-area">
+            <!-- Main Workspace -->
+            <div class="main-workspace">
+                <input type="text" class="task-input" placeholder="Enter your task..." id="taskInput">
+                <div class="task-list" id="taskList"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Weather Control -->
+                <div class="control-panel">
+                    <div class="control-title">Emotional Weather</div>
+                    <div class="weather-states">
+                        <button class="weather-btn" data-weather="calm">☀️ Calm</button>
+                        <button class="weather-btn" data-weather="focused">⚡ Focused</button>
+                        <button class="weather-btn" data-weather="stressed">🌩️ Stressed</button>
+                        <button class="weather-btn" data-weather="creative">🌈 Creative</button>
+                    </div>
+                </div>
+
+                <!-- Time Control -->
+                <div class="control-panel">
+                    <div class="control-title">Time Control</div>
+                    <div class="time-control">
+                        <input type="range" class="time-slider" id="timeSlider" min="0.5" max="2" step="0.1" value="1">
+                        <div class="time-display" id="timeDisplay">Normal Speed</div>
+                    </div>
+                </div>
+
+                <!-- Correlation Graph -->
+                <div class="correlation-graph">
+                    <div class="control-title">Focus-Emotion Correlation</div>
+                    <canvas id="correlationCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        const state = {
+            focusLevel: 50,
+            emotionalWeather: 'calm',
+            timeRatio: 1.0,
+            productivityScore: 0,
+            flowState: 'idle',
+            tasks: [],
+            correlationData: [],
+            startTime: Date.now(),
+            actualElapsed: 0,
+            perceivedElapsed: 0
+        };
+
+        // Weather Canvas Setup
+        const weatherCanvas = document.getElementById('weatherCanvas');
+        const weatherCtx = weatherCanvas.getContext('2d');
+        weatherCanvas.width = window.innerWidth;
+        weatherCanvas.height = window.innerHeight;
+
+        // Correlation Canvas Setup
+        const correlationCanvas = document.getElementById('correlationCanvas');
+        const correlationCtx = correlationCanvas.getContext('2d');
+        correlationCanvas.width = correlationCanvas.offsetWidth;
+        correlationCanvas.height = 150;
+
+        // Weather Patterns
+        const weatherPatterns = {
+            calm: {
+                color: 'rgba(100, 200, 255, 0.1)',
+                particles: 20,
+                speed: 0.5,
+                emotion: 'Peaceful'
+            },
+            focused: {
+                color: 'rgba(255, 136, 0, 0.15)',
+                particles: 50,
+                speed: 2,
+                emotion: 'Intense'
+            },
+            stressed: {
+                color: 'rgba(255, 50, 50, 0.2)',
+                particles: 100,
+                speed: 4,
+                emotion: 'Anxious'
+            },
+            creative: {
+                color: 'rgba(150, 100, 255, 0.15)',
+                particles: 40,
+                speed: 1.5,
+                emotion: 'Inspired'
+            }
+        };
+
+        // Weather Particles
+        class WeatherParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * weatherCanvas.width;
+                this.y = Math.random() * weatherCanvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2;
+                this.life = 1;
+            }
+
+            update(pattern) {
+                this.x += this.speedX * pattern.speed;
+                this.y += this.speedY * pattern.speed;
+                this.life -= 0.01;
+
+                if (this.x < 0 || this.x > weatherCanvas.width || 
+                    this.y < 0 || this.y > weatherCanvas.height || 
+                    this.life <= 0) {
+                    this.reset();
+                }
+            }
+
+            draw(ctx, pattern) {
+                ctx.globalAlpha = this.life * 0.5;
+                ctx.fillStyle = pattern.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize Weather System
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push(new WeatherParticle());
+        }
+
+        // Biometric Simulation
+        function simulateBiometrics() {
+            // Simulate focus changes based on task engagement
+            if (state.tasks.length > 0) {
+                state.focusLevel = Math.min(95, state.focusLevel + Math.random() * 2);
+            } else {
+                state.focusLevel = Math.max(20, state.focusLevel - Math.random() * 1);
+            }
+
+            // Update focus display
+            document.getElementById('focusLevel').textContent = Math.round(state.focusLevel) + '%';
+
+            // Calculate time dilation based on focus
+            const focusImpact = state.focusLevel / 100;
+            const emotionImpact = getEmotionImpact();
+            state.timeRatio = 0.5 + (focusImpact * 1.5) * emotionImpact;
+
+            // Update time dilation visual
+            updateTimeDilation();
+        }
+
+        function getEmotionImpact() {
+            const impacts = {
+                calm: 1.0,
+                focused: 1.2,
+                stressed: 0.8,
+                creative: 1.1
+            };
+            return impacts[state.emotionalWeather] || 1.0;
+        }
+
+        function updateTimeDilation() {
+            const timeField = document.getElementById('timeField');
+            const intensity = (state.timeRatio - 0.5) / 1.5;
+            
+            timeField.style.background = `radial-gradient(circle at center, 
+                rgba(255, 136, 0, ${intensity * 0.3}) 0%, 
+                transparent 70%)`;
+            
+            document.getElementById('timeRatio').textContent = state.timeRatio.toFixed(1) + 'x';
+            
+            // Update productivity pulse
+            const pulse = document.getElementById('productivityPulse');
+            pulse.style.animationDuration = (4 / state.timeRatio) + 's';
+        }
+
+        // Task Management
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                addTask(e.target.value.trim());
+                e.target.value = '';
+            }
+        });
+
+        function addTask(text) {
+            const task = {
+                id: Date.now(),
+                text: text,
+                startTime: Date.now(),
+                perceivedTime: 0
+            };
+            
+            state.tasks.push(task);
+            renderTasks();
+            
+            // Boost focus when adding tasks
+            state.focusLevel = Math.min(95, state.focusLevel + 10);
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = state.tasks.map(task => `
+                <div class="task-item" data-id="${task.id}">
+                    <div class="task-text">${task.text}</div>
+                    <div class="task-time">${formatTime(task.perceivedTime)}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateTaskTimes() {
+            state.tasks.forEach(task => {
+                const elapsed = (Date.now() - task.startTime) / 1000;
+                task.perceivedTime = elapsed * state.timeRatio;
+            });
+            renderTasks();
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Weather Control
+        document.querySelectorAll('.weather-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const weather = btn.dataset.weather;
+                state.emotionalWeather = weather;
+                
+                // Update UI
+                document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update displays
+                const pattern = weatherPatterns[weather];
+                document.getElementById('emotionalState').textContent = pattern.emotion;
+                document.getElementById('emotionIntensity').textContent = pattern.emotion;
+                
+                // Generate emotion particles
+                generateEmotionParticles(weather);
+            });
+        });
+
+        // Time Control
+        document.getElementById('timeSlider').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            const manual = value;
+            
+            // Blend manual control with biometric influence
+            state.timeRatio = (state.timeRatio + manual) / 2;
+            
+            const labels = {
+                0.5: 'Slow Motion',
+                1: 'Normal Speed',
+                1.5: 'Accelerated',
+                2: 'Double Time'
+            };
+            
+            document.getElementById('timeDisplay').textContent = 
+                labels[value] || `${value.toFixed(1)}x Speed`;
+        });
+
+        // Generate floating emotion particles
+        function generateEmotionParticles(emotion) {
+            const colors = {
+                calm: '#64c8ff',
+                focused: '#ff8800',
+                stressed: '#ff3232',
+                creative: '#9664ff'
+            };
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.bottom = '0px';
+                    particle.style.width = particle.style.height = '20px';
+                    particle.style.borderRadius = '50%';
+                    particle.style.background = colors[emotion];
+                    particle.style.animation = 'float 5s ease-out forwards';
+                    
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 5000);
+                }, i * 200);
+            }
+        }
+
+        // Correlation Tracking
+        function updateCorrelation() {
+            const dataPoint = {
+                time: Date.now(),
+                focus: state.focusLevel,
+                emotion: getEmotionValue(),
+                productivity: calculateProductivity()
+            };
+            
+            state.correlationData.push(dataPoint);
+            
+            // Keep last 50 points
+            if (state.correlationData.length > 50) {
+                state.correlationData.shift();
+            }
+            
+            drawCorrelationGraph();
+        }
+
+        function getEmotionValue() {
+            const values = {
+                calm: 50,
+                focused: 80,
+                stressed: 30,
+                creative: 70
+            };
+            return values[state.emotionalWeather] || 50;
+        }
+
+        function calculateProductivity() {
+            const focusWeight = 0.6;
+            const emotionWeight = 0.4;
+            const taskWeight = state.tasks.length > 0 ? 1.2 : 0.5;
+            
+            const score = (
+                (state.focusLevel * focusWeight) + 
+                (getEmotionValue() * emotionWeight)
+            ) * taskWeight * (state.timeRatio / 2);
+            
+            state.productivityScore = Math.min(100, Math.round(score));
+            document.getElementById('productivityScore').textContent = state.productivityScore + '%';
+            
+            // Update flow state
+            if (state.productivityScore > 80) {
+                state.flowState = 'Peak Flow';
+            } else if (state.productivityScore > 60) {
+                state.flowState = 'In Flow';
+            } else if (state.productivityScore > 40) {
+                state.flowState = 'Building';
+            } else {
+                state.flowState = 'Idle';
+            }
+            
+            document.getElementById('flowState').textContent = state.flowState;
+            
+            return state.productivityScore;
+        }
+
+        function drawCorrelationGraph() {
+            correlationCtx.clearRect(0, 0, correlationCanvas.width, correlationCanvas.height);
+            
+            if (state.correlationData.length < 2) return;
+            
+            const width = correlationCanvas.width;
+            const height = correlationCanvas.height;
+            const padding = 10;
+            
+            // Draw focus line (orange)
+            correlationCtx.strokeStyle = '#ff8800';
+            correlationCtx.lineWidth = 2;
+            correlationCtx.beginPath();
+            
+            state.correlationData.forEach((point, i) => {
+                const x = (i / (state.correlationData.length - 1)) * (width - 2 * padding) + padding;
+                const y = height - (point.focus / 100) * (height - 2 * padding) - padding;
+                
+                if (i === 0) {
+                    correlationCtx.moveTo(x, y);
+                } else {
+                    correlationCtx.lineTo(x, y);
+                }
+            });
+            
+            correlationCtx.stroke();
+            
+            // Draw emotion line (blue)
+            correlationCtx.strokeStyle = '#4488ff';
+            correlationCtx.beginPath();
+            
+            state.correlationData.forEach((point, i) => {
+                const x = (i / (state.correlationData.length - 1)) * (width - 2 * padding) + padding;
+                const y = height - (point.emotion / 100) * (height - 2 * padding) - padding;
+                
+                if (i === 0) {
+                    correlationCtx.moveTo(x, y);
+                } else {
+                    correlationCtx.lineTo(x, y);
+                }
+            });
+            
+            correlationCtx.stroke();
+            
+            // Draw productivity dots (white)
+            correlationCtx.fillStyle = '#fff';
+            state.correlationData.forEach((point, i) => {
+                const x = (i / (state.correlationData.length - 1)) * (width - 2 * padding) + padding;
+                const y = height - (point.productivity / 100) * (height - 2 * padding) - padding;
+                
+                correlationCtx.beginPath();
+                correlationCtx.arc(x, y, 3, 0, Math.PI * 2);
+                correlationCtx.fill();
+            });
+        }
+
+        // Animation Loop
+        function animate() {
+            // Clear weather canvas
+            weatherCtx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            weatherCtx.fillRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+            
+            // Update and draw particles
+            const pattern = weatherPatterns[state.emotionalWeather];
+            const activeParticles = particles.slice(0, pattern.particles);
+            
+            activeParticles.forEach(particle => {
+                particle.update(pattern);
+                particle.draw(weatherCtx, pattern);
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Update Loop
+        setInterval(() => {
+            simulateBiometrics();
+            updateTaskTimes();
+            updateCorrelation();
+        }, 1000);
+
+        // Initialize
+        document.querySelector('[data-weather="calm"]').click();
+        animate();
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            weatherCanvas.width = window.innerWidth;
+            weatherCanvas.height = window.innerHeight;
+            correlationCanvas.width = correlationCanvas.offsetWidth;
+        });
+    </script>
+</body>
+</html>

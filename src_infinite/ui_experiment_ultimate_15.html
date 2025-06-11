@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Omniversal Interface - Ultimate Meta-Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            cursor: none;
+        }
+
+        /* Reality Layers */
+        .reality-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        /* Quantum Field */
+        #quantum-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(138, 43, 226, 0.1) 0%, 
+                transparent 50%);
+            filter: blur(2px);
+        }
+
+        /* Consciousness Grid */
+        .consciousness-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            pointer-events: all;
+            transition: all 0.3s;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .consciousness-node:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: scale(1.2);
+            z-index: 100;
+        }
+
+        /* Biological System */
+        .cell {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(50, 205, 50, 0.6), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.2); }
+            66% { transform: translate(-20px, 20px) scale(0.8); }
+        }
+
+        /* Cultural Membrane */
+        .cultural-symbol {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0.3;
+            pointer-events: all;
+            cursor: pointer;
+            transition: all 0.5s;
+            animation: drift 20s infinite linear;
+        }
+
+        @keyframes drift {
+            from { transform: translateX(-100px); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        .cultural-symbol:hover {
+            opacity: 1;
+            transform: scale(2) rotate(180deg);
+            animation-play-state: paused;
+        }
+
+        /* Paradox Engine */
+        #paradox-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            pointer-events: all;
+        }
+
+        .paradox-element {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 50%;
+            animation: rotate 10s infinite linear;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .paradox-element:nth-child(odd) {
+            animation-direction: reverse;
+        }
+
+        /* Time Distortion */
+        .time-bubble {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            pointer-events: all;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .time-bubble:active {
+            cursor: grabbing;
+            animation: timeWarp 1s infinite;
+        }
+
+        @keyframes timeWarp {
+            0%, 100% { transform: scale(1); filter: hue-rotate(0deg); }
+            50% { transform: scale(0.8); filter: hue-rotate(180deg); }
+        }
+
+        /* Meta Interface */
+        #meta-controller {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            pointer-events: all;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .dimension-selector {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .dimension-selector:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .dimension-selector.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+        }
+
+        /* Emergent Patterns */
+        .emergence-point {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .emergence-point.active {
+            animation: emerge 2s forwards;
+        }
+
+        @keyframes emerge {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(20); }
+            100% { opacity: 0; transform: scale(40); }
+        }
+
+        /* Cursor Entity */
+        #cursor-entity {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+            z-index: 10000;
+        }
+
+        #cursor-trail {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+
+        /* Quantum Entanglement Lines */
+        .entanglement-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.5), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: quantumFlicker 0.5s infinite;
+        }
+
+        @keyframes quantumFlicker {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Status Display */
+        #status-display {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .status-line {
+            margin: 5px 0;
+            opacity: 0.8;
+        }
+
+        /* Modal Overlay */
+        #transcendence-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .transcendence-message {
+            text-align: center;
+            font-size: 24px;
+            max-width: 600px;
+            line-height: 1.6;
+            animation: transcend 3s infinite;
+        }
+
+        @keyframes transcend {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* Glitch Effects */
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+            20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+            40% { transform: translate(-2px, -2px); filter: hue-rotate(180deg); }
+            60% { transform: translate(2px, 2px); filter: hue-rotate(270deg); }
+            80% { transform: translate(2px, -2px); filter: hue-rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Reality Layers -->
+    <div id="quantum-field" class="reality-layer"></div>
+    
+    <!-- Consciousness Grid -->
+    <div id="consciousness-grid"></div>
+    
+    <!-- Biological System -->
+    <div id="biological-layer"></div>
+    
+    <!-- Cultural Membrane -->
+    <div id="cultural-layer"></div>
+    
+    <!-- Paradox Engine -->
+    <div id="paradox-container"></div>
+    
+    <!-- Time Bubbles -->
+    <div id="time-layer"></div>
+    
+    <!-- Meta Controller -->
+    <div id="meta-controller">
+        <h3>DIMENSION CONTROL</h3>
+        <div class="dimension-selector active" data-dim="quantum">Quantum Reality</div>
+        <div class="dimension-selector" data-dim="consciousness">Consciousness Field</div>
+        <div class="dimension-selector" data-dim="biological">Biological Matrix</div>
+        <div class="dimension-selector" data-dim="cultural">Cultural Membrane</div>
+        <div class="dimension-selector" data-dim="paradox">Paradox Engine</div>
+        <div class="dimension-selector" data-dim="all">OMNIVERSAL MODE</div>
+    </div>
+    
+    <!-- Status Display -->
+    <div id="status-display">
+        <div class="status-line">Reality Coherence: <span id="coherence">100%</span></div>
+        <div class="status-line">Quantum State: <span id="quantum-state">Superposition</span></div>
+        <div class="status-line">Consciousness Level: <span id="consciousness-level">5</span></div>
+        <div class="status-line">Time Flow: <span id="time-flow">Normal</span></div>
+        <div class="status-line">Paradox Count: <span id="paradox-count">0</span></div>
+    </div>
+    
+    <!-- Cursor Entity -->
+    <div id="cursor-entity"></div>
+    <div id="cursor-trail"></div>
+    
+    <!-- Transcendence Modal -->
+    <div id="transcendence-modal">
+        <div class="transcendence-message">
+            You have transcended the interface.<br>
+            Reality and virtuality are one.<br>
+            The experiment is complete.<br>
+            The experiment begins.
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        const state = {
+            dimensions: {
+                quantum: true,
+                consciousness: false,
+                biological: false,
+                cultural: false,
+                paradox: false
+            },
+            coherence: 100,
+            quantumState: 'Superposition',
+            consciousnessLevel: 5,
+            timeFlow: 1,
+            paradoxCount: 0,
+            mouseX: 0,
+            mouseY: 0,
+            connections: [],
+            cells: [],
+            symbols: [],
+            emergencePoints: [],
+            transcended: false
+        };
+
+        // Initialize Consciousness Grid
+        function initConsciousnessGrid() {
+            const grid = document.getElementById('consciousness-grid');
+            const thoughts = [
+                'OBSERVE', 'CREATE', 'DESTROY', 'TRANSFORM',
+                'CONNECT', 'DIVIDE', 'EMERGE', 'DISSOLVE',
+                'REMEMBER', 'FORGET', 'DREAM', 'AWAKEN'
+            ];
+            
+            for (let i = 0; i < 12; i++) {
+                const node = document.createElement('div');
+                node.className = 'consciousness-node';
+                node.textContent = thoughts[i];
+                node.style.left = `${Math.random() * 80 + 10}%`;
+                node.style.top = `${Math.random() * 80 + 10}%`;
+                node.dataset.id = i;
+                
+                node.addEventListener('click', (e) => {
+                    connectConsciousness(e.target);
+                });
+                
+                grid.appendChild(node);
+            }
+        }
+
+        // Initialize Biological Layer
+        function initBiologicalLayer() {
+            const layer = document.getElementById('biological-layer');
+            
+            for (let i = 0; i < 20; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.style.left = `${Math.random() * 100}%`;
+                cell.style.top = `${Math.random() * 100}%`;
+                cell.style.animationDelay = `${Math.random() * 10}s`;
+                cell.style.animationDuration = `${10 + Math.random() * 10}s`;
+                
+                layer.appendChild(cell);
+                state.cells.push(cell);
+            }
+        }
+
+        // Initialize Cultural Layer
+        function initCulturalLayer() {
+            const layer = document.getElementById('cultural-layer');
+            const symbols = ['◯', '△', '□', '✦', '◈', '◊', '⬟', '⬢', '※', '◉'];
+            
+            for (let i = 0; i < 15; i++) {
+                const symbol = document.createElement('div');
+                symbol.className = 'cultural-symbol';
+                symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                symbol.style.left = `${Math.random() * 100}%`;
+                symbol.style.top = `${Math.random() * 100}%`;
+                symbol.style.animationDelay = `${Math.random() * 20}s`;
+                
+                symbol.addEventListener('click', (e) => {
+                    transformSymbol(e.target);
+                });
+                
+                layer.appendChild(symbol);
+                state.symbols.push(symbol);
+            }
+        }
+
+        // Initialize Paradox Engine
+        function initParadoxEngine() {
+            const container = document.getElementById('paradox-container');
+            
+            for (let i = 0; i < 5; i++) {
+                const element = document.createElement('div');
+                element.className = 'paradox-element';
+                element.style.width = `${300 - i * 50}px`;
+                element.style.height = `${300 - i * 50}px`;
+                element.style.left = `${i * 25}px`;
+                element.style.top = `${i * 25}px`;
+                element.style.animationDuration = `${10 - i * 1.5}s`;
+                element.style.borderColor = `hsla(${i * 72}, 70%, 50%, 0.5)`;
+                
+                container.appendChild(element);
+            }
+            
+            container.addEventListener('click', () => {
+                createParadox();
+            });
+        }
+
+        // Initialize Time Bubbles
+        function initTimeBubbles() {
+            const layer = document.getElementById('time-layer');
+            
+            for (let i = 0; i < 3; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'time-bubble';
+                bubble.innerHTML = `<span>TIME ${i + 1}</span>`;
+                bubble.style.left = `${Math.random() * 70 + 15}%`;
+                bubble.style.top = `${Math.random() * 70 + 15}%`;
+                
+                let isDragging = false;
+                let startX, startY;
+                
+                bubble.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX - bubble.offsetLeft;
+                    startY = e.clientY - bubble.offsetTop;
+                    distortTime(bubble);
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        bubble.style.left = `${e.clientX - startX}px`;
+                        bubble.style.top = `${e.clientY - startY}px`;
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+                
+                layer.appendChild(bubble);
+            }
+        }
+
+        // Consciousness Connection
+        function connectConsciousness(node) {
+            const nodes = document.querySelectorAll('.consciousness-node');
+            const connections = [];
+            
+            nodes.forEach(other => {
+                if (other !== node && Math.random() > 0.5) {
+                    drawConnection(node, other);
+                    connections.push(other);
+                }
+            });
+            
+            state.consciousnessLevel = Math.min(10, state.consciousnessLevel + 1);
+            updateStatus();
+            
+            if (connections.length > 3) {
+                createEmergence(node.offsetLeft + 40, node.offsetTop + 40);
+            }
+        }
+
+        // Draw Quantum Entanglement
+        function drawConnection(elem1, elem2) {
+            const line = document.createElement('div');
+            line.className = 'entanglement-line';
+            
+            const x1 = elem1.offsetLeft + elem1.offsetWidth / 2;
+            const y1 = elem1.offsetTop + elem1.offsetHeight / 2;
+            const x2 = elem2.offsetLeft + elem2.offsetWidth / 2;
+            const y2 = elem2.offsetTop + elem2.offsetHeight / 2;
+            
+            const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            line.style.width = `${distance}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            document.body.appendChild(line);
+            
+            setTimeout(() => line.remove(), 3000);
+        }
+
+        // Transform Cultural Symbol
+        function transformSymbol(symbol) {
+            const newSymbols = ['☯', '✡', '☪', '✝', '🕎', '☸', '🕉', '☦'];
+            symbol.textContent = newSymbols[Math.floor(Math.random() * newSymbols.length)];
+            symbol.style.color = `hsl(${Math.random() * 360}, 70%, 70%)`;
+            
+            createEmergence(symbol.offsetLeft, symbol.offsetTop);
+            
+            state.coherence = Math.max(0, state.coherence - 5);
+            updateStatus();
+        }
+
+        // Create Paradox
+        function createParadox() {
+            state.paradoxCount++;
+            state.quantumState = state.quantumState === 'Collapsed' ? 'Superposition' : 'Collapsed';
+            
+            const container = document.getElementById('paradox-container');
+            container.classList.add('glitch');
+            
+            setTimeout(() => {
+                container.classList.remove('glitch');
+            }, 300);
+            
+            if (state.paradoxCount > 5) {
+                document.body.style.filter = `hue-rotate(${state.paradoxCount * 30}deg)`;
+            }
+            
+            updateStatus();
+            checkTranscendence();
+        }
+
+        // Time Distortion
+        function distortTime(bubble) {
+            state.timeFlow = Math.random() * 2;
+            
+            document.querySelectorAll('.cell, .cultural-symbol, .paradox-element').forEach(elem => {
+                elem.style.animationDuration = `${parseFloat(elem.style.animationDuration) / state.timeFlow}s`;
+            });
+            
+            updateStatus();
+        }
+
+        // Create Emergence Point
+        function createEmergence(x, y) {
+            const point = document.createElement('div');
+            point.className = 'emergence-point active';
+            point.style.left = `${x}px`;
+            point.style.top = `${y}px`;
+            
+            document.body.appendChild(point);
+            
+            setTimeout(() => point.remove(), 2000);
+        }
+
+        // Dimension Control
+        function initDimensionControl() {
+            const selectors = document.querySelectorAll('.dimension-selector');
+            
+            selectors.forEach(selector => {
+                selector.addEventListener('click', () => {
+                    const dim = selector.dataset.dim;
+                    
+                    if (dim === 'all') {
+                        // Activate all dimensions
+                        Object.keys(state.dimensions).forEach(key => {
+                            state.dimensions[key] = true;
+                        });
+                        document.querySelectorAll('.dimension-selector').forEach(s => {
+                            s.classList.add('active');
+                        });
+                        enterOmniversalMode();
+                    } else {
+                        // Toggle individual dimension
+                        state.dimensions[dim] = !state.dimensions[dim];
+                        selector.classList.toggle('active');
+                        
+                        // Show/hide corresponding layer
+                        toggleDimensionVisibility(dim);
+                    }
+                    
+                    updateStatus();
+                });
+            });
+        }
+
+        // Toggle Dimension Visibility
+        function toggleDimensionVisibility(dimension) {
+            const layers = {
+                quantum: document.getElementById('quantum-field'),
+                consciousness: document.getElementById('consciousness-grid'),
+                biological: document.getElementById('biological-layer'),
+                cultural: document.getElementById('cultural-layer'),
+                paradox: document.getElementById('paradox-container')
+            };
+            
+            if (layers[dimension]) {
+                layers[dimension].style.display = state.dimensions[dimension] ? 'block' : 'none';
+            }
+        }
+
+        // Omniversal Mode
+        function enterOmniversalMode() {
+            document.body.style.animation = 'glitch 0.1s infinite';
+            
+            // Create reality fractures
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createEmergence(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight
+                    );
+                }, i * 100);
+            }
+            
+            // Accelerate all animations
+            document.querySelectorAll('*').forEach(elem => {
+                if (elem.style.animationDuration) {
+                    elem.style.animationDuration = '0.5s';
+                }
+            });
+            
+            setTimeout(() => {
+                document.body.style.animation = 'none';
+                checkTranscendence();
+            }, 5000);
+        }
+
+        // Check for Transcendence
+        function checkTranscendence() {
+            const allActive = Object.values(state.dimensions).every(d => d);
+            const highConsciousness = state.consciousnessLevel >= 8;
+            const manyParadoxes = state.paradoxCount >= 10;
+            
+            if (allActive && highConsciousness && manyParadoxes && !state.transcended) {
+                state.transcended = true;
+                showTranscendence();
+            }
+        }
+
+        // Show Transcendence
+        function showTranscendence() {
+            const modal = document.getElementById('transcendence-modal');
+            modal.style.display = 'flex';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                resetInterface();
+            }, 10000);
+        }
+
+        // Reset Interface
+        function resetInterface() {
+            // The interface never truly resets - it evolves
+            state.coherence = Math.random() * 100;
+            state.paradoxCount = 0;
+            state.consciousnessLevel = Math.floor(Math.random() * 5) + 5;
+            state.transcended = false;
+            
+            document.body.style.filter = 'none';
+            
+            // Rearrange all elements
+            document.querySelectorAll('.consciousness-node, .cell, .cultural-symbol, .time-bubble').forEach(elem => {
+                elem.style.left = `${Math.random() * 80 + 10}%`;
+                elem.style.top = `${Math.random() * 80 + 10}%`;
+            });
+            
+            updateStatus();
+        }
+
+        // Update Status Display
+        function updateStatus() {
+            document.getElementById('coherence').textContent = `${Math.round(state.coherence)}%`;
+            document.getElementById('quantum-state').textContent = state.quantumState;
+            document.getElementById('consciousness-level').textContent = state.consciousnessLevel;
+            document.getElementById('time-flow').textContent = state.timeFlow === 1 ? 'Normal' : `${state.timeFlow.toFixed(2)}x`;
+            document.getElementById('paradox-count').textContent = state.paradoxCount;
+        }
+
+        // Mouse Tracking
+        document.addEventListener('mousemove', (e) => {
+            state.mouseX = e.clientX;
+            state.mouseY = e.clientY;
+            
+            // Update cursor entity
+            const cursor = document.getElementById('cursor-entity');
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+            
+            // Update quantum field
+            document.getElementById('quantum-field').style.setProperty('--mouse-x', `${(e.clientX / window.innerWidth) * 100}%`);
+            document.getElementById('quantum-field').style.setProperty('--mouse-y', `${(e.clientY / window.innerHeight) * 100}%`);
+            
+            // Create cursor trail
+            if (Math.random() > 0.95) {
+                const trail = document.getElementById('cursor-trail').cloneNode();
+                trail.style.left = `${e.clientX}px`;
+                trail.style.top = `${e.clientY}px`;
+                trail.style.opacity = '1';
+                document.body.appendChild(trail);
+                
+                setTimeout(() => {
+                    trail.style.opacity = '0';
+                    setTimeout(() => trail.remove(), 1000);
+                }, 100);
+            }
+        });
+
+        // Keyboard Interactions
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    createParadox();
+                    break;
+                case 'Enter':
+                    enterOmniversalMode();
+                    break;
+                case 'Escape':
+                    resetInterface();
+                    break;
+            }
+        });
+
+        // Random Events
+        function startRandomEvents() {
+            setInterval(() => {
+                if (Math.random() > 0.9) {
+                    const nodes = document.querySelectorAll('.consciousness-node');
+                    const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+                    connectConsciousness(randomNode);
+                }
+                
+                if (Math.random() > 0.95) {
+                    createEmergence(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight
+                    );
+                }
+                
+                if (Math.random() > 0.98) {
+                    state.coherence = Math.max(0, Math.min(100, state.coherence + (Math.random() - 0.5) * 20));
+                    updateStatus();
+                }
+            }, 2000);
+        }
+
+        // Initialize Everything
+        function init() {
+            initConsciousnessGrid();
+            initBiologicalLayer();
+            initCulturalLayer();
+            initParadoxEngine();
+            initTimeBubbles();
+            initDimensionControl();
+            startRandomEvents();
+            updateStatus();
+            
+            // Hide inactive dimensions initially
+            Object.keys(state.dimensions).forEach(dim => {
+                if (!state.dimensions[dim]) {
+                    toggleDimensionVisibility(dim);
+                }
+            });
+        }
+
+        // Start the experience
+        init();
+    </script>
+</body>
+</html>

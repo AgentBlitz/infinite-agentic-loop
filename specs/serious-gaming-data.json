@@ -1,0 +1,244 @@
+{
+  "categories": {
+    "red": {
+      "name": "Field of education/Identification",
+      "color": "#FF4444",
+      "maxCards": 5
+    },
+    "orange": {
+      "name": "User characteristic",
+      "color": "#FF8800",
+      "maxCards": 5
+    },
+    "yellow": {
+      "name": "Style and preferences",
+      "color": "#FFD700",
+      "maxCards": 5
+    },
+    "green": {
+      "name": "Game quality",
+      "color": "#00CC00",
+      "maxCards": 5
+    },
+    "blue": {
+      "name": "In-game statuses",
+      "color": "#0088CC",
+      "maxCards": 5
+    },
+    "purple": {
+      "name": "Results",
+      "color": "#8844CC",
+      "maxCards": 5
+    }
+  },
+  "cards": {
+    "red": [
+      {
+        "id": "red-1",
+        "title": "Field of education",
+        "description": "Elementary School, Technical School, Social Science-Small, Exact and Natural Sciences"
+      },
+      {
+        "id": "red-2",
+        "title": "Identification",
+        "description": "Gender, player, socioeconomic levels, Location identification, Social ties-in-Small"
+      },
+      {
+        "id": "red-3",
+        "title": "Identification",
+        "description": "Gamer ID, Player ID, Real ID, Character ID"
+      },
+      {
+        "id": "red-4",
+        "title": "Identification",
+        "description": "Data of data: IDs, Nationality, Age, Neighbourhood, Role, location and education"
+      },
+      {
+        "id": "red-5",
+        "title": "Identification",
+        "description": "So-call identity: Global scale, Worsening social situation, Workcentricity, Pre-measured cooperation"
+      }
+    ],
+    "orange": [
+      {
+        "id": "orange-1",
+        "title": "User characteristic",
+        "description": "Linked reputation, Emotion recognition, Avatar"
+      },
+      {
+        "id": "orange-2",
+        "title": "User characteristic",
+        "description": "Developer overviews, Gender, Personality, Experience, Emotionality, Imagery"
+      },
+      {
+        "id": "orange-3",
+        "title": "Collective",
+        "description": "Preferences, Online presence, Community, Goal priority, Experience"
+      },
+      {
+        "id": "orange-4",
+        "title": "Motivation",
+        "description": "Money reward, Social status, Experimental interest, Social skills, Personal fullness"
+      },
+      {
+        "id": "orange-5",
+        "title": "Player skill",
+        "description": "Physical/motor skill, memory, IQ"
+      },
+      {
+        "id": "orange-6",
+        "title": "Professional involvement",
+        "description": "Level of involvement, Level of investment, User of observation"
+      },
+      {
+        "id": "orange-7",
+        "title": "Role in group",
+        "description": "Leader, Counselor, Specialist, Observer, Decision maker, Shared leader, Equal member, Info processor"
+      },
+      {
+        "id": "orange-8",
+        "title": "Learning style",
+        "description": "Auditory, Visual, Manipulative, Verbal, Written, Mixed"
+      },
+      {
+        "id": "orange-9",
+        "title": "Personality traits",
+        "description": "Traits: sociable, thinking/feeling, judging/perceiving, intuitive/observant, prospecting/assertive"
+      },
+      {
+        "id": "orange-10",
+        "title": "Attitude towards",
+        "description": "Games, School subjects, Work experience, Acceptance, Pre-measured cooperation"
+      }
+    ],
+    "yellow": [
+      {
+        "id": "yellow-1",
+        "title": "Style and preferences",
+        "description": "Content – Configuration, Streaming-Show-Watch, Speed-Skills, Learning curve, Preference-Choice"
+      },
+      {
+        "id": "yellow-2",
+        "title": "Style and preferences",
+        "description": "Analytical – Creative, Adaptive – Flexible, Methodical, Resilient"
+      },
+      {
+        "id": "yellow-3",
+        "title": "Personality scales",
+        "description": "Thinking – Feeling, Shyness – Outspoken, Openness – Steadfast, Shared – Related, Shared-Directed"
+      },
+      {
+        "id": "yellow-4",
+        "title": "Student background",
+        "description": "Student number, prior knowledge and skills, level of perception, personal learning"
+      }
+    ],
+    "green": [
+      {
+        "id": "green-1",
+        "title": "Pre/Post game play",
+        "description": "Briefing, Debriefing, Play test once or play again"
+      },
+      {
+        "id": "green-2",
+        "title": "Flexibility",
+        "description": "Narrative with visually represented fairness"
+      },
+      {
+        "id": "green-3",
+        "title": "Narrative quality",
+        "description": "Natural dialog, Personal challenges, Social interactive, Collaborative"
+      },
+      {
+        "id": "green-4",
+        "title": "Learning styles",
+        "description": "Specific elements that can be integrated into the Playful Digital Content (PDC) using learning/playing styles"
+      }
+    ],
+    "blue": [
+      {
+        "id": "blue-1",
+        "title": "Time spent",
+        "description": "In mobile game/PC, In mission, In session, In post sharing"
+      }
+    ],
+    "purple": [
+      {
+        "id": "purple-1",
+        "title": "Achievement level",
+        "description": "Game score, Badges acquired, Mission-completed"
+      },
+      {
+        "id": "purple-2",
+        "title": "Learning styles",
+        "description": "Knowledge, Transfer cognitive, Real application"
+      },
+      {
+        "id": "purple-3",
+        "title": "Efficacy",
+        "description": "To finish, To lead, To succeed, To complete, Team effectiveness"
+      }
+    ]
+  },
+  "gameFlow": {
+    "sections": [
+      {
+        "name": "START",
+        "description": "Plan out your experiment",
+        "type": "start"
+      },
+      {
+        "name": "PRE-GAME",
+        "zones": [1, 2, 3, 4, 5],
+        "description": "MEASURE BEFORE THE GAME",
+        "type": "measure",
+        "colorRestrictions": ["red", "orange", "yellow"]
+      },
+      {
+        "name": "IN-GAME",
+        "zones": [1, 2, 3, 4, 5],
+        "description": "MEASURE AGAIN AFTER THE GAME",
+        "type": "game",
+        "colorRestrictions": ["green", "blue"]
+      },
+      {
+        "name": "POST-GAME",
+        "zones": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "description": "SERIOUS GAMING",
+        "type": "results",
+        "colorRestrictions": ["purple"]
+      }
+    ]
+  },
+  "instructions": {
+    "steps": [
+      "To start, choose the maximum 5 cards from red, orange cards and place them on 'PRE-GAME 1-5' zone. Warm colour sections are pre-game timeline.",
+      "On the 'MEASURE' sector on top-right, decide experiment subject by placing choosing the 'Measure' cards and place on middle section of board.",
+      "Choose the maximum 5 cards from orange, yellow cards and place them on 'PRE-GAME 6-10' zone.",
+      "From 'SERIOUS-GAMING' sector, Timeline changes to in-game. Pick the maximum 5 cards from green and blue types and place them on 'GAMING 1-5' zone.",
+      "On the 'MEASURE AGAIN' sector, refer back to the 'Measure' cards for experiment subject after the game.",
+      "Finally, pick the maximum 5 cards from purple cards and place on 'POST-GAME' zone to finish planning your experiment."
+    ]
+  },
+  "colorCode": {
+    "identification": "#FF4444",
+    "userCharacteristic": "#FF8800",
+    "styleAndPreferences": "#FFD700",
+    "gameQuality": "#00CC00",
+    "inGameStatuses": "#0088CC",
+    "results": "#8844CC"
+  },
+  "metadata": {
+    "copyright": "Igor Mayor and PlayGen",
+    "version": "1.0",
+    "totalCards": 27,
+    "cardsPerCategory": {
+      "red": 5,
+      "orange": 10,
+      "yellow": 4,
+      "green": 4,
+      "blue": 1,
+      "purple": 3
+    }
+  }
+}

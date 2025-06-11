@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perception Matrix - Reality Distortion Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        #realityCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #perceptionField {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 1px;
+            padding: 20px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .realityNode {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .realityNode:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateZ(20px);
+        }
+
+        .realityNode.distorted {
+            animation: distort 2s infinite;
+            border-color: #ff0066;
+        }
+
+        .realityNode.objective {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .realityNode.subjective {
+            border-color: #ff6600;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.3);
+        }
+
+        @keyframes distort {
+            0%, 100% { transform: rotateY(0deg) scale(1); }
+            25% { transform: rotateY(5deg) scale(1.05); }
+            50% { transform: rotateY(-5deg) scale(0.95); }
+            75% { transform: rotateY(3deg) scale(1.02); }
+        }
+
+        #biasDetector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .biasType {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #ff0066;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .biasType.active {
+            opacity: 1;
+            background: rgba(255, 0, 102, 0.1);
+            transform: translateX(-5px);
+        }
+
+        #consensusPanel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .consensusBar {
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .consensusFill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #ff0066);
+            width: 50%;
+            transition: width 0.5s ease;
+        }
+
+        #perspectiveShifter {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 1000;
+        }
+
+        .perspectiveOption {
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin: 10px;
+            display: inline-block;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .perspectiveOption:hover {
+            transform: scale(1.1);
+            border-color: #00ff88;
+        }
+
+        .perspectiveOption::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent, rgba(255, 255, 255, 0.1));
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #realityScore {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .scoreValue {
+            font-size: 48px;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .distortionWave {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 0, 102, 0.5);
+            animation: wave 2s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes wave {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        #tutorialOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .tutorialContent {
+            max-width: 600px;
+            padding: 40px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .tutorialContent h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #ff0066;
+        }
+
+        .startButton {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff0066, #00ff88);
+            border: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .startButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 0, 102, 0.5);
+        }
+
+        .perceptionIndicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .realityNode:hover .perceptionIndicator {
+            opacity: 1;
+        }
+
+        #biasCorrector {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .correctorButton {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .correctorButton:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="realityCanvas"></canvas>
+    
+    <div id="perceptionField"></div>
+    
+    <div id="realityScore">
+        <div>Reality Coherence</div>
+        <div class="scoreValue">50%</div>
+    </div>
+    
+    <div id="biasDetector">
+        <h3>Active Cognitive Biases</h3>
+        <div class="biasType" data-bias="confirmation">Confirmation Bias</div>
+        <div class="biasType" data-bias="anchoring">Anchoring Bias</div>
+        <div class="biasType" data-bias="availability">Availability Heuristic</div>
+        <div class="biasType" data-bias="framing">Framing Effect</div>
+        <div class="biasType" data-bias="hindsight">Hindsight Bias</div>
+    </div>
+    
+    <div id="consensusPanel">
+        <h3>Reality Consensus</h3>
+        <div>Objective Reality</div>
+        <div class="consensusBar">
+            <div class="consensusFill" id="objectiveFill"></div>
+        </div>
+        <div>Subjective Perception</div>
+        <div class="consensusBar">
+            <div class="consensusFill" id="subjectiveFill" style="background: linear-gradient(90deg, #ff6600, #ff0066);"></div>
+        </div>
+    </div>
+    
+    <div id="perspectiveShifter">
+        <div class="perspectiveOption" data-perspective="objective">
+            <div style="padding: 20px;">
+                <h4>Objective</h4>
+                <p>Raw reality</p>
+            </div>
+        </div>
+        <div class="perspectiveOption" data-perspective="subjective">
+            <div style="padding: 20px;">
+                <h4>Subjective</h4>
+                <p>Personal view</p>
+            </div>
+        </div>
+        <div class="perspectiveOption" data-perspective="collective">
+            <div style="padding: 20px;">
+                <h4>Collective</h4>
+                <p>Shared reality</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="biasCorrector">
+        <h3>Bias Correction</h3>
+        <button class="correctorButton" data-correction="reset">Reset Perception</button>
+        <button class="correctorButton" data-correction="calibrate">Calibrate Reality</button>
+        <button class="correctorButton" data-correction="merge">Merge Perspectives</button>
+    </div>
+    
+    <div id="tutorialOverlay">
+        <div class="tutorialContent">
+            <h1>PERCEPTION MATRIX</h1>
+            <p>Reality is not what it seems. Your perception shapes your world.</p>
+            <p>Navigate the grid to distinguish between objective reality and subjective distortions.</p>
+            <p>Identify and correct cognitive biases. Build consensus between perspectives.</p>
+            <p>Remember: What you perceive may not be what is real.</p>
+            <button class="startButton" onclick="startExperience()">ENTER THE MATRIX</button>
+        </div>
+    </div>
+
+    <script>
+        // Reality state management
+        const realityState = {
+            nodes: [],
+            activeBiases: new Set(),
+            currentPerspective: 'objective',
+            coherenceScore: 50,
+            objectiveConsensus: 50,
+            subjectiveConsensus: 50,
+            distortionLevel: 0
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('realityCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Initialize perception field
+        function initializeField() {
+            const field = document.getElementById('perceptionField');
+            field.innerHTML = '';
+            
+            for (let i = 0; i < 100; i++) {
+                const node = document.createElement('div');
+                node.className = 'realityNode';
+                node.dataset.index = i;
+                node.dataset.reality = Math.random() > 0.5 ? 'objective' : 'subjective';
+                node.dataset.distorted = Math.random() > 0.7 ? 'true' : 'false';
+                
+                const indicator = document.createElement('div');
+                indicator.className = 'perceptionIndicator';
+                indicator.textContent = '?';
+                node.appendChild(indicator);
+                
+                node.addEventListener('click', handleNodeClick);
+                node.addEventListener('mouseenter', handleNodeHover);
+                
+                field.appendChild(node);
+                realityState.nodes.push({
+                    element: node,
+                    reality: node.dataset.reality,
+                    distorted: node.dataset.distorted === 'true',
+                    revealed: false
+                });
+            }
+        }
+
+        // Handle node interactions
+        function handleNodeClick(e) {
+            const node = e.currentTarget;
+            const index = parseInt(node.dataset.index);
+            const nodeData = realityState.nodes[index];
+            
+            if (nodeData.revealed) return;
+            
+            // Create distortion wave
+            createDistortionWave(e.pageX, e.pageY);
+            
+            // Reveal node reality
+            nodeData.revealed = true;
+            node.classList.add(nodeData.reality);
+            
+            if (nodeData.distorted) {
+                node.classList.add('distorted');
+                triggerBias();
+            }
+            
+            // Update perception indicator
+            const indicator = node.querySelector('.perceptionIndicator');
+            indicator.textContent = nodeData.reality === 'objective' ? 'O' : 'S';
+            
+            updateCoherence();
+            updateConsensus();
+        }
+
+        function handleNodeHover(e) {
+            const node = e.currentTarget;
+            if (realityState.distortionLevel > 0.5) {
+                // Apply perception distortion
+                node.style.transform = `
+                    rotateX(${(Math.random() - 0.5) * 20}deg) 
+                    rotateY(${(Math.random() - 0.5) * 20}deg)
+                    scale(${0.9 + Math.random() * 0.2})
+                `;
+            }
+        }
+
+        // Bias system
+        function triggerBias() {
+            const biases = ['confirmation', 'anchoring', 'availability', 'framing', 'hindsight'];
+            const randomBias = biases[Math.floor(Math.random() * biases.length)];
+            
+            realityState.activeBiases.add(randomBias);
+            const biasElement = document.querySelector(`[data-bias="${randomBias}"]`);
+            biasElement.classList.add('active');
+            
+            // Apply bias effects
+            applyBiasEffect(randomBias);
+            
+            // Show bias corrector after multiple biases
+            if (realityState.activeBiases.size >= 3) {
+                document.getElementById('biasCorrector').style.display = 'block';
+            }
+        }
+
+        function applyBiasEffect(biasType) {
+            switch(biasType) {
+                case 'confirmation':
+                    // Highlight nodes that match current belief
+                    realityState.nodes.forEach(node => {
+                        if (!node.revealed && node.reality === realityState.currentPerspective) {
+                            node.element.style.opacity = '0.8';
+                        }
+                    });
+                    break;
+                case 'anchoring':
+                    // Lock perspective temporarily
+                    setTimeout(() => showPerspectiveShifter(), 2000);
+                    break;
+                case 'availability':
+                    // Make recent nodes more prominent
+                    const recentNodes = realityState.nodes.slice(-10);
+                    recentNodes.forEach(node => {
+                        node.element.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
+                    });
+                    break;
+                case 'framing':
+                    // Distort field perspective
+                    document.getElementById('perceptionField').style.transform = 
+                        `rotateX(${Math.random() * 10}deg) rotateY(${Math.random() * 10}deg)`;
+                    break;
+                case 'hindsight':
+                    // Reveal pattern in past choices
+                    realityState.nodes.forEach(node => {
+                        if (node.revealed) {
+                            node.element.style.borderWidth = '2px';
+                        }
+                    });
+                    break;
+            }
+            
+            realityState.distortionLevel += 0.1;
+        }
+
+        // Perspective shifting
+        function showPerspectiveShifter() {
+            document.getElementById('perspectiveShifter').style.display = 'block';
+        }
+
+        document.querySelectorAll('.perspectiveOption').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const perspective = e.currentTarget.dataset.perspective;
+                realityState.currentPerspective = perspective;
+                
+                // Apply perspective filter
+                applyPerspectiveFilter(perspective);
+                
+                document.getElementById('perspectiveShifter').style.display = 'none';
+            });
+        });
+
+        function applyPerspectiveFilter(perspective) {
+            const field = document.getElementById('perceptionField');
+            
+            switch(perspective) {
+                case 'objective':
+                    field.style.filter = 'contrast(1.2) brightness(1.1)';
+                    break;
+                case 'subjective':
+                    field.style.filter = 'hue-rotate(30deg) saturate(1.5)';
+                    break;
+                case 'collective':
+                    field.style.filter = 'blur(1px) brightness(0.9)';
+                    break;
+            }
+        }
+
+        // Scoring and consensus
+        function updateCoherence() {
+            const revealed = realityState.nodes.filter(n => n.revealed);
+            const correct = revealed.filter(n => 
+                (n.reality === 'objective' && !n.distorted) ||
+                (n.reality === 'subjective' && n.distorted)
+            );
+            
+            realityState.coherenceScore = Math.round((correct.length / revealed.length) * 100) || 50;
+            document.querySelector('.scoreValue').textContent = realityState.coherenceScore + '%';
+            
+            // Change score color based on performance
+            const scoreElement = document.querySelector('.scoreValue');
+            if (realityState.coherenceScore > 70) {
+                scoreElement.style.color = '#00ff88';
+            } else if (realityState.coherenceScore < 30) {
+                scoreElement.style.color = '#ff0066';
+            } else {
+                scoreElement.style.color = '#ff6600';
+            }
+        }
+
+        function updateConsensus() {
+            const revealed = realityState.nodes.filter(n => n.revealed);
+            const objective = revealed.filter(n => n.reality === 'objective').length;
+            const subjective = revealed.filter(n => n.reality === 'subjective').length;
+            const total = revealed.length || 1;
+            
+            realityState.objectiveConsensus = (objective / total) * 100;
+            realityState.subjectiveConsensus = (subjective / total) * 100;
+            
+            document.getElementById('objectiveFill').style.width = realityState.objectiveConsensus + '%';
+            document.getElementById('subjectiveFill').style.width = realityState.subjectiveConsensus + '%';
+        }
+
+        // Visual effects
+        function createDistortionWave(x, y) {
+            const wave = document.createElement('div');
+            wave.className = 'distortionWave';
+            wave.style.left = x - 150 + 'px';
+            wave.style.top = y - 150 + 'px';
+            document.body.appendChild(wave);
+            
+            setTimeout(() => wave.remove(), 2000);
+        }
+
+        // Background animation
+        function animateBackground() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw perception particles
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = realityState.distortionLevel > 0.5 ? 
+                    'rgba(255, 0, 102, 0.5)' : 'rgba(0, 255, 136, 0.5)';
+                ctx.fill();
+            }
+            
+            requestAnimationFrame(animateBackground);
+        }
+
+        // Bias correction
+        document.querySelectorAll('.correctorButton').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const correction = e.target.dataset.correction;
+                
+                switch(correction) {
+                    case 'reset':
+                        realityState.activeBiases.clear();
+                        document.querySelectorAll('.biasType').forEach(b => b.classList.remove('active'));
+                        realityState.distortionLevel = 0;
+                        break;
+                    case 'calibrate':
+                        document.getElementById('perceptionField').style.transform = 'none';
+                        document.getElementById('perceptionField').style.filter = 'none';
+                        break;
+                    case 'merge':
+                        // Show all realities
+                        realityState.nodes.forEach(node => {
+                            if (!node.revealed) {
+                                node.element.style.opacity = '0.5';
+                                node.element.classList.add(node.reality);
+                            }
+                        });
+                        break;
+                }
+                
+                updateCoherence();
+            });
+        });
+
+        // Start experience
+        function startExperience() {
+            document.getElementById('tutorialOverlay').style.display = 'none';
+            initializeField();
+            animateBackground();
+            
+            // Periodic reality shifts
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    showPerspectiveShifter();
+                }
+            }, 15000);
+            
+            // Random bias activation
+            setInterval(() => {
+                if (Math.random() > 0.8 && realityState.activeBiases.size < 5) {
+                    triggerBias();
+                }
+            }, 10000);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'p':
+                    showPerspectiveShifter();
+                    break;
+                case 'r':
+                    location.reload();
+                    break;
+                case 'c':
+                    document.getElementById('biasCorrector').style.display = 
+                        document.getElementById('biasCorrector').style.display === 'none' ? 'block' : 'none';
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

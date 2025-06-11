@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporal Ecosystem Memory Palace - Consciousness Nexus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Temporal Canvas */
+        #temporal-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Consciousness Streams */
+        .consciousness-stream {
+            position: absolute;
+            width: 25%;
+            height: 100%;
+            backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        #past-consciousness {
+            left: 0;
+            background: linear-gradient(90deg, rgba(100,50,150,0.3) 0%, transparent 100%);
+        }
+
+        #present-consciousness {
+            left: 25%;
+            width: 50%;
+            background: radial-gradient(circle at center, rgba(50,150,250,0.2) 0%, transparent 70%);
+        }
+
+        #future-consciousness {
+            right: 0;
+            background: linear-gradient(270deg, rgba(250,150,50,0.3) 0%, transparent 100%);
+        }
+
+        /* Memory Palace Nodes */
+        .memory-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .memory-node:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        .memory-node.past {
+            background: radial-gradient(circle, rgba(138,43,226,0.6), rgba(138,43,226,0.2));
+            border: 2px solid #8a2be2;
+            color: #e6d5ff;
+        }
+
+        .memory-node.present {
+            background: radial-gradient(circle, rgba(30,144,255,0.6), rgba(30,144,255,0.2));
+            border: 2px solid #1e90ff;
+            color: #d5e6ff;
+        }
+
+        .memory-node.future {
+            background: radial-gradient(circle, rgba(255,140,0,0.6), rgba(255,140,0,0.2));
+            border: 2px solid #ff8c00;
+            color: #ffe6d5;
+        }
+
+        /* Ecosystem Entities */
+        .ecosystem-entity {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .entity-plant {
+            background: radial-gradient(circle, rgba(50,205,50,0.8), transparent);
+            animation: grow 4s ease-in-out infinite;
+        }
+
+        .entity-creature {
+            background: radial-gradient(circle, rgba(255,105,180,0.8), transparent);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .entity-energy {
+            background: radial-gradient(circle, rgba(255,255,0,0.8), transparent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes grow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Temporal Links */
+        .temporal-link {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: flow 3s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Control Interface */
+        #control-interface {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .control-button {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .control-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+
+        .control-button.active {
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+        }
+
+        /* Status Display */
+        #status-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+            font-size: 14px;
+            min-width: 250px;
+        }
+
+        .status-item {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        /* Memory Detail Popup */
+        .memory-detail {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid currentColor;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 100;
+            display: none;
+            backdrop-filter: blur(20px);
+            max-width: 300px;
+        }
+
+        .memory-detail h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .memory-detail p {
+            font-size: 12px;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        /* Consciousness Indicator */
+        .consciousness-indicator {
+            position: absolute;
+            top: 20px;
+            width: calc(100% - 40px);
+            margin: 0 20px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .consciousness-label {
+            padding: 5px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Temporal Ripple Effect */
+        .temporal-ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            pointer-events: none;
+            animation: ripple 2s ease-out forwards;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        /* Evolution Indicator */
+        #evolution-tracker {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 1000;
+        }
+
+        .evolution-bar {
+            width: 200px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .evolution-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #8a2be2, #1e90ff, #ff8c00);
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Temporal Canvas -->
+    <canvas id="temporal-canvas"></canvas>
+
+    <!-- Consciousness Streams -->
+    <div id="past-consciousness" class="consciousness-stream">
+        <div class="consciousness-indicator">
+            <div class="consciousness-label">Past Stream</div>
+        </div>
+    </div>
+    <div id="present-consciousness" class="consciousness-stream">
+        <div class="consciousness-indicator">
+            <div class="consciousness-label">Present Stream</div>
+        </div>
+    </div>
+    <div id="future-consciousness" class="consciousness-stream">
+        <div class="consciousness-indicator">
+            <div class="consciousness-label">Future Stream</div>
+        </div>
+    </div>
+
+    <!-- Evolution Tracker -->
+    <div id="evolution-tracker">
+        <h3>Ecosystem Evolution</h3>
+        <div class="evolution-bar">
+            <div class="evolution-progress" id="evolution-progress"></div>
+        </div>
+        <div style="font-size: 12px; opacity: 0.8;">
+            Generation: <span id="generation-count">1</span>
+        </div>
+    </div>
+
+    <!-- Status Display -->
+    <div id="status-display">
+        <h3>Temporal Status</h3>
+        <div class="status-item">
+            <span>Active Memories:</span>
+            <span class="status-value" id="memory-count">0</span>
+        </div>
+        <div class="status-item">
+            <span>Entities:</span>
+            <span class="status-value" id="entity-count">0</span>
+        </div>
+        <div class="status-item">
+            <span>Temporal Links:</span>
+            <span class="status-value" id="link-count">0</span>
+        </div>
+        <div class="status-item">
+            <span>Consciousness Level:</span>
+            <span class="status-value" id="consciousness-level">Unified</span>
+        </div>
+    </div>
+
+    <!-- Control Interface -->
+    <div id="control-interface">
+        <button class="control-button" onclick="toggleConsciousness()">Split Consciousness</button>
+        <button class="control-button" onclick="createMemory()">Plant Memory</button>
+        <button class="control-button" onclick="evolveEcosystem()">Evolve</button>
+        <button class="control-button" onclick="temporalShift()">Temporal Shift</button>
+        <button class="control-button" onclick="reset()">Reset Timeline</button>
+    </div>
+
+    <script>
+        // Global state
+        const state = {
+            memories: [],
+            entities: [],
+            temporalLinks: [],
+            consciousness: 'unified',
+            generation: 1,
+            evolutionProgress: 0,
+            activeStream: 'present',
+            memoryPalace: new Map(),
+            ecosystemState: {
+                past: { diversity: 0.3, energy: 0.5 },
+                present: { diversity: 0.5, energy: 0.7 },
+                future: { diversity: 0.8, energy: 0.9 }
+            }
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('temporal-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Temporal particle system
+        const particles = [];
+        class TemporalParticle {
+            constructor(x, y, temporal) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.size = Math.random() * 3 + 1;
+                this.temporal = temporal;
+                this.life = 1;
+                this.decay = 0.01;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+
+                // Wrap around edges
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.temporal === 'past' ? '#8a2be2' :
+                               this.temporal === 'present' ? '#1e90ff' : '#ff8c00';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Memory Node class
+        class MemoryNode {
+            constructor(x, y, temporal, data) {
+                this.id = Date.now() + Math.random();
+                this.x = x;
+                this.y = y;
+                this.temporal = temporal;
+                this.data = data;
+                this.connections = [];
+                this.evolution = 0;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const node = document.createElement('div');
+                node.className = `memory-node ${this.temporal}`;
+                node.style.left = `${this.x}px`;
+                node.style.top = `${this.y}px`;
+                node.innerHTML = `<span>${this.data.symbol || '◉'}</span>`;
+                
+                node.addEventListener('mouseenter', () => this.showDetail());
+                node.addEventListener('mouseleave', () => this.hideDetail());
+                node.addEventListener('click', () => this.activate());
+                
+                document.getElementById(`${this.temporal}-consciousness`).appendChild(node);
+                return node;
+            }
+
+            showDetail() {
+                const detail = document.createElement('div');
+                detail.className = 'memory-detail';
+                detail.style.left = `${this.x + 90}px`;
+                detail.style.top = `${this.y}px`;
+                detail.style.color = this.element.style.color;
+                detail.style.borderColor = this.element.style.borderColor;
+                detail.innerHTML = `
+                    <h3>${this.data.title || 'Memory Node'}</h3>
+                    <p>${this.data.description || 'A temporal memory fragment'}</p>
+                    <p style="margin-top: 10px; font-size: 11px;">
+                        Evolution: ${Math.round(this.evolution * 100)}%<br>
+                        Connections: ${this.connections.length}
+                    </p>
+                `;
+                detail.style.display = 'block';
+                this.element.appendChild(detail);
+            }
+
+            hideDetail() {
+                const detail = this.element.querySelector('.memory-detail');
+                if (detail) detail.remove();
+            }
+
+            activate() {
+                this.evolution += 0.1;
+                this.createRipple();
+                this.spawnEntities();
+                this.formTemporalLinks();
+                updateStatus();
+            }
+
+            createRipple() {
+                const ripple = document.createElement('div');
+                ripple.className = 'temporal-ripple';
+                ripple.style.left = `${this.x - 150}px`;
+                ripple.style.top = `${this.y - 150}px`;
+                this.element.parentElement.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 2000);
+            }
+
+            spawnEntities() {
+                for (let i = 0; i < 3; i++) {
+                    const angle = (Math.PI * 2 / 3) * i;
+                    const distance = 100 + Math.random() * 50;
+                    const entity = new EcosystemEntity(
+                        this.x + Math.cos(angle) * distance,
+                        this.y + Math.sin(angle) * distance,
+                        this.temporal
+                    );
+                    state.entities.push(entity);
+                }
+            }
+
+            formTemporalLinks() {
+                // Link to memories in other temporal streams
+                state.memories.forEach(memory => {
+                    if (memory.id !== this.id && memory.temporal !== this.temporal) {
+                        if (Math.random() < 0.3) {
+                            this.connections.push(memory.id);
+                            createTemporalLink(this, memory);
+                        }
+                    }
+                });
+            }
+
+            evolve() {
+                this.evolution = Math.min(1, this.evolution + 0.05);
+                const scale = 1 + this.evolution * 0.3;
+                this.element.style.transform = `scale(${scale})`;
+                this.element.style.opacity = 0.5 + this.evolution * 0.5;
+            }
+        }
+
+        // Ecosystem Entity class
+        class EcosystemEntity {
+            constructor(x, y, temporal) {
+                this.x = x;
+                this.y = y;
+                this.temporal = temporal;
+                this.type = ['plant', 'creature', 'energy'][Math.floor(Math.random() * 3)];
+                this.age = 0;
+                this.element = this.createElement();
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+            }
+
+            createElement() {
+                const entity = document.createElement('div');
+                entity.className = `ecosystem-entity entity-${this.type}`;
+                const size = 20 + Math.random() * 20;
+                entity.style.width = `${size}px`;
+                entity.style.height = `${size}px`;
+                entity.style.left = `${this.x - size/2}px`;
+                entity.style.top = `${this.y - size/2}px`;
+                document.getElementById(`${this.temporal}-consciousness`).appendChild(entity);
+                return entity;
+            }
+
+            update() {
+                this.age += 0.01;
+                
+                // Movement
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                
+                // Boundary check
+                const parent = this.element.parentElement;
+                const bounds = parent.getBoundingClientRect();
+                if (this.x < 0 || this.x > bounds.width) this.velocity.x *= -1;
+                if (this.y < 0 || this.y > bounds.height) this.velocity.y *= -1;
+                
+                // Update position
+                this.element.style.left = `${this.x - parseFloat(this.element.style.width)/2}px`;
+                this.element.style.top = `${this.y - parseFloat(this.element.style.height)/2}px`;
+                
+                // Lifecycle
+                if (this.age > 5) {
+                    this.element.style.opacity = Math.max(0, 1 - (this.age - 5) * 0.2);
+                    if (this.age > 6) {
+                        this.remove();
+                    }
+                }
+            }
+
+            remove() {
+                this.element.remove();
+                const index = state.entities.indexOf(this);
+                if (index > -1) state.entities.splice(index, 1);
+            }
+        }
+
+        // Create temporal link between memories
+        function createTemporalLink(memory1, memory2) {
+            const link = document.createElement('div');
+            link.className = 'temporal-link';
+            
+            const dx = memory2.x - memory1.x;
+            const dy = memory2.y - memory1.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            const angle = Math.atan2(dy, dx);
+            
+            link.style.width = `${distance}px`;
+            link.style.left = `${memory1.x}px`;
+            link.style.top = `${memory1.y}px`;
+            link.style.transform = `rotate(${angle}rad)`;
+            
+            document.getElementById('temporal-canvas').parentElement.appendChild(link);
+            state.temporalLinks.push(link);
+            
+            setTimeout(() => {
+                link.remove();
+                const index = state.temporalLinks.indexOf(link);
+                if (index > -1) state.temporalLinks.splice(index, 1);
+            }, 5000);
+        }
+
+        // Control functions
+        function toggleConsciousness() {
+            state.consciousness = state.consciousness === 'unified' ? 'split' : 'unified';
+            document.getElementById('consciousness-level').textContent = 
+                state.consciousness === 'unified' ? 'Unified' : 'Split';
+            
+            const streams = document.querySelectorAll('.consciousness-stream');
+            streams.forEach(stream => {
+                stream.style.opacity = state.consciousness === 'split' ? '1' : '0.7';
+                stream.style.pointerEvents = state.consciousness === 'split' ? 'auto' : 'none';
+            });
+        }
+
+        function createMemory() {
+            const temporal = ['past', 'present', 'future'][Math.floor(Math.random() * 3)];
+            const stream = document.getElementById(`${temporal}-consciousness`);
+            const bounds = stream.getBoundingClientRect();
+            
+            const memory = new MemoryNode(
+                Math.random() * (bounds.width - 100) + 50,
+                Math.random() * (bounds.height - 200) + 100,
+                temporal,
+                {
+                    title: `Memory ${state.memories.length + 1}`,
+                    description: `A ${temporal} memory fragment containing ecosystem data`,
+                    symbol: ['◉', '◎', '◈', '◊', '○'][Math.floor(Math.random() * 5)]
+                }
+            );
+            
+            state.memories.push(memory);
+            state.memoryPalace.set(memory.id, memory);
+            updateStatus();
+        }
+
+        function evolveEcosystem() {
+            state.generation++;
+            state.evolutionProgress = Math.min(1, state.evolutionProgress + 0.1);
+            
+            // Evolve all memories
+            state.memories.forEach(memory => memory.evolve());
+            
+            // Update ecosystem states
+            Object.keys(state.ecosystemState).forEach(temporal => {
+                state.ecosystemState[temporal].diversity += Math.random() * 0.1;
+                state.ecosystemState[temporal].energy += (Math.random() - 0.5) * 0.2;
+                state.ecosystemState[temporal].diversity = Math.max(0, Math.min(1, state.ecosystemState[temporal].diversity));
+                state.ecosystemState[temporal].energy = Math.max(0, Math.min(1, state.ecosystemState[temporal].energy));
+            });
+            
+            // Spawn new entities based on evolution
+            const entityCount = Math.floor(state.evolutionProgress * 10);
+            for (let i = 0; i < entityCount; i++) {
+                const temporal = ['past', 'present', 'future'][Math.floor(Math.random() * 3)];
+                const stream = document.getElementById(`${temporal}-consciousness`);
+                const bounds = stream.getBoundingClientRect();
+                
+                const entity = new EcosystemEntity(
+                    Math.random() * bounds.width,
+                    Math.random() * bounds.height,
+                    temporal
+                );
+                state.entities.push(entity);
+            }
+            
+            updateEvolutionDisplay();
+            updateStatus();
+        }
+
+        function temporalShift() {
+            // Rotate temporal states
+            const temp = state.ecosystemState.past;
+            state.ecosystemState.past = state.ecosystemState.future;
+            state.ecosystemState.future = state.ecosystemState.present;
+            state.ecosystemState.present = temp;
+            
+            // Create visual effect
+            const streams = document.querySelectorAll('.consciousness-stream');
+            streams.forEach((stream, index) => {
+                stream.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    stream.style.transform = 'translateX(0)';
+                }, 500);
+            });
+            
+            // Generate temporal particles
+            for (let i = 0; i < 50; i++) {
+                particles.push(new TemporalParticle(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    ['past', 'present', 'future'][Math.floor(Math.random() * 3)]
+                ));
+            }
+        }
+
+        function reset() {
+            // Clear all elements
+            state.memories.forEach(memory => memory.element.remove());
+            state.entities.forEach(entity => entity.element.remove());
+            state.temporalLinks.forEach(link => link.remove());
+            
+            // Reset state
+            state.memories = [];
+            state.entities = [];
+            state.temporalLinks = [];
+            state.generation = 1;
+            state.evolutionProgress = 0;
+            state.memoryPalace.clear();
+            
+            // Reset ecosystem states
+            state.ecosystemState = {
+                past: { diversity: 0.3, energy: 0.5 },
+                present: { diversity: 0.5, energy: 0.7 },
+                future: { diversity: 0.8, energy: 0.9 }
+            };
+            
+            updateEvolutionDisplay();
+            updateStatus();
+        }
+
+        function updateStatus() {
+            document.getElementById('memory-count').textContent = state.memories.length;
+            document.getElementById('entity-count').textContent = state.entities.length;
+            document.getElementById('link-count').textContent = state.temporalLinks.length;
+        }
+
+        function updateEvolutionDisplay() {
+            document.getElementById('generation-count').textContent = state.generation;
+            document.getElementById('evolution-progress').style.width = `${state.evolutionProgress * 100}%`;
+        }
+
+        // Animation loop
+        function animate() {
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            
+            // Update entities
+            state.entities.forEach(entity => entity.update());
+            
+            // Draw temporal field lines
+            if (state.consciousness === 'split') {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    for (let j = 0; j < canvas.height; j += 10) {
+                        const offset = Math.sin((i + j + Date.now() * 0.001) * 0.01) * 20;
+                        ctx.lineTo(i + offset, j);
+                    }
+                    ctx.stroke();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Start with some initial memories
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => createMemory(), i * 500);
+        }
+
+        // Start animation
+        animate();
+
+        // Auto-evolve ecosystem
+        setInterval(() => {
+            if (state.memories.length > 0 && Math.random() < 0.3) {
+                const randomMemory = state.memories[Math.floor(Math.random() * state.memories.length)];
+                randomMemory.activate();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

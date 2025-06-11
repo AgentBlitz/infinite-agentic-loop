@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consciousness Splitter - Multi-Perspective Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0ff;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #consciousness-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            background: #111;
+        }
+
+        .perspective {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #0ff;
+            background: #000;
+            transition: all 0.3s;
+        }
+
+        .perspective.active {
+            border-color: #f0f;
+            box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .perspective.synchronized {
+            border-color: #ff0;
+            animation: sync-pulse 2s infinite;
+        }
+
+        @keyframes sync-pulse {
+            0%, 100% { box-shadow: inset 0 0 20px rgba(255, 255, 0, 0.2); }
+            50% { box-shadow: inset 0 0 40px rgba(255, 255, 0, 0.4); }
+        }
+
+        .consciousness-stream {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .stream-data {
+            position: absolute;
+            font-size: 10px;
+            color: #0f0;
+            white-space: nowrap;
+            pointer-events: none;
+            animation: data-flow 5s linear infinite;
+        }
+
+        @keyframes data-flow {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        .entity {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .entity.target {
+            background: radial-gradient(circle, #f0f, transparent);
+            border: 2px solid #f0f;
+        }
+
+        .entity.distractor {
+            background: radial-gradient(circle, #f00, transparent);
+            border: 2px solid #f00;
+        }
+
+        .entity.synchronizer {
+            background: radial-gradient(circle, #ff0, transparent);
+            border: 2px solid #ff0;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #0ff;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.1s;
+            z-index: 1000;
+        }
+
+        .cursor.split {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px #0ff;
+        }
+
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #0ff;
+            border-radius: 10px;
+        }
+
+        .metric {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .metric-label {
+            color: #888;
+        }
+
+        .metric-value {
+            color: #0ff;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        #sync-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 30px;
+            border: 1px solid #0ff;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        #sync-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #f0f, #ff0);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .merge-zone {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 3px dashed #ff0;
+            border-radius: 50%;
+            display: none;
+            animation: merge-pulse 1s infinite;
+        }
+
+        @keyframes merge-pulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .attention-trail {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #0ff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fade-out 2s forwards;
+        }
+
+        @keyframes fade-out {
+            to {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .consciousness-link {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #0ff, transparent);
+            height: 2px;
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .consciousness-link.active {
+            opacity: 0.5;
+            animation: link-flow 2s linear infinite;
+        }
+
+        @keyframes link-flow {
+            from { background-position: -100px 0; }
+            to { background-position: 100px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="consciousness-container">
+        <div class="perspective" data-id="0">
+            <div class="consciousness-stream">
+                <h3>PERSPECTIVE ALPHA</h3>
+                <p>Focus: Pattern Recognition</p>
+            </div>
+        </div>
+        <div class="perspective" data-id="1">
+            <div class="consciousness-stream">
+                <h3>PERSPECTIVE BETA</h3>
+                <p>Focus: Movement Tracking</p>
+            </div>
+        </div>
+        <div class="perspective" data-id="2">
+            <div class="consciousness-stream">
+                <h3>PERSPECTIVE GAMMA</h3>
+                <p>Focus: Color Detection</p>
+            </div>
+        </div>
+        <div class="perspective" data-id="3">
+            <div class="consciousness-stream">
+                <h3>PERSPECTIVE DELTA</h3>
+                <p>Focus: Synchronization</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="hud">
+        <h2>CONSCIOUSNESS SPLITTER</h2>
+        <div class="metric">
+            <span class="metric-label">Active Streams:</span>
+            <span class="metric-value" id="active-streams">0</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Synchronization:</span>
+            <span class="metric-value" id="sync-level">0%</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Attention Load:</span>
+            <span class="metric-value" id="attention-load">0%</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Score:</span>
+            <span class="metric-value" id="score">0</span>
+        </div>
+    </div>
+
+    <div id="sync-indicator">
+        <div id="sync-bar"></div>
+    </div>
+
+    <div class="merge-zone"></div>
+
+    <div id="instructions">
+        Use 1-4 keys to activate perspectives | Mouse to control active streams | 
+        Maintain multiple viewpoints | Synchronize consciousness streams | 
+        Press SPACE to attempt consciousness merge
+    </div>
+
+    <div class="cursor" id="cursor-0"></div>
+    <div class="cursor" id="cursor-1"></div>
+    <div class="cursor" id="cursor-2"></div>
+    <div class="cursor" id="cursor-3"></div>
+
+    <div class="consciousness-link" id="link-01"></div>
+    <div class="consciousness-link" id="link-12"></div>
+    <div class="consciousness-link" id="link-23"></div>
+    <div class="consciousness-link" id="link-03"></div>
+
+    <script>
+        class ConsciousnessSplitter {
+            constructor() {
+                this.perspectives = Array.from(document.querySelectorAll('.perspective'));
+                this.cursors = Array.from(document.querySelectorAll('.cursor'));
+                this.links = Array.from(document.querySelectorAll('.consciousness-link'));
+                this.activeStreams = new Set();
+                this.entities = new Map();
+                this.synchronization = 0;
+                this.attentionLoad = 0;
+                this.score = 0;
+                this.mousePositions = new Map();
+                this.streamData = [];
+                this.mergeAttempts = 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.startSimulation();
+                this.startDataFlow();
+                this.updateMetrics();
+            }
+
+            setupEventListeners() {
+                // Keyboard controls for perspective activation
+                document.addEventListener('keydown', (e) => {
+                    const key = parseInt(e.key);
+                    if (key >= 1 && key <= 4) {
+                        this.togglePerspective(key - 1);
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        this.attemptMerge();
+                    }
+                });
+
+                // Mouse movement for all active perspectives
+                document.addEventListener('mousemove', (e) => {
+                    this.handleMouseMovement(e);
+                });
+
+                // Click handling for entity interaction
+                document.addEventListener('click', (e) => {
+                    this.handleClick(e);
+                });
+            }
+
+            togglePerspective(index) {
+                const perspective = this.perspectives[index];
+                const cursor = this.cursors[index];
+                
+                if (this.activeStreams.has(index)) {
+                    this.activeStreams.delete(index);
+                    perspective.classList.remove('active');
+                    cursor.style.display = 'none';
+                } else {
+                    this.activeStreams.add(index);
+                    perspective.classList.add('active');
+                    cursor.style.display = 'block';
+                    cursor.classList.add('split');
+                    
+                    // Initialize mouse position for this perspective
+                    if (!this.mousePositions.has(index)) {
+                        this.mousePositions.set(index, { x: 0, y: 0 });
+                    }
+                }
+
+                this.updateLinks();
+                this.calculateAttentionLoad();
+            }
+
+            handleMouseMovement(e) {
+                const rect = document.body.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Update cursor positions for all active streams
+                this.activeStreams.forEach(streamId => {
+                    const perspective = this.perspectives[streamId];
+                    const perspRect = perspective.getBoundingClientRect();
+                    const cursor = this.cursors[streamId];
+                    
+                    // Calculate relative position within perspective
+                    const relX = (x - perspRect.left) / perspRect.width;
+                    const relY = (y - perspRect.top) / perspRect.height;
+                    
+                    // Apply consciousness drift based on stream ID
+                    const drift = streamId * 0.1;
+                    const driftX = Math.sin(Date.now() * 0.001 + streamId) * 20;
+                    const driftY = Math.cos(Date.now() * 0.001 + streamId) * 20;
+                    
+                    cursor.style.left = `${x + driftX}px`;
+                    cursor.style.top = `${y + driftY}px`;
+                    
+                    this.mousePositions.set(streamId, { 
+                        x: x + driftX, 
+                        y: y + driftY,
+                        relX,
+                        relY
+                    });
+                    
+                    // Create attention trail
+                    this.createAttentionTrail(x + driftX, y + driftY);
+                });
+
+                this.checkSynchronization();
+            }
+
+            createAttentionTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.className = 'attention-trail';
+                trail.style.left = `${x}px`;
+                trail.style.top = `${y}px`;
+                document.body.appendChild(trail);
+                
+                setTimeout(() => trail.remove(), 2000);
+            }
+
+            handleClick(e) {
+                this.activeStreams.forEach(streamId => {
+                    const perspective = this.perspectives[streamId];
+                    const rect = perspective.getBoundingClientRect();
+                    const pos = this.mousePositions.get(streamId);
+                    
+                    if (pos) {
+                        // Check if click intersects with any entity in this perspective
+                        this.entities.forEach((entity, id) => {
+                            if (entity.perspectiveId === streamId) {
+                                const entityRect = entity.element.getBoundingClientRect();
+                                const distance = Math.sqrt(
+                                    Math.pow(pos.x - (entityRect.left + entityRect.width / 2), 2) +
+                                    Math.pow(pos.y - (entityRect.top + entityRect.height / 2), 2)
+                                );
+                                
+                                if (distance < 30) {
+                                    this.handleEntityInteraction(entity, streamId);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            startSimulation() {
+                setInterval(() => {
+                    // Spawn entities in different perspectives
+                    if (Math.random() < 0.3 && this.entities.size < 12) {
+                        this.spawnEntity();
+                    }
+                    
+                    // Update entity positions
+                    this.updateEntities();
+                    
+                    // Check for synchronization opportunities
+                    this.updateSynchronization();
+                }, 100);
+            }
+
+            spawnEntity() {
+                const perspectiveId = Math.floor(Math.random() * 4);
+                const perspective = this.perspectives[perspectiveId];
+                const types = ['target', 'distractor', 'synchronizer'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                const entity = document.createElement('div');
+                entity.className = `entity ${type}`;
+                
+                const rect = perspective.getBoundingClientRect();
+                const x = Math.random() * (rect.width - 30);
+                const y = Math.random() * (rect.height - 30);
+                
+                entity.style.left = `${x}px`;
+                entity.style.top = `${y}px`;
+                
+                perspective.appendChild(entity);
+                
+                const id = `entity-${Date.now()}-${Math.random()}`;
+                this.entities.set(id, {
+                    element: entity,
+                    type,
+                    perspectiveId,
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    lifetime: 5000
+                });
+            }
+
+            updateEntities() {
+                this.entities.forEach((entity, id) => {
+                    entity.x += entity.vx;
+                    entity.y += entity.vy;
+                    entity.lifetime -= 100;
+                    
+                    const perspective = this.perspectives[entity.perspectiveId];
+                    const rect = perspective.getBoundingClientRect();
+                    
+                    // Bounce off walls
+                    if (entity.x <= 0 || entity.x >= rect.width - 30) {
+                        entity.vx *= -1;
+                    }
+                    if (entity.y <= 0 || entity.y >= rect.height - 30) {
+                        entity.vy *= -1;
+                    }
+                    
+                    // Constrain to bounds
+                    entity.x = Math.max(0, Math.min(rect.width - 30, entity.x));
+                    entity.y = Math.max(0, Math.min(rect.height - 30, entity.y));
+                    
+                    entity.element.style.left = `${entity.x}px`;
+                    entity.element.style.top = `${entity.y}px`;
+                    
+                    // Remove expired entities
+                    if (entity.lifetime <= 0) {
+                        entity.element.remove();
+                        this.entities.delete(id);
+                    }
+                });
+            }
+
+            handleEntityInteraction(entity, streamId) {
+                if (!this.activeStreams.has(streamId)) return;
+                
+                switch (entity.type) {
+                    case 'target':
+                        this.score += 10;
+                        this.createFeedback(entity.element, '+10', '#0f0');
+                        break;
+                    case 'distractor':
+                        this.score -= 5;
+                        this.attentionLoad += 10;
+                        this.createFeedback(entity.element, '-5', '#f00');
+                        break;
+                    case 'synchronizer':
+                        this.synchronization += 20;
+                        this.createFeedback(entity.element, 'SYNC', '#ff0');
+                        break;
+                }
+                
+                entity.element.remove();
+                this.entities.delete(Array.from(this.entities.entries())
+                    .find(([k, v]) => v === entity)?.[0]);
+                
+                this.updateMetrics();
+            }
+
+            createFeedback(element, text, color) {
+                const feedback = document.createElement('div');
+                feedback.style.position = 'absolute';
+                feedback.style.left = element.style.left;
+                feedback.style.top = element.style.top;
+                feedback.style.color = color;
+                feedback.style.fontSize = '20px';
+                feedback.style.fontWeight = 'bold';
+                feedback.style.pointerEvents = 'none';
+                feedback.style.animation = 'fade-out 1s forwards';
+                feedback.textContent = text;
+                
+                element.parentElement.appendChild(feedback);
+                setTimeout(() => feedback.remove(), 1000);
+            }
+
+            checkSynchronization() {
+                if (this.activeStreams.size < 2) return;
+                
+                const positions = Array.from(this.activeStreams).map(id => 
+                    this.mousePositions.get(id)
+                ).filter(p => p);
+                
+                if (positions.length >= 2) {
+                    // Calculate average distance between cursor positions
+                    let totalDistance = 0;
+                    let comparisons = 0;
+                    
+                    for (let i = 0; i < positions.length; i++) {
+                        for (let j = i + 1; j < positions.length; j++) {
+                            const dist = Math.sqrt(
+                                Math.pow(positions[i].x - positions[j].x, 2) +
+                                Math.pow(positions[i].y - positions[j].y, 2)
+                            );
+                            totalDistance += dist;
+                            comparisons++;
+                        }
+                    }
+                    
+                    const avgDistance = totalDistance / comparisons;
+                    const syncBonus = Math.max(0, 200 - avgDistance) / 200;
+                    this.synchronization = Math.min(100, this.synchronization + syncBonus * 2);
+                    
+                    // Update perspective synchronization visual
+                    this.activeStreams.forEach(id => {
+                        const perspective = this.perspectives[id];
+                        if (syncBonus > 0.5) {
+                            perspective.classList.add('synchronized');
+                        } else {
+                            perspective.classList.remove('synchronized');
+                        }
+                    });
+                }
+            }
+
+            updateLinks() {
+                // Hide all links first
+                this.links.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Show links between active perspectives
+                const activeArray = Array.from(this.activeStreams).sort();
+                for (let i = 0; i < activeArray.length; i++) {
+                    for (let j = i + 1; j < activeArray.length; j++) {
+                        const linkId = `link-${activeArray[i]}${activeArray[j]}`;
+                        const link = document.getElementById(linkId);
+                        if (link) {
+                            link.classList.add('active');
+                            this.updateLinkPosition(link, activeArray[i], activeArray[j]);
+                        }
+                    }
+                }
+            }
+
+            updateLinkPosition(link, id1, id2) {
+                const p1 = this.perspectives[id1].getBoundingClientRect();
+                const p2 = this.perspectives[id2].getBoundingClientRect();
+                
+                const x1 = p1.left + p1.width / 2;
+                const y1 = p1.top + p1.height / 2;
+                const x2 = p2.left + p2.width / 2;
+                const y2 = p2.top + p2.height / 2;
+                
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                link.style.left = `${x1}px`;
+                link.style.top = `${y1}px`;
+                link.style.width = `${length}px`;
+                link.style.transform = `rotate(${angle}deg)`;
+            }
+
+            calculateAttentionLoad() {
+                const baseLoad = this.activeStreams.size * 20;
+                const entityLoad = this.entities.size * 2;
+                this.attentionLoad = Math.min(100, baseLoad + entityLoad);
+            }
+
+            updateSynchronization() {
+                // Natural decay
+                this.synchronization = Math.max(0, this.synchronization - 0.5);
+                
+                // Bonus for maintaining multiple streams
+                if (this.activeStreams.size >= 3) {
+                    this.synchronization += 0.2;
+                }
+                
+                this.updateMetrics();
+            }
+
+            attemptMerge() {
+                if (this.activeStreams.size < 2 || this.synchronization < 80) {
+                    this.createSystemMessage('Insufficient synchronization for merge');
+                    return;
+                }
+                
+                const mergeZone = document.querySelector('.merge-zone');
+                mergeZone.style.display = 'block';
+                
+                setTimeout(() => {
+                    mergeZone.style.display = 'none';
+                    
+                    if (this.synchronization >= 80) {
+                        this.score += 100;
+                        this.synchronization = 50;
+                        this.createSystemMessage('CONSCIOUSNESS MERGED! +100');
+                        
+                        // Create merge effect
+                        this.createMergeEffect();
+                    }
+                }, 2000);
+            }
+
+            createMergeEffect() {
+                const positions = Array.from(this.activeStreams).map(id => {
+                    const p = this.perspectives[id].getBoundingClientRect();
+                    return {
+                        x: p.left + p.width / 2,
+                        y: p.top + p.height / 2
+                    };
+                });
+                
+                positions.forEach(pos => {
+                    const effect = document.createElement('div');
+                    effect.style.position = 'fixed';
+                    effect.style.left = `${pos.x}px`;
+                    effect.style.top = `${pos.y}px`;
+                    effect.style.width = '50px';
+                    effect.style.height = '50px';
+                    effect.style.background = 'radial-gradient(circle, #ff0, transparent)';
+                    effect.style.borderRadius = '50%';
+                    effect.style.pointerEvents = 'none';
+                    effect.style.animation = 'merge-complete 1s forwards';
+                    document.body.appendChild(effect);
+                    
+                    setTimeout(() => effect.remove(), 1000);
+                });
+            }
+
+            createSystemMessage(text) {
+                const message = document.createElement('div');
+                message.style.position = 'fixed';
+                message.style.top = '50%';
+                message.style.left = '50%';
+                message.style.transform = 'translate(-50%, -50%)';
+                message.style.color = '#ff0';
+                message.style.fontSize = '24px';
+                message.style.fontWeight = 'bold';
+                message.style.textShadow = '0 0 20px #ff0';
+                message.style.pointerEvents = 'none';
+                message.style.animation = 'fade-out 2s forwards';
+                message.textContent = text;
+                
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 2000);
+            }
+
+            startDataFlow() {
+                setInterval(() => {
+                    this.perspectives.forEach((perspective, index) => {
+                        if (Math.random() < 0.3) {
+                            const data = document.createElement('div');
+                            data.className = 'stream-data';
+                            data.style.left = `${Math.random() * 100}%`;
+                            data.style.animationDelay = `${Math.random() * 2}s`;
+                            
+                            const dataTypes = [
+                                'NEURAL_SYNC_0x' + Math.random().toString(16).substr(2, 6),
+                                'ATTENTION_VECTOR_' + Math.floor(Math.random() * 1000),
+                                'CONSCIOUSNESS_PACKET_' + Date.now().toString(16).substr(-6),
+                                'PERSPECTIVE_MATRIX_' + index
+                            ];
+                            
+                            data.textContent = dataTypes[Math.floor(Math.random() * dataTypes.length)];
+                            perspective.appendChild(data);
+                            
+                            setTimeout(() => data.remove(), 5000);
+                        }
+                    });
+                }, 200);
+            }
+
+            updateMetrics() {
+                document.getElementById('active-streams').textContent = this.activeStreams.size;
+                document.getElementById('sync-level').textContent = Math.floor(this.synchronization) + '%';
+                document.getElementById('attention-load').textContent = Math.floor(this.attentionLoad) + '%';
+                document.getElementById('score').textContent = this.score;
+                
+                document.getElementById('sync-bar').style.width = this.synchronization + '%';
+                
+                requestAnimationFrame(() => this.updateMetrics());
+            }
+        }
+
+        // Add merge complete animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes merge-complete {
+                to {
+                    transform: scale(3);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the consciousness splitter
+        const splitter = new ConsciousnessSplitter();
+    </script>
+</body>
+</html>

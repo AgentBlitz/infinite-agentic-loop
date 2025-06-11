@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Universe Generator - Infinite Self-Reference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #universeCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .universe-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .universe-stats {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .recursion-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            font-size: 14px;
+        }
+
+        .zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .zoom-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .universe-navigator {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 5px 10px;
+            margin: 2px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid #fff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="universeCanvas"></canvas>
+    
+    <div class="control-panel">
+        <h3>Universe Generator</h3>
+        <div class="control-group">
+            <label>Recursion Depth: <span id="depthValue">5</span></label>
+            <input type="range" id="recursionDepth" min="1" max="10" value="5">
+        </div>
+        <div class="control-group">
+            <label>Universe Complexity: <span id="complexityValue">50</span></label>
+            <input type="range" id="complexity" min="10" max="100" value="50">
+        </div>
+        <div class="control-group">
+            <label>Self-Reference Factor: <span id="selfRefValue">0.5</span></label>
+            <input type="range" id="selfReference" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <div class="control-group">
+            <label>Time Flow: <span id="timeValue">1</span></label>
+            <input type="range" id="timeFlow" min="0" max="5" step="0.1" value="1">
+        </div>
+        <button id="generateBtn">Generate New Universe</button>
+        <button id="collapseBtn">Collapse All</button>
+        <button id="expandBtn">Expand All</button>
+        <button id="pauseBtn">Pause Time</button>
+    </div>
+
+    <div class="universe-info">
+        <h3>Current Universe</h3>
+        <div class="universe-stats">
+            <div><span class="stat-label">ID:</span> <span class="stat-value" id="universeId">ROOT</span></div>
+            <div><span class="stat-label">Depth:</span> <span class="stat-value" id="currentDepth">0</span></div>
+            <div><span class="stat-label">Children:</span> <span class="stat-value" id="childCount">0</span></div>
+            <div><span class="stat-label">Total Nodes:</span> <span class="stat-value" id="totalNodes">1</span></div>
+            <div><span class="stat-label">Energy:</span> <span class="stat-value" id="energy">100%</span></div>
+            <div><span class="stat-label">Entropy:</span> <span class="stat-value" id="entropy">0.0</span></div>
+        </div>
+    </div>
+
+    <div class="recursion-indicator">
+        Recursion Level: <span id="recursionLevel">0</span> | Zoom: <span id="zoomLevel">1.0x</span>
+    </div>
+
+    <div class="zoom-controls">
+        <button class="zoom-button" id="zoomIn">+</button>
+        <button class="zoom-button" id="zoomOut">−</button>
+        <button class="zoom-button" id="zoomReset">⟲</button>
+    </div>
+
+    <div class="universe-navigator" style="display: none;">
+        <h4>Universe Tree</h4>
+        <div id="navTree"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('universeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        // Universe state
+        let universeTree = null;
+        let currentUniverse = null;
+        let zoom = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let timeMultiplier = 1;
+        let isPaused = false;
+        let animationFrame = 0;
+
+        // Universe class
+        class Universe {
+            constructor(id, parent = null, depth = 0, x = 0, y = 0) {
+                this.id = id;
+                this.parent = parent;
+                this.depth = depth;
+                this.x = x;
+                this.y = y;
+                this.children = [];
+                this.radius = 100 / (depth + 1);
+                this.energy = 100;
+                this.entropy = 0;
+                this.rotation = 0;
+                this.color = this.generateColor();
+                this.particles = this.generateParticles();
+                this.connections = [];
+                this.expanded = depth < 2;
+                this.selfReferenceStrength = 0.5;
+            }
+
+            generateColor() {
+                const hue = (this.depth * 60 + Math.random() * 60) % 360;
+                return `hsl(${hue}, 70%, 50%)`;
+            }
+
+            generateParticles() {
+                const particles = [];
+                const count = Math.floor(Math.random() * 20 + 10);
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        angle: Math.random() * Math.PI * 2,
+                        distance: Math.random() * this.radius * 0.8,
+                        speed: Math.random() * 0.02 + 0.01,
+                        size: Math.random() * 3 + 1,
+                        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+                    });
+                }
+                return particles;
+            }
+
+            update(deltaTime) {
+                if (isPaused) return;
+
+                // Update rotation
+                this.rotation += 0.001 * timeMultiplier * deltaTime;
+
+                // Update particles
+                this.particles.forEach(particle => {
+                    particle.angle += particle.speed * timeMultiplier * deltaTime;
+                });
+
+                // Update entropy
+                this.entropy = Math.min(100, this.entropy + 0.01 * timeMultiplier * deltaTime);
+                this.energy = Math.max(0, 100 - this.entropy);
+
+                // Self-reference effect
+                if (this.parent && Math.random() < this.selfReferenceStrength * 0.001) {
+                    // Inherit properties from parent with mutation
+                    this.color = this.mutateColor(this.parent.color);
+                    this.selfReferenceStrength = Math.min(1, this.parent.selfReferenceStrength + 0.1);
+                }
+
+                // Update children
+                this.children.forEach(child => child.update(deltaTime));
+            }
+
+            mutateColor(parentColor) {
+                const match = parentColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                if (match) {
+                    const hue = (parseInt(match[1]) + Math.random() * 60 - 30 + 360) % 360;
+                    const sat = Math.max(20, Math.min(90, parseInt(match[2]) + Math.random() * 20 - 10));
+                    const light = Math.max(30, Math.min(70, parseInt(match[3]) + Math.random() * 20 - 10));
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+                return this.color;
+            }
+
+            draw(ctx, parentX = width/2, parentY = height/2, scale = 1) {
+                const x = parentX + this.x * scale;
+                const y = parentY + this.y * scale;
+                const radius = this.radius * scale;
+
+                // Draw universe circle
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.rotation);
+
+                // Outer glow
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius * 1.5);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(0.5, this.color.replace('50%', '30%'));
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Main universe
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Particles
+                this.particles.forEach(particle => {
+                    const px = Math.cos(particle.angle) * particle.distance;
+                    const py = Math.sin(particle.angle) * particle.distance;
+                    
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(px, py, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Self-reference indicator
+                if (this.selfReferenceStrength > 0.7) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                ctx.restore();
+
+                // Draw connections to children
+                if (this.expanded) {
+                    this.children.forEach(child => {
+                        ctx.strokeStyle = `rgba(255, 255, 255, 0.1)`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        const childX = x + child.x * scale;
+                        const childY = y + child.y * scale;
+                        ctx.lineTo(childX, childY);
+                        ctx.stroke();
+                    });
+
+                    // Draw children recursively
+                    this.children.forEach(child => {
+                        child.draw(ctx, x, y, scale * 0.5);
+                    });
+                }
+
+                // Draw universe ID
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = `${Math.max(10, 12 * scale)}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.id, x, y);
+            }
+
+            generateChildren(maxDepth, complexity) {
+                if (this.depth >= maxDepth) return;
+
+                const childCount = Math.floor(Math.random() * 5) + 2;
+                for (let i = 0; i < childCount; i++) {
+                    const angle = (Math.PI * 2 / childCount) * i + Math.random() * 0.5;
+                    const distance = 150 + Math.random() * 50;
+                    const x = Math.cos(angle) * distance;
+                    const y = Math.sin(angle) * distance;
+                    
+                    const child = new Universe(
+                        `${this.id}-${i}`,
+                        this,
+                        this.depth + 1,
+                        x,
+                        y
+                    );
+                    
+                    this.children.push(child);
+                    
+                    // Recursive generation
+                    if (Math.random() < complexity / 100) {
+                        child.generateChildren(maxDepth, complexity * 0.8);
+                    }
+                }
+
+                // Create self-reference loop
+                if (this.depth > 0 && Math.random() < this.selfReferenceStrength) {
+                    const selfRef = new Universe(
+                        `${this.id}-SELF`,
+                        this,
+                        this.depth + 1,
+                        0,
+                        0
+                    );
+                    selfRef.radius = this.radius * 0.3;
+                    selfRef.selfReferenceStrength = Math.min(1, this.selfReferenceStrength + 0.2);
+                    this.children.push(selfRef);
+                }
+            }
+
+            countNodes() {
+                let count = 1;
+                this.children.forEach(child => {
+                    count += child.countNodes();
+                });
+                return count;
+            }
+
+            findUniverse(id) {
+                if (this.id === id) return this;
+                for (let child of this.children) {
+                    const found = child.findUniverse(id);
+                    if (found) return found;
+                }
+                return null;
+            }
+
+            toggleExpanded() {
+                this.expanded = !this.expanded;
+            }
+
+            collapseAll() {
+                this.expanded = false;
+                this.children.forEach(child => child.collapseAll());
+            }
+
+            expandAll() {
+                this.expanded = true;
+                this.children.forEach(child => child.expandAll());
+            }
+        }
+
+        // Initialize universe
+        function generateUniverse() {
+            const depth = parseInt(document.getElementById('recursionDepth').value);
+            const complexity = parseInt(document.getElementById('complexity').value);
+            const selfRef = parseFloat(document.getElementById('selfReference').value);
+
+            universeTree = new Universe('ROOT', null, 0, 0, 0);
+            universeTree.selfReferenceStrength = selfRef;
+            universeTree.generateChildren(depth, complexity);
+            currentUniverse = universeTree;
+            
+            updateStats();
+            updateNavigator();
+        }
+
+        // Update UI stats
+        function updateStats() {
+            if (!currentUniverse) return;
+
+            document.getElementById('universeId').textContent = currentUniverse.id;
+            document.getElementById('currentDepth').textContent = currentUniverse.depth;
+            document.getElementById('childCount').textContent = currentUniverse.children.length;
+            document.getElementById('totalNodes').textContent = universeTree.countNodes();
+            document.getElementById('energy').textContent = Math.round(currentUniverse.energy) + '%';
+            document.getElementById('entropy').textContent = currentUniverse.entropy.toFixed(1);
+            document.getElementById('recursionLevel').textContent = currentUniverse.depth;
+            document.getElementById('zoomLevel').textContent = zoom.toFixed(1) + 'x';
+        }
+
+        // Update navigator
+        function updateNavigator() {
+            const navTree = document.getElementById('navTree');
+            navTree.innerHTML = '';
+            
+            function addNavItem(universe, indent = 0) {
+                const item = document.createElement('div');
+                item.className = 'nav-item' + (universe === currentUniverse ? ' active' : '');
+                item.style.paddingLeft = (10 + indent * 20) + 'px';
+                item.textContent = universe.id;
+                item.onclick = () => {
+                    currentUniverse = universe;
+                    updateStats();
+                    updateNavigator();
+                };
+                navTree.appendChild(item);
+                
+                if (universe.expanded) {
+                    universe.children.forEach(child => addNavItem(child, indent + 1));
+                }
+            }
+            
+            addNavItem(universeTree);
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Update universe
+            if (universeTree) {
+                universeTree.update(deltaTime);
+                
+                // Draw universe centered with zoom and offset
+                ctx.save();
+                ctx.translate(width/2 + offsetX, height/2 + offsetY);
+                ctx.scale(zoom, zoom);
+                ctx.translate(-width/2, -height/2);
+                
+                universeTree.draw(ctx);
+                
+                ctx.restore();
+                
+                updateStats();
+            }
+            
+            animationFrame++;
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('recursionDepth').addEventListener('input', (e) => {
+            document.getElementById('depthValue').textContent = e.target.value;
+        });
+
+        document.getElementById('complexity').addEventListener('input', (e) => {
+            document.getElementById('complexityValue').textContent = e.target.value;
+        });
+
+        document.getElementById('selfReference').addEventListener('input', (e) => {
+            document.getElementById('selfRefValue').textContent = e.target.value;
+            if (currentUniverse) {
+                currentUniverse.selfReferenceStrength = parseFloat(e.target.value);
+            }
+        });
+
+        document.getElementById('timeFlow').addEventListener('input', (e) => {
+            document.getElementById('timeValue').textContent = e.target.value;
+            timeMultiplier = parseFloat(e.target.value);
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', generateUniverse);
+
+        document.getElementById('collapseBtn').addEventListener('click', () => {
+            if (universeTree) {
+                universeTree.collapseAll();
+                updateNavigator();
+            }
+        });
+
+        document.getElementById('expandBtn').addEventListener('click', () => {
+            if (universeTree) {
+                universeTree.expandAll();
+                updateNavigator();
+            }
+        });
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'Resume Time' : 'Pause Time';
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            zoom = Math.min(5, zoom * 1.2);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            zoom = Math.max(0.1, zoom / 1.2);
+        });
+
+        document.getElementById('zoomReset').addEventListener('click', () => {
+            zoom = 1;
+            offsetX = 0;
+            offsetY = 0;
+        });
+
+        // Mouse controls
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStartX = e.clientX - offsetX;
+            dragStartY = e.clientY - offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                offsetX = e.clientX - dragStartX;
+                offsetY = e.clientY - dragStartY;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            zoom = Math.max(0.1, Math.min(5, zoom * delta));
+        });
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    isPaused = !isPaused;
+                    document.getElementById('pauseBtn').textContent = isPaused ? 'Resume Time' : 'Pause Time';
+                    break;
+                case 'n':
+                    document.querySelector('.universe-navigator').style.display = 
+                        document.querySelector('.universe-navigator').style.display === 'none' ? 'block' : 'none';
+                    break;
+                case 'r':
+                    generateUniverse();
+                    break;
+                case '+':
+                case '=':
+                    zoom = Math.min(5, zoom * 1.2);
+                    break;
+                case '-':
+                case '_':
+                    zoom = Math.max(0.1, zoom / 1.2);
+                    break;
+            }
+        });
+
+        // Initialize
+        generateUniverse();
+        animate(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Causal Architecture Studio - Iteration 23</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #causalCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .timeline-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 350px;
+        }
+
+        .tool-section {
+            margin-bottom: 20px;
+        }
+
+        .tool-section h3 {
+            color: #0ff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .tool-btn {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .tool-btn:hover {
+            background: #222;
+            border-color: #0ff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .tool-btn.active {
+            background: #0ff;
+            color: #000;
+            border-color: #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+
+        .timeline-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-chip {
+            background: #222;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .timeline-chip.active {
+            background: #f0f;
+            color: #000;
+            border-color: #f0f;
+        }
+
+        .causality-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 250px;
+        }
+
+        .status-line {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-value {
+            color: #0ff;
+        }
+
+        .paradox-warning {
+            color: #ff0;
+            margin-top: 10px;
+            font-size: 11px;
+            display: none;
+        }
+
+        .paradox-warning.active {
+            display: block;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .structure-preview {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .preview-canvas {
+            width: 100%;
+            height: 100%;
+            background: #111;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .causal-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #0ff, transparent);
+            height: 1px;
+            animation: causalFlow 3s linear infinite;
+        }
+
+        @keyframes causalFlow {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        .temporal-ghost {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.3;
+            filter: blur(2px);
+        }
+
+        .bootstrap-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #f0f;
+        }
+
+        .bootstrap-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #f0f;
+            border-radius: 50%;
+            animation: rotate 5s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #0ff;
+            padding: 30px;
+            border-radius: 5px;
+            z-index: 2000;
+            max-width: 500px;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal h2 {
+            color: #0ff;
+            margin-bottom: 20px;
+        }
+
+        .modal p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="causalCanvas"></canvas>
+    
+    <div class="control-panel">
+        <div class="tool-section">
+            <h3>CAUSAL CONSTRUCTION TOOLS</h3>
+            <div class="tool-grid">
+                <button class="tool-btn" data-tool="temporal-anchor">Temporal Anchor</button>
+                <button class="tool-btn" data-tool="causal-bridge">Causal Bridge</button>
+                <button class="tool-btn" data-tool="paradox-foundation">Paradox Foundation</button>
+                <button class="tool-btn" data-tool="bootstrap-scaffold">Bootstrap Scaffold</button>
+                <button class="tool-btn" data-tool="timeline-splitter">Timeline Splitter</button>
+                <button class="tool-btn" data-tool="retrocausal-support">Retrocausal Support</button>
+                <button class="tool-btn" data-tool="quantum-junction">Quantum Junction</button>
+                <button class="tool-btn" data-tool="temporal-loop">Temporal Loop</button>
+                <button class="tool-btn" data-tool="causality-inverter">Causality Inverter</button>
+            </div>
+        </div>
+        
+        <div class="tool-section">
+            <h3>ACTIVE TIMELINES</h3>
+            <div class="timeline-selector">
+                <div class="timeline-chip active" data-timeline="alpha">Timeline α</div>
+                <div class="timeline-chip" data-timeline="beta">Timeline β</div>
+                <div class="timeline-chip" data-timeline="gamma">Timeline γ</div>
+                <div class="timeline-chip" data-timeline="delta">Timeline δ</div>
+                <div class="timeline-chip" data-timeline="omega">Timeline Ω</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="causality-status">
+        <h3>CAUSALITY METRICS</h3>
+        <div class="status-line">
+            <span>Temporal Stability:</span>
+            <span class="status-value" id="stability">87%</span>
+        </div>
+        <div class="status-line">
+            <span>Paradox Count:</span>
+            <span class="status-value" id="paradoxCount">0</span>
+        </div>
+        <div class="status-line">
+            <span>Bootstrap Loops:</span>
+            <span class="status-value" id="bootstrapLoops">0</span>
+        </div>
+        <div class="status-line">
+            <span>Causal Divergence:</span>
+            <span class="status-value" id="divergence">0.00</span>
+        </div>
+        <div class="paradox-warning" id="paradoxWarning">
+            ⚠️ CAUSAL PARADOX DETECTED
+        </div>
+    </div>
+    
+    <div class="structure-preview">
+        <div class="preview-canvas" id="previewCanvas"></div>
+    </div>
+    
+    <div class="bootstrap-indicator">
+        <div class="bootstrap-circle"></div>
+        <div id="bootstrapStatus">NO LOOPS</div>
+    </div>
+    
+    <div class="modal" id="introModal">
+        <h2>CAUSAL ARCHITECTURE STUDIO</h2>
+        <p>Welcome to the revolutionary interface for designing structures that exist across multiple causality chains.</p>
+        <p>Build impossible architecture that bootstraps its own existence through temporal loops and paradoxes.</p>
+        <p>Select tools and timelines to construct buildings that defy conventional causality.</p>
+        <button onclick="closeModal()">BEGIN CONSTRUCTION</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('causalCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Architecture state
+        let currentTool = 'temporal-anchor';
+        let activeTimelines = new Set(['alpha']);
+        let structures = [];
+        let causalLinks = [];
+        let paradoxes = [];
+        let bootstrapLoops = [];
+        let mouseX = 0;
+        let mouseY = 0;
+        let isBuilding = false;
+        let buildStart = null;
+        let temporalGhosts = [];
+
+        // Timeline colors
+        const timelineColors = {
+            alpha: '#0ff',
+            beta: '#f0f',
+            gamma: '#ff0',
+            delta: '#0f0',
+            omega: '#f00'
+        };
+
+        // Structure class
+        class CausalStructure {
+            constructor(type, x, y, timelines, params = {}) {
+                this.id = Date.now() + Math.random();
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.timelines = new Set(timelines);
+                this.params = params;
+                this.connections = [];
+                this.phase = 0;
+                this.stability = 100;
+                this.causedBy = null;
+                this.causes = [];
+            }
+
+            update() {
+                this.phase += 0.02;
+                
+                // Check for bootstrap conditions
+                if (this.type === 'bootstrap-scaffold') {
+                    this.checkBootstrap();
+                }
+                
+                // Decay stability if in paradox
+                if (this.isInParadox()) {
+                    this.stability -= 0.5;
+                }
+                
+                // Stabilize through causal connections
+                this.connections.forEach(conn => {
+                    if (conn.stable) {
+                        this.stability = Math.min(100, this.stability + 0.1);
+                    }
+                });
+            }
+
+            checkBootstrap() {
+                // Look for circular causality
+                let visited = new Set();
+                let current = this;
+                
+                while (current && !visited.has(current.id)) {
+                    visited.add(current.id);
+                    current = current.causedBy;
+                }
+                
+                if (current && current.id === this.id) {
+                    if (!bootstrapLoops.includes(this.id)) {
+                        bootstrapLoops.push(this.id);
+                        createBootstrapEffect(this);
+                    }
+                }
+            }
+
+            isInParadox() {
+                return paradoxes.some(p => p.structures.includes(this.id));
+            }
+
+            draw(ctx) {
+                ctx.save();
+                
+                // Draw structure based on type
+                this.timelines.forEach(timeline => {
+                    ctx.strokeStyle = timelineColors[timeline];
+                    ctx.fillStyle = timelineColors[timeline] + '33';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = this.stability / 100;
+                    
+                    this.drawStructureType(ctx);
+                });
+                
+                ctx.restore();
+            }
+
+            drawStructureType(ctx) {
+                switch (this.type) {
+                    case 'temporal-anchor':
+                        this.drawTemporalAnchor(ctx);
+                        break;
+                    case 'causal-bridge':
+                        this.drawCausalBridge(ctx);
+                        break;
+                    case 'paradox-foundation':
+                        this.drawParadoxFoundation(ctx);
+                        break;
+                    case 'bootstrap-scaffold':
+                        this.drawBootstrapScaffold(ctx);
+                        break;
+                    case 'timeline-splitter':
+                        this.drawTimelineSplitter(ctx);
+                        break;
+                    case 'retrocausal-support':
+                        this.drawRetrocausalSupport(ctx);
+                        break;
+                    case 'quantum-junction':
+                        this.drawQuantumJunction(ctx);
+                        break;
+                    case 'temporal-loop':
+                        this.drawTemporalLoop(ctx);
+                        break;
+                    case 'causality-inverter':
+                        this.drawCausalityInverter(ctx);
+                        break;
+                }
+            }
+
+            drawTemporalAnchor(ctx) {
+                const size = 40;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - size);
+                ctx.lineTo(this.x + size, this.y + size);
+                ctx.lineTo(this.x - size, this.y + size);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // Anchor point
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawCausalBridge(ctx) {
+                const width = this.params.width || 100;
+                const height = 20;
+                
+                ctx.beginPath();
+                ctx.rect(this.x - width/2, this.y - height/2, width, height);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Causal flow indicators
+                for (let i = 0; i < 3; i++) {
+                    const x = this.x - width/2 + (i + 0.5) * width/3;
+                    const offset = Math.sin(this.phase + i) * 5;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 10, this.y + offset);
+                    ctx.lineTo(x + 10, this.y + offset);
+                    ctx.stroke();
+                }
+            }
+
+            drawParadoxFoundation(ctx) {
+                const size = 50;
+                
+                // Impossible triangle
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - size);
+                ctx.lineTo(this.x + size, this.y);
+                ctx.lineTo(this.x, this.y + size);
+                ctx.lineTo(this.x - size, this.y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // Inner paradox
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.phase);
+                ctx.beginPath();
+                ctx.moveTo(0, -size/2);
+                ctx.lineTo(size/2, 0);
+                ctx.lineTo(0, size/2);
+                ctx.lineTo(-size/2, 0);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            drawBootstrapScaffold(ctx) {
+                const radius = 40;
+                
+                // Circular scaffolding
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 + this.phase;
+                    const x1 = this.x + Math.cos(angle) * radius;
+                    const y1 = this.y + Math.sin(angle) * radius;
+                    const x2 = this.x + Math.cos(angle + Math.PI) * radius;
+                    const y2 = this.y + Math.sin(angle + Math.PI) * radius;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                // Central bootstrap point
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawTimelineSplitter(ctx) {
+                const size = 40;
+                
+                // Y-shaped splitter
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + size);
+                ctx.lineTo(this.x, this.y);
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - size, this.y - size);
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + size, this.y - size);
+                ctx.stroke();
+                
+                // Junction points
+                [-1, 0, 1].forEach(offset => {
+                    ctx.beginPath();
+                    ctx.arc(this.x + offset * size, this.y - (offset === 0 ? 0 : size), 8, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            drawRetrocausalSupport(ctx) {
+                const width = 60;
+                const height = 80;
+                
+                // Support beam going backwards
+                ctx.beginPath();
+                ctx.moveTo(this.x - width/2, this.y + height/2);
+                ctx.lineTo(this.x + width/2, this.y - height/2);
+                ctx.stroke();
+                
+                // Time arrows
+                for (let i = 0; i < 3; i++) {
+                    const t = i / 2;
+                    const x = this.x - width/2 + t * width;
+                    const y = this.y + height/2 - t * height;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(Math.PI + Math.PI/4);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-10, -5);
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-10, 5);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            drawQuantumJunction(ctx) {
+                const size = 35;
+                
+                // Quantum superposition states
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i / 4) * Math.PI * 2;
+                    const opacity = 0.5 + 0.5 * Math.sin(this.phase + angle);
+                    
+                    ctx.save();
+                    ctx.globalAlpha = opacity * (this.stability / 100);
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.x + Math.cos(angle) * size/2,
+                        this.y + Math.sin(angle) * size/2,
+                        size/3,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            drawTemporalLoop(ctx) {
+                const radius = 40;
+                
+                // Möbius strip representation
+                ctx.beginPath();
+                for (let t = 0; t <= Math.PI * 2; t += 0.1) {
+                    const x = this.x + Math.cos(t) * radius;
+                    const y = this.y + Math.sin(t) * radius * Math.cos(t/2 + this.phase);
+                    
+                    if (t === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Loop direction indicators
+                const arrowCount = 6;
+                for (let i = 0; i < arrowCount; i++) {
+                    const t = (i / arrowCount) * Math.PI * 2;
+                    const x = this.x + Math.cos(t) * radius;
+                    const y = this.y + Math.sin(t) * radius * Math.cos(t/2 + this.phase);
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(t + Math.PI/2);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-5, -5);
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-5, 5);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            drawCausalityInverter(ctx) {
+                const size = 45;
+                
+                // Inverted hourglass
+                ctx.beginPath();
+                ctx.moveTo(this.x - size/2, this.y - size/2);
+                ctx.lineTo(this.x + size/2, this.y - size/2);
+                ctx.lineTo(this.x, this.y);
+                ctx.lineTo(this.x + size/2, this.y + size/2);
+                ctx.lineTo(this.x - size/2, this.y + size/2);
+                ctx.lineTo(this.x, this.y);
+                ctx.closePath();
+                ctx.stroke();
+                
+                // Inverted flow particles
+                for (let i = 0; i < 5; i++) {
+                    const t = (this.phase + i * 0.4) % 1;
+                    const y = this.y + (t - 0.5) * size;
+                    const x = this.x + Math.sin(t * Math.PI) * size/4;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Causal connection class
+        class CausalConnection {
+            constructor(from, to, type = 'normal') {
+                this.from = from;
+                this.to = to;
+                this.type = type;
+                this.strength = 1;
+                this.stable = true;
+                this.phase = 0;
+            }
+
+            update() {
+                this.phase += 0.03;
+                
+                // Check stability
+                this.stable = this.from.stability > 50 && this.to.stability > 50;
+                
+                // Propagate causality
+                if (this.type === 'causal' && this.to.causedBy === null) {
+                    this.to.causedBy = this.from;
+                    this.from.causes.push(this.to);
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = this.stable ? 0.8 : 0.3;
+                
+                const gradient = ctx.createLinearGradient(
+                    this.from.x, this.from.y,
+                    this.to.x, this.to.y
+                );
+                
+                // Use timeline colors
+                const fromColor = Array.from(this.from.timelines)[0];
+                const toColor = Array.from(this.to.timelines)[0];
+                gradient.addColorStop(0, timelineColors[fromColor] || '#fff');
+                gradient.addColorStop(1, timelineColors[toColor] || '#fff');
+                
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = this.stable ? 2 : 1;
+                ctx.setLineDash(this.type === 'temporal' ? [5, 5] : []);
+                
+                ctx.beginPath();
+                ctx.moveTo(this.from.x, this.from.y);
+                
+                if (this.type === 'causal') {
+                    // Curved causal lines
+                    const cx = (this.from.x + this.to.x) / 2;
+                    const cy = (this.from.y + this.to.y) / 2 - 50;
+                    ctx.quadraticCurveTo(cx, cy, this.to.x, this.to.y);
+                } else {
+                    ctx.lineTo(this.to.x, this.to.y);
+                }
+                
+                ctx.stroke();
+                
+                // Draw flow indicators
+                if (this.stable) {
+                    const steps = 5;
+                    for (let i = 0; i < steps; i++) {
+                        const t = (this.phase + i / steps) % 1;
+                        let x, y;
+                        
+                        if (this.type === 'causal') {
+                            // Position along curve
+                            const cx = (this.from.x + this.to.x) / 2;
+                            const cy = (this.from.y + this.to.y) / 2 - 50;
+                            x = (1-t)*(1-t)*this.from.x + 2*(1-t)*t*cx + t*t*this.to.x;
+                            y = (1-t)*(1-t)*this.from.y + 2*(1-t)*t*cy + t*t*this.to.y;
+                        } else {
+                            x = this.from.x + t * (this.to.x - this.from.x);
+                            y = this.from.y + t * (this.to.y - this.from.y);
+                        }
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        // Tool event handlers
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        // Timeline event handlers
+        document.querySelectorAll('.timeline-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                const timeline = chip.dataset.timeline;
+                
+                if (activeTimelines.has(timeline)) {
+                    activeTimelines.delete(timeline);
+                    chip.classList.remove('active');
+                } else {
+                    activeTimelines.add(timeline);
+                    chip.classList.add('active');
+                }
+            });
+        });
+
+        // Canvas event handlers
+        canvas.addEventListener('mousedown', (e) => {
+            if (activeTimelines.size === 0) return;
+            
+            isBuilding = true;
+            buildStart = { x: e.clientX, y: e.clientY };
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isBuilding) return;
+            
+            isBuilding = false;
+            
+            // Create structure
+            const structure = new CausalStructure(
+                currentTool,
+                e.clientX,
+                e.clientY,
+                Array.from(activeTimelines),
+                {
+                    width: Math.abs(e.clientX - buildStart.x),
+                    height: Math.abs(e.clientY - buildStart.y)
+                }
+            );
+            
+            structures.push(structure);
+            
+            // Auto-connect to nearby structures
+            structures.forEach(other => {
+                if (other === structure) return;
+                
+                const dist = Math.hypot(structure.x - other.x, structure.y - other.y);
+                if (dist < 150) {
+                    const connection = new CausalConnection(
+                        other,
+                        structure,
+                        currentTool.includes('causal') ? 'causal' : 'temporal'
+                    );
+                    causalLinks.push(connection);
+                    other.connections.push(connection);
+                    structure.connections.push(connection);
+                }
+            });
+            
+            // Check for paradoxes
+            checkForParadoxes();
+            
+            // Create temporal ghost
+            createTemporalGhost(structure);
+        });
+
+        // Check for paradoxes
+        function checkForParadoxes() {
+            paradoxes = [];
+            
+            // Look for causal loops
+            structures.forEach(structure => {
+                const visited = new Set();
+                const path = [];
+                
+                if (findCausalLoop(structure, visited, path)) {
+                    paradoxes.push({
+                        type: 'causal-loop',
+                        structures: path.map(s => s.id)
+                    });
+                }
+            });
+            
+            // Update UI
+            document.getElementById('paradoxCount').textContent = paradoxes.length;
+            document.getElementById('paradoxWarning').classList.toggle('active', paradoxes.length > 0);
+        }
+
+        function findCausalLoop(node, visited, path) {
+            if (visited.has(node.id)) {
+                return path.includes(node);
+            }
+            
+            visited.add(node.id);
+            path.push(node);
+            
+            for (let child of node.causes) {
+                if (findCausalLoop(child, visited, path)) {
+                    return true;
+                }
+            }
+            
+            path.pop();
+            return false;
+        }
+
+        // Create temporal ghost
+        function createTemporalGhost(structure) {
+            temporalGhosts.push({
+                structure: structure,
+                opacity: 0.5,
+                age: 0
+            });
+        }
+
+        // Create bootstrap effect
+        function createBootstrapEffect(structure) {
+            // Visual feedback for bootstrap loop
+            const effect = {
+                x: structure.x,
+                y: structure.y,
+                radius: 0,
+                opacity: 1
+            };
+            
+            const animate = () => {
+                effect.radius += 2;
+                effect.opacity -= 0.02;
+                
+                if (effect.opacity > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = effect.opacity;
+                    ctx.strokeStyle = '#f0f';
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    requestAnimationFrame(animate);
+                }
+            };
+            
+            animate();
+        }
+
+        // Update loop
+        function update() {
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Update and draw temporal ghosts
+            temporalGhosts = temporalGhosts.filter(ghost => {
+                ghost.age++;
+                ghost.opacity = Math.max(0, 0.5 - ghost.age * 0.005);
+                
+                if (ghost.opacity > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = ghost.opacity;
+                    ghost.structure.draw(ctx);
+                    ctx.restore();
+                    return true;
+                }
+                return false;
+            });
+            
+            // Update and draw connections
+            causalLinks.forEach(link => {
+                link.update();
+                link.draw(ctx);
+            });
+            
+            // Update and draw structures
+            structures.forEach(structure => {
+                structure.update();
+                structure.draw(ctx);
+            });
+            
+            // Draw building preview
+            if (isBuilding && buildStart) {
+                ctx.save();
+                ctx.strokeStyle = '#0ff';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.rect(
+                    buildStart.x,
+                    buildStart.y,
+                    mouseX - buildStart.x,
+                    mouseY - buildStart.y
+                );
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // Update status
+            updateStatus();
+            
+            requestAnimationFrame(update);
+        }
+
+        // Update status display
+        function updateStatus() {
+            // Calculate stability
+            let totalStability = 0;
+            structures.forEach(s => totalStability += s.stability);
+            const avgStability = structures.length > 0 ? totalStability / structures.length : 100;
+            document.getElementById('stability').textContent = Math.round(avgStability) + '%';
+            
+            // Bootstrap loops
+            document.getElementById('bootstrapLoops').textContent = bootstrapLoops.length;
+            document.getElementById('bootstrapStatus').textContent = 
+                bootstrapLoops.length > 0 ? `${bootstrapLoops.length} ACTIVE` : 'NO LOOPS';
+            
+            // Causal divergence
+            const divergence = calculateCausalDivergence();
+            document.getElementById('divergence').textContent = divergence.toFixed(2);
+        }
+
+        function calculateCausalDivergence() {
+            if (structures.length < 2) return 0;
+            
+            let divergence = 0;
+            let count = 0;
+            
+            structures.forEach((s1, i) => {
+                structures.slice(i + 1).forEach(s2 => {
+                    const timelineDiff = symmetricDifference(s1.timelines, s2.timelines).size;
+                    divergence += timelineDiff / 5; // Normalize by max timelines
+                    count++;
+                });
+            });
+            
+            return count > 0 ? divergence / count : 0;
+        }
+
+        function symmetricDifference(setA, setB) {
+            const diff = new Set(setA);
+            for (const elem of setB) {
+                if (diff.has(elem)) {
+                    diff.delete(elem);
+                } else {
+                    diff.add(elem);
+                }
+            }
+            return diff;
+        }
+
+        // Modal functions
+        function closeModal() {
+            document.getElementById('introModal').classList.remove('active');
+        }
+
+        // Show intro modal on load
+        window.addEventListener('load', () => {
+            document.getElementById('introModal').classList.add('active');
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Clear all structures
+                structures = [];
+                causalLinks = [];
+                paradoxes = [];
+                bootstrapLoops = [];
+                temporalGhosts = [];
+            } else if (e.key >= '1' && e.key <= '9') {
+                // Quick tool selection
+                const toolIndex = parseInt(e.key) - 1;
+                const tools = document.querySelectorAll('.tool-btn');
+                if (tools[toolIndex]) {
+                    tools[toolIndex].click();
+                }
+            }
+        });
+
+        // Start animation loop
+        update();
+
+        // Set first tool as active
+        document.querySelector('.tool-btn').classList.add('active');
+    </script>
+</body>
+</html>

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Probability Manipulator - Iteration 14</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0ff;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        #quantum-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #001122 0%, #000 100%);
+        }
+
+        .probability-wave {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #0ff;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .probability-slider {
+            width: 200px;
+            height: 40px;
+            position: relative;
+            background: #001;
+            border: 1px solid #0ff;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .slider-fill {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            width: 50%;
+            transition: width 0.3s;
+        }
+
+        .slider-value {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        #outcomes-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0ff;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .outcome-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .outcome-probability {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2));
+            transition: width 0.5s;
+        }
+
+        .outcome-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        #quantum-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .quantum-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #0ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #0ff;
+            opacity: 0.8;
+        }
+
+        #probability-field {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            pointer-events: none;
+        }
+
+        .probability-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: all 0.3s;
+            pointer-events: all;
+        }
+
+        .probability-node:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px #0ff;
+        }
+
+        .probability-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0ff, transparent);
+            transform-origin: left center;
+            opacity: 0.5;
+        }
+
+        #collapse-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #0ff;
+            color: #0ff;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #collapse-button:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 30px #0ff;
+        }
+
+        .collapse-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.8) 0%, transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            animation: collapse 1s ease-out;
+        }
+
+        @keyframes collapse {
+            0% {
+                opacity: 1;
+                transform: scale(0.1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(3);
+            }
+        }
+
+        #uncertainty-meter {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 200px;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0ff;
+            padding: 10px;
+        }
+
+        .uncertainty-bar {
+            width: 100%;
+            height: 20px;
+            background: #001;
+            border: 1px solid #0ff;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .uncertainty-fill {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #f0f);
+            width: 50%;
+            animation: uncertainty-pulse 2s infinite;
+        }
+
+        @keyframes uncertainty-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .reality-branch {
+            position: absolute;
+            width: 2px;
+            background: rgba(0, 255, 255, 0.3);
+            transform-origin: top center;
+            pointer-events: none;
+        }
+
+        #feedback-display {
+            position: absolute;
+            bottom: 130px;
+            right: 30px;
+            width: 250px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #0ff;
+            font-size: 12px;
+        }
+
+        .feedback-item {
+            margin: 5px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="quantum-field">
+        <canvas class="probability-wave" id="waveCanvas"></canvas>
+    </div>
+
+    <div id="quantum-particles"></div>
+
+    <div id="control-panel">
+        <h2 style="margin-bottom: 20px; text-align: center;">PROBABILITY CONTROLS</h2>
+        
+        <div class="control-section">
+            <label class="control-label">Quantum Coherence</label>
+            <div class="probability-slider" id="coherenceSlider">
+                <div class="slider-fill"></div>
+                <div class="slider-value">50%</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <label class="control-label">Causality Strength</label>
+            <div class="probability-slider" id="causalitySlider">
+                <div class="slider-fill"></div>
+                <div class="slider-value">50%</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <label class="control-label">Observer Effect</label>
+            <div class="probability-slider" id="observerSlider">
+                <div class="slider-fill"></div>
+                <div class="slider-value">50%</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="outcomes-display">
+        <h3 style="margin-bottom: 15px;">PROBABLE OUTCOMES</h3>
+        <div id="outcomesList"></div>
+    </div>
+
+    <div id="probability-field"></div>
+
+    <div id="uncertainty-meter">
+        <div style="font-size: 12px; text-transform: uppercase;">Heisenberg Uncertainty</div>
+        <div class="uncertainty-bar">
+            <div class="uncertainty-fill"></div>
+        </div>
+    </div>
+
+    <div id="feedback-display">
+        <h4 style="margin-bottom: 10px;">CAUSAL FEEDBACK</h4>
+        <div id="feedbackList"></div>
+    </div>
+
+    <button id="collapse-button">COLLAPSE WAVEFUNCTION</button>
+
+    <script>
+        class QuantumProbabilityManipulator {
+            constructor() {
+                this.coherence = 0.5;
+                this.causality = 0.5;
+                this.observerEffect = 0.5;
+                this.uncertainty = 0.5;
+                this.particles = [];
+                this.nodes = [];
+                this.outcomes = [
+                    { name: "Timeline Alpha", base: 0.25, current: 0.25 },
+                    { name: "Timeline Beta", base: 0.25, current: 0.25 },
+                    { name: "Timeline Gamma", base: 0.25, current: 0.25 },
+                    { name: "Timeline Delta", base: 0.25, current: 0.25 }
+                ];
+                this.feedbackLog = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.setupCanvas();
+                this.createQuantumParticles();
+                this.createProbabilityNodes();
+                this.setupControls();
+                this.updateOutcomes();
+                this.animate();
+                
+                // Start feedback loop
+                setInterval(() => this.generateFeedback(), 2000);
+            }
+
+            setupCanvas() {
+                this.canvas = document.getElementById('waveCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createQuantumParticles() {
+                const container = document.getElementById('quantum-particles');
+                
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'quantum-particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = Math.random() * window.innerHeight + 'px';
+                    container.appendChild(particle);
+                    
+                    this.particles.push({
+                        element: particle,
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            createProbabilityNodes() {
+                const field = document.getElementById('probability-field');
+                const centerX = 200;
+                const centerY = 200;
+                const radius = 150;
+                
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    const node = document.createElement('div');
+                    node.className = 'probability-node';
+                    node.style.left = (x - 30) + 'px';
+                    node.style.top = (y - 30) + 'px';
+                    node.textContent = Math.floor(Math.random() * 100) + '%';
+                    node.dataset.index = i;
+                    
+                    node.addEventListener('click', (e) => this.manipulateNode(e.target));
+                    
+                    field.appendChild(node);
+                    this.nodes.push({ element: node, x, y, value: 0.5 });
+                }
+                
+                this.createConnections();
+            }
+
+            createConnections() {
+                const field = document.getElementById('probability-field');
+                
+                for (let i = 0; i < this.nodes.length; i++) {
+                    for (let j = i + 1; j < this.nodes.length; j++) {
+                        const connection = document.createElement('div');
+                        connection.className = 'probability-connection';
+                        
+                        const node1 = this.nodes[i];
+                        const node2 = this.nodes[j];
+                        
+                        const dx = node2.x - node1.x;
+                        const dy = node2.y - node1.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx);
+                        
+                        connection.style.width = distance + 'px';
+                        connection.style.left = node1.x + 'px';
+                        connection.style.top = node1.y + 'px';
+                        connection.style.transform = `rotate(${angle}rad)`;
+                        
+                        field.appendChild(connection);
+                    }
+                }
+            }
+
+            setupControls() {
+                this.setupSlider('coherenceSlider', (value) => {
+                    this.coherence = value;
+                    this.updateQuantumState();
+                });
+                
+                this.setupSlider('causalitySlider', (value) => {
+                    this.causality = value;
+                    this.updateCausality();
+                });
+                
+                this.setupSlider('observerSlider', (value) => {
+                    this.observerEffect = value;
+                    this.updateObserverEffect();
+                });
+                
+                document.getElementById('collapse-button').addEventListener('click', () => {
+                    this.collapseWavefunction();
+                });
+            }
+
+            setupSlider(sliderId, callback) {
+                const slider = document.getElementById(sliderId);
+                const fill = slider.querySelector('.slider-fill');
+                const value = slider.querySelector('.slider-value');
+                
+                slider.addEventListener('click', (e) => {
+                    const rect = slider.getBoundingClientRect();
+                    const percent = (e.clientX - rect.left) / rect.width;
+                    const clamped = Math.max(0, Math.min(1, percent));
+                    
+                    fill.style.width = (clamped * 100) + '%';
+                    value.textContent = Math.floor(clamped * 100) + '%';
+                    
+                    callback(clamped);
+                });
+            }
+
+            manipulateNode(node) {
+                const index = parseInt(node.dataset.index);
+                const nodeData = this.nodes[index];
+                
+                nodeData.value = Math.random();
+                node.textContent = Math.floor(nodeData.value * 100) + '%';
+                
+                // Create ripple effect
+                node.style.transform = 'scale(1.5)';
+                setTimeout(() => {
+                    node.style.transform = 'scale(1)';
+                }, 300);
+                
+                this.recalculateProbabilities();
+                this.addFeedback(`Node ${index + 1} manually adjusted to ${Math.floor(nodeData.value * 100)}%`);
+            }
+
+            updateQuantumState() {
+                this.uncertainty = 1 - this.coherence;
+                const uncertaintyFill = document.querySelector('.uncertainty-fill');
+                uncertaintyFill.style.width = (this.uncertainty * 100) + '%';
+            }
+
+            updateCausality() {
+                // Update connection strengths based on causality
+                const connections = document.querySelectorAll('.probability-connection');
+                connections.forEach(conn => {
+                    conn.style.opacity = 0.2 + (this.causality * 0.6);
+                });
+            }
+
+            updateObserverEffect() {
+                // Observer effect changes particle behavior
+                this.particles.forEach(p => {
+                    p.observed = this.observerEffect > 0.5;
+                });
+            }
+
+            recalculateProbabilities() {
+                let total = 0;
+                
+                // Calculate new probabilities based on node values
+                this.outcomes.forEach((outcome, i) => {
+                    const nodeInfluence = this.nodes.reduce((sum, node) => {
+                        return sum + (node.value * (1 + Math.sin(i + node.value * Math.PI)));
+                    }, 0) / this.nodes.length;
+                    
+                    outcome.current = outcome.base * (0.5 + nodeInfluence) * this.coherence;
+                    total += outcome.current;
+                });
+                
+                // Normalize
+                this.outcomes.forEach(outcome => {
+                    outcome.current /= total;
+                });
+                
+                this.updateOutcomes();
+            }
+
+            updateOutcomes() {
+                const list = document.getElementById('outcomesList');
+                list.innerHTML = '';
+                
+                this.outcomes.forEach(outcome => {
+                    const item = document.createElement('div');
+                    item.className = 'outcome-item';
+                    
+                    const prob = document.createElement('div');
+                    prob.className = 'outcome-probability';
+                    prob.style.width = (outcome.current * 100) + '%';
+                    
+                    const text = document.createElement('div');
+                    text.className = 'outcome-text';
+                    text.textContent = `${outcome.name}: ${Math.floor(outcome.current * 100)}%`;
+                    
+                    item.appendChild(prob);
+                    item.appendChild(text);
+                    list.appendChild(item);
+                });
+            }
+
+            collapseWavefunction() {
+                // Create collapse effect
+                const effect = document.createElement('div');
+                effect.className = 'collapse-effect';
+                document.getElementById('quantum-field').appendChild(effect);
+                
+                setTimeout(() => effect.remove(), 1000);
+                
+                // Collapse to single outcome
+                const random = Math.random();
+                let cumulative = 0;
+                let selectedOutcome = null;
+                
+                for (let outcome of this.outcomes) {
+                    cumulative += outcome.current;
+                    if (random <= cumulative) {
+                        selectedOutcome = outcome;
+                        break;
+                    }
+                }
+                
+                // Update probabilities to show collapse
+                this.outcomes.forEach(outcome => {
+                    outcome.current = outcome === selectedOutcome ? 1 : 0;
+                });
+                
+                this.updateOutcomes();
+                this.addFeedback(`Wavefunction collapsed to: ${selectedOutcome.name}`);
+                
+                // Reset after delay
+                setTimeout(() => {
+                    this.recalculateProbabilities();
+                }, 3000);
+            }
+
+            generateFeedback() {
+                const messages = [
+                    `Quantum entanglement detected at ${Math.floor(Math.random() * 100)}%`,
+                    `Causal loop forming in sector ${Math.floor(Math.random() * 6) + 1}`,
+                    `Probability flux: ${Math.floor(Math.random() * 200 - 100)}%`,
+                    `Observer influence registered: ${Math.floor(this.observerEffect * 100)}%`,
+                    `Heisenberg limit approaching: ${Math.floor(this.uncertainty * 100)}%`
+                ];
+                
+                this.addFeedback(messages[Math.floor(Math.random() * messages.length)]);
+            }
+
+            addFeedback(message) {
+                const list = document.getElementById('feedbackList');
+                const item = document.createElement('div');
+                item.className = 'feedback-item';
+                item.textContent = `> ${message}`;
+                
+                list.appendChild(item);
+                
+                // Keep only last 5 messages
+                while (list.children.length > 5) {
+                    list.removeChild(list.firstChild);
+                }
+            }
+
+            drawWaves() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+                this.ctx.lineWidth = 2;
+                
+                const time = Date.now() * 0.001;
+                
+                for (let i = 0; i < 5; i++) {
+                    this.ctx.beginPath();
+                    
+                    for (let x = 0; x < this.canvas.width; x += 10) {
+                        const y = this.canvas.height / 2 + 
+                                 Math.sin((x * 0.01 + time + i) * this.coherence) * 100 * this.uncertainty +
+                                 Math.sin((x * 0.02 - time) * this.causality) * 50;
+                        
+                        if (x === 0) {
+                            this.ctx.moveTo(x, y);
+                        } else {
+                            this.ctx.lineTo(x, y);
+                        }
+                    }
+                    
+                    this.ctx.stroke();
+                }
+            }
+
+            animateParticles() {
+                this.particles.forEach(p => {
+                    // Quantum uncertainty movement
+                    if (!p.observed || this.observerEffect < 0.5) {
+                        p.vx += (Math.random() - 0.5) * this.uncertainty;
+                        p.vy += (Math.random() - 0.5) * this.uncertainty;
+                    }
+                    
+                    // Apply causality damping
+                    p.vx *= (0.98 + this.causality * 0.02);
+                    p.vy *= (0.98 + this.causality * 0.02);
+                    
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    // Wrap around edges
+                    if (p.x < 0) p.x = window.innerWidth;
+                    if (p.x > window.innerWidth) p.x = 0;
+                    if (p.y < 0) p.y = window.innerHeight;
+                    if (p.y > window.innerHeight) p.y = 0;
+                    
+                    p.element.style.left = p.x + 'px';
+                    p.element.style.top = p.y + 'px';
+                    p.element.style.opacity = 0.5 + Math.sin(p.phase) * 0.5;
+                    
+                    p.phase += 0.05 * this.coherence;
+                });
+            }
+
+            animate() {
+                this.drawWaves();
+                this.animateParticles();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize the quantum probability manipulator
+        const qpm = new QuantumProbabilityManipulator();
+    </script>
+</body>
+</html>

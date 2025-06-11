@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Causality Dungeon - Planning & Improvisation Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #ffd700;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header {
+            background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+            padding: 10px 20px;
+            border-bottom: 2px solid #ffd700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #gameTitle {
+            font-size: 24px;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        #stats {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0a0a;
+            font-weight: bold;
+        }
+
+        #mainArea {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        #dungeonView {
+            flex: 1;
+            position: relative;
+            background: #050505;
+            overflow: hidden;
+        }
+
+        #dungeonGrid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 1px;
+            background: #222;
+            padding: 1px;
+        }
+
+        .cell {
+            background: #111;
+            border: 1px solid #333;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cell:hover {
+            background: #222;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .cell.wall {
+            background: #444;
+            border-color: #666;
+        }
+
+        .cell.path {
+            background: #1a3a1a;
+            border-color: #3a5a3a;
+        }
+
+        .cell.trap {
+            background: #3a1a1a;
+            border-color: #5a3a3a;
+        }
+
+        .cell.treasure {
+            background: radial-gradient(circle, #ffd700, #ff8c00);
+            border-color: #ffd700;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .cell.start {
+            background: #1a1a3a;
+            border-color: #3a3a5a;
+        }
+
+        .cell.current-player {
+            box-shadow: inset 0 0 20px #00ff00;
+        }
+
+        .cell.past-player {
+            box-shadow: inset 0 0 20px #0088ff;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        #sidePanel {
+            width: 350px;
+            background: #0f0f0f;
+            border-left: 2px solid #ffd700;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-shadow: 0 0 5px #ffd700;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tool-button {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: #ffd700;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .tool-button:hover {
+            background: #2a2a2a;
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .tool-button.active {
+            background: #3a3a1a;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #timeline {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-step {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-step:hover {
+            border-color: #ffd700;
+            background: #2a2a2a;
+        }
+
+        .timeline-step.current {
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        #researchData {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .research-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .research-bar {
+            width: 100px;
+            height: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .research-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #ffff44, #44ff44);
+            transition: width 0.5s ease;
+        }
+
+        #controlButtons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-button {
+            flex: 1;
+            background: #1a1a1a;
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            padding: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: #ffd700;
+            color: #0a0a0a;
+            transform: translateY(-2px);
+        }
+
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 3px solid #ffd700;
+            padding: 30px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .modal-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+
+        .time-effect {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent, rgba(255, 215, 0, 0.1));
+            animation: timeRipple 2s ease-out;
+        }
+
+        @keyframes timeRipple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="header">
+            <div id="gameTitle">⏪ REVERSE CAUSALITY DUNGEON ⏪</div>
+            <div id="stats">
+                <div class="stat">
+                    <div class="stat-icon">T</div>
+                    <span id="turnCount">Turn: 0</span>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">P</div>
+                    <span id="planScore">Plan: 0%</span>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">I</div>
+                    <span id="improvScore">Improv: 0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainArea">
+            <div id="dungeonView">
+                <div id="dungeonGrid"></div>
+            </div>
+
+            <div id="sidePanel">
+                <div class="panel-section">
+                    <h3 class="section-title">🔨 Dungeon Tools</h3>
+                    <div class="tool-grid">
+                        <button class="tool-button" data-tool="path">Path</button>
+                        <button class="tool-button" data-tool="wall">Wall</button>
+                        <button class="tool-button" data-tool="trap">Trap</button>
+                        <button class="tool-button" data-tool="key">Key</button>
+                        <button class="tool-button" data-tool="door">Door</button>
+                        <button class="tool-button" data-tool="hint">Hint</button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="section-title">⏰ Timeline</h3>
+                    <div id="timeline">
+                        <div class="timeline-step current" data-turn="0">
+                            <strong>Present:</strong> You have the treasure!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3 class="section-title">📊 Cognitive Profile</h3>
+                    <div id="researchData">
+                        <div class="research-item">
+                            <span>Planning Tendency:</span>
+                            <div class="research-bar">
+                                <div class="research-fill" id="planBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="research-item">
+                            <span>Improvisation:</span>
+                            <div class="research-bar">
+                                <div class="research-fill" id="improvBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="research-item">
+                            <span>Path Efficiency:</span>
+                            <div class="research-bar">
+                                <div class="research-fill" id="efficiencyBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="controlButtons">
+                    <button class="control-button" id="simulateBtn">⏮️ Simulate Past</button>
+                    <button class="control-button" id="resetBtn">🔄 Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Welcome to Reverse Causality Dungeon!</h2>
+            <p class="modal-text">
+                You've already found the treasure! Now you must design the dungeon your past self 
+                navigated to reach this point. Work backwards through time, placing obstacles and 
+                paths that create a challenging but possible journey.
+                <br><br>
+                Your design choices will reveal your cognitive preferences between careful planning 
+                and creative improvisation. Can you create a dungeon that your past self could 
+                actually solve?
+            </p>
+            <button class="control-button" onclick="startGame()">Begin Reverse Journey</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        let currentTool = 'path';
+        let turnCount = 0;
+        let dungeonState = [];
+        let timelineStates = [];
+        let playerPosition = { x: 8, y: 8 }; // Start near treasure
+        let treasurePosition = { x: 9, y: 9 };
+        let startPosition = { x: 0, y: 0 };
+        let isSimulating = false;
+
+        // Research tracking
+        let researchData = {
+            totalActions: 0,
+            plannedActions: 0,
+            improvisedActions: 0,
+            backtrackCount: 0,
+            efficiencyScore: 100,
+            toolUsage: {},
+            timeSpentPlanning: 0,
+            lastActionTime: Date.now()
+        };
+
+        function initializeGrid() {
+            dungeonState = Array(GRID_SIZE).fill(null).map(() => 
+                Array(GRID_SIZE).fill('empty')
+            );
+            
+            // Set fixed positions
+            dungeonState[treasurePosition.y][treasurePosition.x] = 'treasure';
+            dungeonState[startPosition.y][startPosition.x] = 'start';
+            dungeonState[playerPosition.y][playerPosition.x] = 'current';
+            
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('dungeonGrid');
+            grid.innerHTML = '';
+            
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    const cellType = dungeonState[y][x];
+                    if (cellType !== 'empty') {
+                        cell.classList.add(cellType);
+                    }
+                    
+                    if (x === playerPosition.x && y === playerPosition.y) {
+                        cell.classList.add('current-player');
+                    }
+                    
+                    cell.addEventListener('click', () => handleCellClick(x, y));
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(x, y) {
+            if (isSimulating) return;
+            
+            // Can't modify start, treasure, or current player position
+            if ((x === startPosition.x && y === startPosition.y) ||
+                (x === treasurePosition.x && y === treasurePosition.y) ||
+                (x === playerPosition.x && y === playerPosition.y)) {
+                return;
+            }
+            
+            const timeSinceLastAction = Date.now() - researchData.lastActionTime;
+            researchData.lastActionTime = Date.now();
+            
+            // Track planning vs improvisation based on time between actions
+            if (timeSinceLastAction > 3000) {
+                researchData.plannedActions++;
+            } else {
+                researchData.improvisedActions++;
+            }
+            
+            researchData.totalActions++;
+            researchData.toolUsage[currentTool] = (researchData.toolUsage[currentTool] || 0) + 1;
+            
+            // Apply tool
+            dungeonState[y][x] = currentTool;
+            
+            // Create time ripple effect
+            const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            const ripple = document.createElement('div');
+            ripple.className = 'time-effect';
+            cell.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 2000);
+            
+            turnCount++;
+            updateStats();
+            saveTimelineState();
+            renderGrid();
+        }
+
+        function saveTimelineState() {
+            timelineStates.push({
+                turn: turnCount,
+                state: dungeonState.map(row => [...row]),
+                playerPos: { ...playerPosition },
+                action: `Placed ${currentTool} at (${playerPosition.x}, ${playerPosition.y})`
+            });
+            
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = timelineStates.map((state, index) => `
+                <div class="timeline-step ${index === timelineStates.length - 1 ? 'current' : ''}" 
+                     data-turn="${state.turn}">
+                    <strong>Turn ${state.turn}:</strong> ${state.action}
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('turnCount').textContent = `Turn: ${turnCount}`;
+            
+            const planPercent = researchData.totalActions > 0 
+                ? Math.round((researchData.plannedActions / researchData.totalActions) * 100)
+                : 0;
+            const improvPercent = researchData.totalActions > 0
+                ? Math.round((researchData.improvisedActions / researchData.totalActions) * 100)
+                : 0;
+            
+            document.getElementById('planScore').textContent = `Plan: ${planPercent}%`;
+            document.getElementById('improvScore').textContent = `Improv: ${improvPercent}%`;
+            
+            // Update research bars
+            document.getElementById('planBar').style.width = `${planPercent}%`;
+            document.getElementById('improvBar').style.width = `${improvPercent}%`;
+            document.getElementById('efficiencyBar').style.width = `${researchData.efficiencyScore}%`;
+        }
+
+        function simulatePastJourney() {
+            if (isSimulating) return;
+            isSimulating = true;
+            
+            // Pathfinding algorithm to check if dungeon is solvable
+            const path = findPath(startPosition, treasurePosition);
+            
+            if (path.length === 0) {
+                alert("Your past self cannot reach the treasure! The dungeon is unsolvable.");
+                isSimulating = false;
+                return;
+            }
+            
+            // Calculate efficiency
+            const theoreticalMinPath = Math.abs(treasurePosition.x - startPosition.x) + 
+                                     Math.abs(treasurePosition.y - startPosition.y);
+            researchData.efficiencyScore = Math.round((theoreticalMinPath / path.length) * 100);
+            
+            // Animate past self's journey
+            let pathIndex = 0;
+            const animateStep = () => {
+                if (pathIndex < path.length) {
+                    const step = path[pathIndex];
+                    
+                    // Clear previous past player position
+                    document.querySelectorAll('.past-player').forEach(cell => {
+                        cell.classList.remove('past-player');
+                    });
+                    
+                    // Show current position
+                    const cell = document.querySelector(
+                        `[data-x="${step.x}"][data-y="${step.y}"]`
+                    );
+                    cell.classList.add('past-player');
+                    
+                    pathIndex++;
+                    setTimeout(animateStep, 500);
+                } else {
+                    isSimulating = false;
+                    showResults();
+                }
+            };
+            
+            animateStep();
+            updateStats();
+        }
+
+        function findPath(start, end) {
+            // A* pathfinding
+            const openSet = [start];
+            const closedSet = new Set();
+            const cameFrom = new Map();
+            const gScore = new Map();
+            const fScore = new Map();
+            
+            const key = (pos) => `${pos.x},${pos.y}`;
+            gScore.set(key(start), 0);
+            fScore.set(key(start), heuristic(start, end));
+            
+            while (openSet.length > 0) {
+                let current = openSet.reduce((min, pos) => 
+                    fScore.get(key(pos)) < fScore.get(key(min)) ? pos : min
+                );
+                
+                if (current.x === end.x && current.y === end.y) {
+                    return reconstructPath(cameFrom, current);
+                }
+                
+                openSet.splice(openSet.indexOf(current), 1);
+                closedSet.add(key(current));
+                
+                const neighbors = getNeighbors(current);
+                for (const neighbor of neighbors) {
+                    if (closedSet.has(key(neighbor))) continue;
+                    
+                    const tentativeGScore = gScore.get(key(current)) + 1;
+                    
+                    if (!openSet.some(pos => pos.x === neighbor.x && pos.y === neighbor.y)) {
+                        openSet.push(neighbor);
+                    } else if (tentativeGScore >= gScore.get(key(neighbor))) {
+                        continue;
+                    }
+                    
+                    cameFrom.set(key(neighbor), current);
+                    gScore.set(key(neighbor), tentativeGScore);
+                    fScore.set(key(neighbor), tentativeGScore + heuristic(neighbor, end));
+                }
+            }
+            
+            return [];
+        }
+
+        function heuristic(a, b) {
+            return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+        }
+
+        function getNeighbors(pos) {
+            const neighbors = [];
+            const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+            
+            for (const [dx, dy] of directions) {
+                const x = pos.x + dx;
+                const y = pos.y + dy;
+                
+                if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+                    const cellType = dungeonState[y][x];
+                    if (cellType !== 'wall' && cellType !== 'trap') {
+                        neighbors.push({ x, y });
+                    }
+                }
+            }
+            
+            return neighbors;
+        }
+
+        function reconstructPath(cameFrom, current) {
+            const path = [current];
+            const key = (pos) => `${pos.x},${pos.y}`;
+            
+            while (cameFrom.has(key(current))) {
+                current = cameFrom.get(key(current));
+                path.unshift(current);
+            }
+            
+            return path;
+        }
+
+        function showResults() {
+            const planStyle = researchData.plannedActions > researchData.improvisedActions 
+                ? "Methodical Planner" : "Creative Improviser";
+            
+            const efficiency = researchData.efficiencyScore > 80 ? "Highly Efficient"
+                : researchData.efficiencyScore > 60 ? "Moderately Efficient"
+                : "Creatively Complex";
+            
+            alert(`Journey Complete!\n\nCognitive Style: ${planStyle}\nPath Design: ${efficiency}\nEfficiency Score: ${researchData.efficiencyScore}%`);
+        }
+
+        function startGame() {
+            document.getElementById('modal').classList.add('hidden');
+            initializeGrid();
+        }
+
+        function resetGame() {
+            turnCount = 0;
+            timelineStates = [];
+            researchData = {
+                totalActions: 0,
+                plannedActions: 0,
+                improvisedActions: 0,
+                backtrackCount: 0,
+                efficiencyScore: 100,
+                toolUsage: {},
+                timeSpentPlanning: 0,
+                lastActionTime: Date.now()
+            };
+            
+            initializeGrid();
+            updateStats();
+            document.getElementById('timeline').innerHTML = `
+                <div class="timeline-step current" data-turn="0">
+                    <strong>Present:</strong> You have the treasure!
+                </div>
+            `;
+        }
+
+        // Tool selection
+        document.querySelectorAll('.tool-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                document.querySelectorAll('.tool-button').forEach(b => 
+                    b.classList.remove('active')
+                );
+                e.target.classList.add('active');
+                currentTool = e.target.dataset.tool;
+            });
+        });
+
+        // Set default tool
+        document.querySelector('[data-tool="path"]').classList.add('active');
+
+        // Control buttons
+        document.getElementById('simulateBtn').addEventListener('click', simulatePastJourney);
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Modal will show automatically
+        });
+    </script>
+</body>
+</html>

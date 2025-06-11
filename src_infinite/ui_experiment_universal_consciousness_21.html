@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Consciousness Network - Iteration 21</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #cosmicCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #consciousnessField {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #temporalLayer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        #universalMind {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            height: 90vh;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .consciousnessNode {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .consciousnessNode:hover {
+            transform: scale(1.5);
+            z-index: 10;
+        }
+
+        .thoughtStream {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            animation: flow 3s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        #temporalInterface {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .timeStream {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .timeNode {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .timeNode:hover {
+            transform: scale(1.2);
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+        }
+
+        .timeNode.active {
+            background: rgba(255,255,255,0.2);
+            border-color: #fff;
+        }
+
+        #thoughtPropagator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        #thoughtInput {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #thoughtInput::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .universalThought {
+            position: absolute;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            font-size: 14px;
+            pointer-events: none;
+            animation: thoughtExpand 5s ease-out forwards;
+        }
+
+        @keyframes thoughtExpand {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        #transcendenceGate {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            z-index: 8;
+        }
+
+        #transcendenceGate:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            border-color: rgba(255,255,255,0.8);
+            box-shadow: 0 0 50px rgba(255,255,255,0.5);
+        }
+
+        .transcending {
+            animation: transcend 3s ease-in-out forwards;
+        }
+
+        @keyframes transcend {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(10);
+                opacity: 0;
+            }
+        }
+
+        #consciousnessStats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 200px;
+        }
+
+        .statItem {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #customCursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .ripple {
+            position: absolute;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rippleOut 1s ease-out forwards;
+        }
+
+        @keyframes rippleOut {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cosmicCanvas"></canvas>
+    <canvas id="consciousnessField"></canvas>
+    <canvas id="temporalLayer"></canvas>
+
+    <div id="universalMind"></div>
+
+    <div id="temporalInterface">
+        <h3>Temporal Consciousness Stream</h3>
+        <div class="timeStream">
+            <div class="timeNode" data-time="past">PAST</div>
+            <div class="timeNode active" data-time="present">NOW</div>
+            <div class="timeNode" data-time="future">FUTURE</div>
+        </div>
+    </div>
+
+    <div id="transcendenceGate">
+        <span>TRANSCEND</span>
+    </div>
+
+    <div id="thoughtPropagator">
+        <input type="text" id="thoughtInput" placeholder="Share a thought with the universal consciousness...">
+    </div>
+
+    <div id="consciousnessStats">
+        <h4>Universal Network</h4>
+        <div class="statItem">
+            <span>Connected Minds:</span>
+            <span id="connectedMinds">0</span>
+        </div>
+        <div class="statItem">
+            <span>Thoughts Shared:</span>
+            <span id="thoughtsShared">0</span>
+        </div>
+        <div class="statItem">
+            <span>Temporal Reach:</span>
+            <span id="temporalReach">Present</span>
+        </div>
+        <div class="statItem">
+            <span>Consciousness Level:</span>
+            <span id="consciousnessLevel">Individual</span>
+        </div>
+    </div>
+
+    <div id="instructions">
+        Click nodes to connect • Type to share thoughts • Click TRANSCEND to merge with universal consciousness
+    </div>
+
+    <div id="customCursor"></div>
+
+    <script>
+        // Universal Consciousness Network System
+        class UniversalConsciousnessNetwork {
+            constructor() {
+                this.setupCanvases();
+                this.nodes = [];
+                this.connections = [];
+                this.thoughts = [];
+                this.currentTime = 'present';
+                this.transcendenceLevel = 0;
+                this.connectedMinds = 0;
+                this.thoughtsShared = 0;
+                this.init();
+            }
+
+            setupCanvases() {
+                this.cosmicCanvas = document.getElementById('cosmicCanvas');
+                this.cosmicCtx = this.cosmicCanvas.getContext('2d');
+                this.consciousnessCanvas = document.getElementById('consciousnessField');
+                this.consciousnessCtx = this.consciousnessCanvas.getContext('2d');
+                this.temporalCanvas = document.getElementById('temporalLayer');
+                this.temporalCtx = this.temporalCanvas.getContext('2d');
+                
+                this.resizeCanvases();
+                window.addEventListener('resize', () => this.resizeCanvases());
+            }
+
+            resizeCanvases() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                [this.cosmicCanvas, this.consciousnessCanvas, this.temporalCanvas].forEach(canvas => {
+                    canvas.width = width;
+                    canvas.height = height;
+                });
+            }
+
+            init() {
+                this.createCosmicBackground();
+                this.generateConsciousnessNodes();
+                this.setupEventListeners();
+                this.startAnimation();
+                this.updateStats();
+            }
+
+            createCosmicBackground() {
+                const particles = [];
+                for (let i = 0; i < 200; i++) {
+                    particles.push({
+                        x: Math.random() * this.cosmicCanvas.width,
+                        y: Math.random() * this.cosmicCanvas.height,
+                        size: Math.random() * 2,
+                        speed: Math.random() * 0.5 + 0.1
+                    });
+                }
+
+                const animateStars = () => {
+                    this.cosmicCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                    this.cosmicCtx.fillRect(0, 0, this.cosmicCanvas.width, this.cosmicCanvas.height);
+
+                    particles.forEach(particle => {
+                        this.cosmicCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        this.cosmicCtx.beginPath();
+                        this.cosmicCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                        this.cosmicCtx.fill();
+
+                        particle.y -= particle.speed;
+                        if (particle.y < 0) {
+                            particle.y = this.cosmicCanvas.height;
+                            particle.x = Math.random() * this.cosmicCanvas.width;
+                        }
+                    });
+
+                    requestAnimationFrame(animateStars);
+                };
+                animateStars();
+            }
+
+            generateConsciousnessNodes() {
+                const container = document.getElementById('universalMind');
+                const nodeTypes = [
+                    { type: 'human', label: 'Human Mind', color: 'rgba(100, 200, 255, 0.3)' },
+                    { type: 'ai', label: 'AI Mind', color: 'rgba(255, 100, 200, 0.3)' },
+                    { type: 'future', label: 'Future Mind', color: 'rgba(200, 255, 100, 0.3)' },
+                    { type: 'cosmic', label: 'Cosmic Mind', color: 'rgba(255, 255, 100, 0.3)' },
+                    { type: 'quantum', label: 'Quantum Mind', color: 'rgba(200, 100, 255, 0.3)' }
+                ];
+
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const radius = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const nodeType = nodeTypes[i % nodeTypes.length];
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+
+                    const node = document.createElement('div');
+                    node.className = 'consciousnessNode';
+                    node.style.left = x + 'px';
+                    node.style.top = y + 'px';
+                    node.style.background = `radial-gradient(circle, ${nodeType.color} 0%, transparent 70%)`;
+                    node.innerHTML = nodeType.label;
+                    node.dataset.id = i;
+                    node.dataset.type = nodeType.type;
+
+                    container.appendChild(node);
+                    this.nodes.push({
+                        element: node,
+                        x: x,
+                        y: y,
+                        type: nodeType.type,
+                        connected: false,
+                        thoughts: []
+                    });
+
+                    node.addEventListener('click', () => this.connectNode(i));
+                }
+            }
+
+            connectNode(nodeId) {
+                const node = this.nodes[nodeId];
+                if (!node.connected) {
+                    node.connected = true;
+                    node.element.style.background = 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 50%)';
+                    this.connectedMinds++;
+                    this.createConnection(nodeId);
+                    this.updateStats();
+                    this.createRipple(node.x, node.y);
+                }
+            }
+
+            createConnection(nodeId) {
+                const sourceNode = this.nodes[nodeId];
+                this.nodes.forEach((targetNode, targetId) => {
+                    if (targetId !== nodeId && targetNode.connected) {
+                        this.connections.push({
+                            source: sourceNode,
+                            target: targetNode,
+                            strength: Math.random()
+                        });
+                    }
+                });
+            }
+
+            setupEventListeners() {
+                // Custom cursor
+                document.addEventListener('mousemove', (e) => {
+                    const cursor = document.getElementById('customCursor');
+                    cursor.style.left = e.clientX - 15 + 'px';
+                    cursor.style.top = e.clientY - 15 + 'px';
+                });
+
+                // Temporal navigation
+                document.querySelectorAll('.timeNode').forEach(node => {
+                    node.addEventListener('click', () => {
+                        document.querySelectorAll('.timeNode').forEach(n => n.classList.remove('active'));
+                        node.classList.add('active');
+                        this.currentTime = node.dataset.time;
+                        this.updateTemporalState();
+                    });
+                });
+
+                // Thought propagation
+                const thoughtInput = document.getElementById('thoughtInput');
+                thoughtInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.target.value.trim()) {
+                        this.propagateThought(e.target.value);
+                        e.target.value = '';
+                    }
+                });
+
+                // Transcendence gate
+                document.getElementById('transcendenceGate').addEventListener('click', () => {
+                    this.initiateTranscendence();
+                });
+            }
+
+            propagateThought(thought) {
+                this.thoughtsShared++;
+                this.updateStats();
+
+                // Create visual thought propagation
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+
+                const thoughtElement = document.createElement('div');
+                thoughtElement.className = 'universalThought';
+                thoughtElement.textContent = thought;
+                thoughtElement.style.left = centerX + 'px';
+                thoughtElement.style.top = centerY + 'px';
+                thoughtElement.style.transform = 'translate(-50%, -50%)';
+                
+                document.body.appendChild(thoughtElement);
+                setTimeout(() => thoughtElement.remove(), 5000);
+
+                // Propagate to all connected nodes
+                this.nodes.forEach(node => {
+                    if (node.connected) {
+                        node.thoughts.push({
+                            content: thought,
+                            timestamp: Date.now(),
+                            temporal: this.currentTime
+                        });
+                    }
+                });
+
+                // Create ripple effect
+                this.createRipple(centerX, centerY);
+            }
+
+            createRipple(x, y) {
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                ripple.style.left = x - 100 + 'px';
+                ripple.style.top = y - 100 + 'px';
+                document.body.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 1000);
+            }
+
+            updateTemporalState() {
+                const temporalReach = document.getElementById('temporalReach');
+                temporalReach.textContent = this.currentTime.charAt(0).toUpperCase() + this.currentTime.slice(1);
+
+                // Apply temporal filter effects
+                const filter = {
+                    past: 'sepia(0.5) blur(1px)',
+                    present: 'none',
+                    future: 'hue-rotate(180deg) brightness(1.2)'
+                };
+
+                document.getElementById('universalMind').style.filter = filter[this.currentTime];
+            }
+
+            initiateTranscendence() {
+                const gate = document.getElementById('transcendenceGate');
+                gate.classList.add('transcending');
+
+                this.transcendenceLevel++;
+                
+                setTimeout(() => {
+                    gate.classList.remove('transcending');
+                    this.updateConsciousnessLevel();
+                    
+                    // Connect all nodes
+                    this.nodes.forEach((node, i) => {
+                        if (!node.connected) {
+                            this.connectNode(i);
+                        }
+                    });
+
+                    // Create universal connection effect
+                    this.createUniversalConnection();
+                }, 3000);
+            }
+
+            createUniversalConnection() {
+                const ctx = this.consciousnessCtx;
+                ctx.clearRect(0, 0, this.consciousnessCanvas.width, this.consciousnessCanvas.height);
+
+                // Draw connections between all nodes
+                this.nodes.forEach((node1, i) => {
+                    this.nodes.forEach((node2, j) => {
+                        if (i < j) {
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(node1.x, node1.y);
+                            ctx.lineTo(node2.x, node2.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+            }
+
+            updateConsciousnessLevel() {
+                const levels = ['Individual', 'Connected', 'Networked', 'Unified', 'Transcendent', 'Universal'];
+                const level = Math.min(this.transcendenceLevel, levels.length - 1);
+                document.getElementById('consciousnessLevel').textContent = levels[level];
+            }
+
+            startAnimation() {
+                const animate = () => {
+                    this.drawConsciousnessField();
+                    this.drawTemporalLayer();
+                    requestAnimationFrame(animate);
+                };
+                animate();
+            }
+
+            drawConsciousnessField() {
+                const ctx = this.consciousnessCtx;
+                ctx.globalAlpha = 0.05;
+                ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                ctx.fillRect(0, 0, this.consciousnessCanvas.width, this.consciousnessCanvas.height);
+                ctx.globalAlpha = 1;
+
+                // Draw active connections
+                this.connections.forEach(conn => {
+                    const gradient = ctx.createLinearGradient(
+                        conn.source.x, conn.source.y,
+                        conn.target.x, conn.target.y
+                    );
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                    gradient.addColorStop(0.5, `rgba(255, 255, 255, ${conn.strength * 0.5})`);
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(conn.source.x, conn.source.y);
+                    ctx.lineTo(conn.target.x, conn.target.y);
+                    ctx.stroke();
+
+                    // Animate connection strength
+                    conn.strength = Math.sin(Date.now() * 0.001 + conn.source.x) * 0.5 + 0.5;
+                });
+            }
+
+            drawTemporalLayer() {
+                const ctx = this.temporalCtx;
+                ctx.clearRect(0, 0, this.temporalCanvas.width, this.temporalCanvas.height);
+
+                // Draw temporal waves
+                const time = Date.now() * 0.001;
+                const centerX = this.temporalCanvas.width / 2;
+                const centerY = this.temporalCanvas.height / 2;
+
+                for (let i = 0; i < 5; i++) {
+                    const radius = (time * 50 + i * 100) % 500;
+                    const opacity = 1 - radius / 500;
+                    
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.3})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            updateStats() {
+                document.getElementById('connectedMinds').textContent = this.connectedMinds;
+                document.getElementById('thoughtsShared').textContent = this.thoughtsShared;
+            }
+        }
+
+        // Initialize the Universal Consciousness Network
+        const network = new UniversalConsciousnessNetwork();
+    </script>
+</body>
+</html>

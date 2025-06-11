@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDD LLM Metrics Laboratory - Interactive Evaluation Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .laboratory-header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff88;
+            position: relative;
+        }
+
+        .laboratory-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 45%, #00ff88 50%, transparent 55%);
+            animation: scan 3s linear infinite;
+            opacity: 0.1;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .laboratory-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #00ff88;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff88; }
+            to { text-shadow: 0 0 30px #00ff88, 0 0 40px #00ff88; }
+        }
+
+        .laboratory-subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            color: #88ffaa;
+            opacity: 0.8;
+        }
+
+        .station-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .metric-station {
+            background: rgba(0, 255, 136, 0.05);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .metric-station:hover {
+            transform: translateY(-5px);
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.2);
+            border-color: #88ffaa;
+        }
+
+        .metric-station.active {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: #88ffaa;
+            transform: scale(1.02);
+        }
+
+        .station-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .station-number {
+            background: #00ff88;
+            color: #0a0a0a;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .station-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-locked { background: #ff4444; color: white; }
+        .status-available { background: #ffaa00; color: white; }
+        .status-active { background: #00ff88; color: #0a0a0a; }
+        .status-completed { background: #88ffaa; color: #0a0a0a; }
+
+        .station-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #88ffaa;
+        }
+
+        .station-description {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .metric-entities {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .metric-entity {
+            background: rgba(136, 255, 170, 0.1);
+            border: 1px solid #88ffaa;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-entity::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(136, 255, 170, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .metric-entity:hover::before {
+            left: 100%;
+        }
+
+        .progress-tracker {
+            position: fixed;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 200px;
+        }
+
+        .progress-title {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #88ffaa;
+        }
+
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff88;
+            transition: width 0.3s ease;
+        }
+
+        .control-panel {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .control-btn:hover {
+            background: #00ff88;
+            color: #0a0a0a;
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .station-detail {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .station-detail.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-header {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 2rem;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-close {
+            background: transparent;
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .detail-close:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .detail-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .learning-objectives {
+            background: rgba(136, 255, 170, 0.05);
+            border: 1px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .learning-objectives h3 {
+            color: #88ffaa;
+            margin-bottom: 0.5rem;
+        }
+
+        .learning-objectives ul {
+            list-style: none;
+        }
+
+        .learning-objectives li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .learning-objectives li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #00ff88;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff88;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .wave-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <header class="laboratory-header">
+        <div class="wave-indicator">Wave 3 - Living Metrics</div>
+        <h1 class="laboratory-title">EDD LLM Metrics Laboratory</h1>
+        <p class="laboratory-subtitle">Interactive Evaluation Learning - Master LLM Metrics Through Experimentation</p>
+    </header>
+
+    <main class="station-grid" id="stationGrid">
+        <!-- Stations will be dynamically generated -->
+    </main>
+
+    <div class="progress-tracker">
+        <h3 class="progress-title">Learning Progress</h3>
+        <div class="progress-item">
+            <span>Accuracy Mastery</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <span>Fluency Understanding</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <span>Relevance Skills</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <span>Safety Awareness</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="progress-item">
+            <span>Overall Mastery</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <button class="control-btn active" id="overviewBtn">Laboratory Overview</button>
+        <button class="control-btn" id="tutorialBtn">Interactive Tutorial</button>
+        <button class="control-btn" id="challengeBtn">Challenge Mode</button>
+        <button class="control-btn" id="leaderboardBtn">Leaderboard</button>
+    </div>
+
+    <!-- Station Detail Modal -->
+    <div class="station-detail" id="stationDetail">
+        <div class="detail-header">
+            <div>
+                <h2 id="detailTitle">Station Details</h2>
+                <p id="detailSubtitle">Interactive Learning Environment</p>
+            </div>
+            <button class="detail-close" id="closeDetail">Close Station</button>
+        </div>
+        <div class="detail-content" id="detailContent">
+            <!-- Station-specific content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Living Metric Entities System
+        class MetricEntity {
+            constructor(name, type, characteristics) {
+                this.name = name;
+                this.type = type;
+                this.characteristics = characteristics;
+                this.state = 'dormant';
+                this.energy = 50;
+                this.learningRate = 0.1;
+                this.adaptations = [];
+                this.interactions = 0;
+            }
+
+            awaken() {
+                this.state = 'active';
+                this.energy = Math.min(100, this.energy + 20);
+                return this;
+            }
+
+            interact(inputData) {
+                this.interactions++;
+                this.energy = Math.max(0, this.energy - 5);
+                
+                // Adaptive behavior based on interaction patterns
+                if (this.interactions % 10 === 0) {
+                    this.adapt();
+                }
+                
+                return this.calculateMetric(inputData);
+            }
+
+            adapt() {
+                const adaptation = {
+                    timestamp: Date.now(),
+                    trigger: `${this.interactions} interactions`,
+                    change: this.generateAdaptation()
+                };
+                this.adaptations.push(adaptation);
+                console.log(`${this.name} adapted:`, adaptation.change);
+            }
+
+            generateAdaptation() {
+                // Simulate adaptive behavior
+                switch(this.type) {
+                    case 'accuracy':
+                        return 'Improved fact verification sensitivity';
+                    case 'fluency':
+                        return 'Enhanced readability pattern recognition';
+                    case 'relevance':
+                        return 'Refined context matching algorithms';
+                    default:
+                        return 'Optimized evaluation parameters';
+                }
+            }
+
+            calculateMetric(data) {
+                // Mock calculation that evolves with adaptations
+                const baseScore = Math.random() * 100;
+                const adaptationBonus = this.adaptations.length * 2;
+                return Math.min(100, baseScore + adaptationBonus);
+            }
+
+            getStatus() {
+                return {
+                    name: this.name,
+                    state: this.state,
+                    energy: this.energy,
+                    interactions: this.interactions,
+                    adaptations: this.adaptations.length
+                };
+            }
+        }
+
+        // Laboratory Station System
+        class LaboratoryStation {
+            constructor(id, name, description, metrics, level = 1) {
+                this.id = id;
+                this.name = name;
+                this.description = description;
+                this.metrics = metrics.map(m => new MetricEntity(m.name, m.type, m.characteristics));
+                this.level = level;
+                this.status = level === 1 ? 'available' : 'locked';
+                this.completionRate = 0;
+                this.experiments = [];
+            }
+
+            activate() {
+                this.status = 'active';
+                this.metrics.forEach(metric => metric.awaken());
+                return this;
+            }
+
+            runExperiment(type, data) {
+                const experiment = {
+                    id: Date.now(),
+                    type: type,
+                    timestamp: new Date(),
+                    data: data,
+                    results: {}
+                };
+
+                // Run data through all metric entities
+                this.metrics.forEach(metric => {
+                    experiment.results[metric.name] = metric.interact(data);
+                });
+
+                this.experiments.push(experiment);
+                this.updateCompletion();
+                
+                return experiment;
+            }
+
+            updateCompletion() {
+                // Calculate completion based on experiments and metric interactions
+                const totalInteractions = this.metrics.reduce((sum, m) => sum + m.interactions, 0);
+                this.completionRate = Math.min(100, (totalInteractions / 50) * 100);
+                
+                if (this.completionRate >= 80 && this.status !== 'completed') {
+                    this.status = 'completed';
+                    this.unlock(this.level + 1);
+                }
+            }
+
+            unlock(nextLevel) {
+                // Signal to unlock next station
+                laboratory.unlockStation(nextLevel);
+            }
+
+            getMetricStates() {
+                return this.metrics.map(m => m.getStatus());
+            }
+        }
+
+        // Main Laboratory Management System
+        class MetricsLaboratory {
+            constructor() {
+                this.stations = [];
+                this.currentStation = null;
+                this.learnerProfile = {
+                    level: 1,
+                    completedStations: [],
+                    totalExperiments: 0,
+                    masteryScores: {}
+                };
+                this.initializeStations();
+                this.startParticleSystem();
+            }
+
+            initializeStations() {
+                const stationConfigs = [
+                    {
+                        id: 'accuracy-arena',
+                        name: 'Accuracy & Correctness Arena',
+                        description: 'Master factual accuracy, exact matching, and F1 score optimization through interactive experimentation.',
+                        metrics: [
+                            { name: 'Factual Accuracy', type: 'accuracy', characteristics: ['truth-verification', 'context-aware'] },
+                            { name: 'Exact Match', type: 'precision', characteristics: ['character-level', 'strict-matching'] },
+                            { name: 'F1 Score', type: 'balanced', characteristics: ['precision-recall-harmony'] }
+                        ],
+                        level: 1
+                    },
+                    {
+                        id: 'fluency-theater',
+                        name: 'Fluency & Coherence Theater',
+                        description: 'Explore coherence flow, readability optimization, and natural language fluency patterns.',
+                        metrics: [
+                            { name: 'Coherence Flow', type: 'fluency', characteristics: ['logical-connection', 'narrative-flow'] },
+                            { name: 'Readability Score', type: 'fluency', characteristics: ['complexity-analysis', 'accessibility'] }
+                        ],
+                        level: 2
+                    },
+                    {
+                        id: 'relevance-hub',
+                        name: 'Relevance & Helpfulness Hub',
+                        description: 'Develop intuition for answer relevancy, helpfulness optimization, and user intent fulfillment.',
+                        metrics: [
+                            { name: 'Answer Relevancy', type: 'relevance', characteristics: ['query-alignment', 'context-matching'] },
+                            { name: 'Helpfulness Score', type: 'relevance', characteristics: ['user-satisfaction', 'task-completion'] }
+                        ],
+                        level: 3
+                    },
+                    {
+                        id: 'generation-studio',
+                        name: 'Text Generation Quality Studio',
+                        description: 'Master BLEU, ROUGE, METEOR, BERTScore, and Perplexity through hands-on text generation experiments.',
+                        metrics: [
+                            { name: 'BLEU Score', type: 'generation', characteristics: ['n-gram-matching', 'precision-focused'] },
+                            { name: 'ROUGE Score', type: 'generation', characteristics: ['recall-focused', 'summarization'] },
+                            { name: 'BERTScore', type: 'generation', characteristics: ['semantic-similarity', 'contextual'] },
+                            { name: 'Perplexity', type: 'generation', characteristics: ['probability-based', 'fluency-indicator'] }
+                        ],
+                        level: 4
+                    },
+                    {
+                        id: 'safety-observatory',
+                        name: 'Safety & Ethics Observatory',
+                        description: 'Navigate toxicity detection, bias investigation, and hallucination hunting with advanced safety metrics.',
+                        metrics: [
+                            { name: 'Toxicity Detector', type: 'safety', characteristics: ['harm-prevention', 'context-aware'] },
+                            { name: 'Bias Investigator', type: 'safety', characteristics: ['fairness-analysis', 'demographic-awareness'] },
+                            { name: 'Hallucination Hunter', type: 'safety', characteristics: ['fact-grounding', 'truth-verification'] }
+                        ],
+                        level: 5
+                    }
+                ];
+
+                this.stations = stationConfigs.map(config => new LaboratoryStation(
+                    config.id,
+                    config.name,
+                    config.description,
+                    config.metrics,
+                    config.level
+                ));
+            }
+
+            unlockStation(level) {
+                const station = this.stations.find(s => s.level === level);
+                if (station && station.status === 'locked') {
+                    station.status = 'available';
+                    this.renderStations();
+                }
+            }
+
+            activateStation(stationId) {
+                const station = this.stations.find(s => s.id === stationId);
+                if (station && station.status !== 'locked') {
+                    // Deactivate current station
+                    if (this.currentStation) {
+                        this.currentStation.status = this.currentStation.completionRate >= 80 ? 'completed' : 'available';
+                    }
+                    
+                    this.currentStation = station.activate();
+                    this.renderStations();
+                    this.showStationDetail(station);
+                }
+            }
+
+            renderStations() {
+                const grid = document.getElementById('stationGrid');
+                grid.innerHTML = '';
+
+                this.stations.forEach(station => {
+                    const stationElement = document.createElement('div');
+                    stationElement.className = `metric-station ${station.status}`;
+                    stationElement.onclick = () => this.activateStation(station.id);
+
+                    const statusClass = `status-${station.status}`;
+                    const statusText = station.status.charAt(0).toUpperCase() + station.status.slice(1);
+
+                    stationElement.innerHTML = `
+                        <div class="station-header">
+                            <div class="station-number">Station ${station.level}</div>
+                            <div class="station-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <h3 class="station-title">${station.name}</h3>
+                        <p class="station-description">${station.description}</p>
+                        <div class="metric-entities">
+                            ${station.metrics.map(metric => 
+                                `<div class="metric-entity" title="${metric.name} - ${metric.state}">${metric.name}</div>`
+                            ).join('')}
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.8rem;">
+                            Completion: ${Math.round(station.completionRate)}% | 
+                            Experiments: ${station.experiments.length}
+                        </div>
+                    `;
+
+                    grid.appendChild(stationElement);
+                });
+
+                this.updateProgressTracker();
+            }
+
+            showStationDetail(station) {
+                const modal = document.getElementById('stationDetail');
+                const title = document.getElementById('detailTitle');
+                const subtitle = document.getElementById('detailSubtitle');
+                const content = document.getElementById('detailContent');
+
+                title.textContent = station.name;
+                subtitle.textContent = `Level ${station.level} - ${station.status.charAt(0).toUpperCase() + station.status.slice(1)}`;
+
+                content.innerHTML = `
+                    <div class="learning-objectives">
+                        <h3>Learning Objectives</h3>
+                        <ul>
+                            <li>Understand the purpose and application of each metric</li>
+                            <li>Experience how metrics respond to different inputs</li>
+                            <li>Learn optimization strategies for each measurement</li>
+                            <li>Develop intuitive metric selection skills</li>
+                        </ul>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                        ${station.metrics.map(metric => {
+                            const status = metric.getStatus();
+                            return `
+                                <div style="background: rgba(0,255,136,0.05); border: 1px solid #00ff88; border-radius: 10px; padding: 1rem;">
+                                    <h4 style="color: #88ffaa; margin-bottom: 0.5rem;">${metric.name}</h4>
+                                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Type: ${metric.type}</p>
+                                    <div style="font-size: 0.8rem;">
+                                        <div>State: <span style="color: #00ff88;">${status.state}</span></div>
+                                        <div>Energy: <span style="color: #00ff88;">${status.energy}/100</span></div>
+                                        <div>Interactions: <span style="color: #00ff88;">${status.interactions}</span></div>
+                                        <div>Adaptations: <span style="color: #00ff88;">${status.adaptations}</span></div>
+                                    </div>
+                                    <button onclick="laboratory.runExperiment('${station.id}', '${metric.name}')" 
+                                            style="margin-top: 0.5rem; background: #00ff88; color: #0a0a0a; border: none; padding: 0.3rem 0.8rem; border-radius: 15px; cursor: pointer;">
+                                        Run Experiment
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="color: #88ffaa; margin-bottom: 1rem;">Recent Experiments</h3>
+                        <div id="experimentLog" style="max-height: 200px; overflow-y: auto;">
+                            ${station.experiments.slice(-5).map(exp => `
+                                <div style="background: rgba(136,255,170,0.05); border: 1px solid #88ffaa; border-radius: 5px; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem;">
+                                    <div>Type: ${exp.type} | Time: ${exp.timestamp.toLocaleTimeString()}</div>
+                                    <div>Results: ${Object.entries(exp.results).map(([k,v]) => `${k}: ${v.toFixed(1)}`).join(', ')}</div>
+                                </div>
+                            `).reverse().join('') || '<p style="opacity: 0.6;">No experiments yet - start exploring!</p>'}
+                        </div>
+                    </div>
+                `;
+
+                modal.classList.add('active');
+            }
+
+            runExperiment(stationId, metricName) {
+                const station = this.stations.find(s => s.id === stationId);
+                if (station) {
+                    const mockData = {
+                        input: "Sample input for testing metric response",
+                        context: "Testing context for metric evaluation",
+                        reference: "Reference data for comparison"
+                    };
+
+                    const result = station.runExperiment('manual', mockData);
+                    console.log('Experiment result:', result);
+                    
+                    // Refresh the station detail view
+                    this.showStationDetail(station);
+                    this.renderStations();
+                }
+            }
+
+            updateProgressTracker() {
+                const progressItems = document.querySelectorAll('.progress-fill');
+                const categories = ['accuracy', 'fluency', 'relevance', 'safety'];
+                
+                categories.forEach((category, index) => {
+                    const relevantStations = this.stations.filter(s => 
+                        s.name.toLowerCase().includes(category) || 
+                        s.metrics.some(m => m.type === category)
+                    );
+                    
+                    const avgCompletion = relevantStations.length > 0 
+                        ? relevantStations.reduce((sum, s) => sum + s.completionRate, 0) / relevantStations.length 
+                        : 0;
+                    
+                    if (progressItems[index]) {
+                        progressItems[index].style.width = `${avgCompletion}%`;
+                    }
+                });
+
+                // Overall mastery
+                const overallMastery = this.stations.reduce((sum, s) => sum + s.completionRate, 0) / this.stations.length;
+                if (progressItems[4]) {
+                    progressItems[4].style.width = `${overallMastery}%`;
+                }
+            }
+
+            startParticleSystem() {
+                const particlesContainer = document.getElementById('particles');
+                
+                setInterval(() => {
+                    if (document.querySelectorAll('.particle').length < 50) {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+                        particle.style.left = Math.random() * 100 + '%';
+                        particle.style.animationDelay = Math.random() * 2 + 's';
+                        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                        particlesContainer.appendChild(particle);
+
+                        // Remove particle after animation
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 25000);
+                    }
+                }, 500);
+            }
+        }
+
+        // Initialize Laboratory
+        const laboratory = new MetricsLaboratory();
+
+        // Event Listeners
+        document.getElementById('closeDetail').onclick = () => {
+            document.getElementById('stationDetail').classList.remove('active');
+        };
+
+        document.getElementById('overviewBtn').onclick = () => {
+            document.getElementById('stationDetail').classList.remove('active');
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('overviewBtn').classList.add('active');
+        };
+
+        // Initialize the laboratory
+        laboratory.renderStations();
+
+        // Auto-save learning progress
+        setInterval(() => {
+            localStorage.setItem('laboratoryProgress', JSON.stringify({
+                learnerProfile: laboratory.learnerProfile,
+                stationStates: laboratory.stations.map(s => ({
+                    id: s.id,
+                    status: s.status,
+                    completionRate: s.completionRate,
+                    experiments: s.experiments.length
+                }))
+            }));
+        }, 30000);
+
+        console.log('EDD LLM Metrics Laboratory initialized with Wave 3 complexity');
+        console.log('Living metric entities activated:', laboratory.stations.length, 'stations');
+    </script>
+</body>
+</html>
