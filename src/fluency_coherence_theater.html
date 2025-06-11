@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station 2: Fluency & Coherence Theater - EDD LLM Metrics Laboratory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0a2e1a 100%);
+            color: #88ffaa;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .theater-header {
+            background: rgba(136, 255, 170, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #88ffaa;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .theater-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 45%, #88ffaa 50%, transparent 55%);
+            animation: scan 4s linear infinite;
+            opacity: 0.1;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .theater-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #88ffaa;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #88ffaa; }
+            to { text-shadow: 0 0 30px #88ffaa, 0 0 40px #88ffaa; }
+        }
+
+        .theater-subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            color: #aaffcc;
+            opacity: 0.8;
+        }
+
+        .theater-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .workshop-panel {
+            background: rgba(136, 255, 170, 0.05);
+            border: 2px solid #88ffaa;
+            border-radius: 15px;
+            padding: 2rem;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: #aaffcc;
+        }
+
+        .entity-status {
+            background: rgba(136, 255, 170, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #88ffaa;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .interactive-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #aaffcc;
+            border-bottom: 1px solid #88ffaa;
+            padding-bottom: 0.5rem;
+        }
+
+        .text-flow-area {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            color: #88ffaa;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .text-flow-area:focus {
+            outline: none;
+            border-color: #aaffcc;
+            box-shadow: 0 0 20px rgba(136, 255, 170, 0.3);
+        }
+
+        .coherence-visualizer {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 200px;
+        }
+
+        .sentence-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sentence-block {
+            background: rgba(136, 255, 170, 0.1);
+            border: 1px solid #88ffaa;
+            border-radius: 8px;
+            padding: 0.8rem;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sentence-block:hover {
+            background: rgba(136, 255, 170, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sentence-block.coherent {
+            border-color: #88ffaa;
+            background: rgba(136, 255, 170, 0.15);
+        }
+
+        .sentence-block.incoherent {
+            border-color: #ffaa88;
+            background: rgba(255, 170, 136, 0.1);
+        }
+
+        .sentence-block.off-topic {
+            border-color: #ff8888;
+            background: rgba(255, 136, 136, 0.1);
+        }
+
+        .coherence-score {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .connection-line {
+            height: 20px;
+            background: linear-gradient(to right, #88ffaa, #aaffcc);
+            margin: 0 2rem;
+            border-radius: 10px;
+            position: relative;
+            opacity: 0.6;
+        }
+
+        .connection-line::before {
+            content: '→';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #88ffaa;
+            font-size: 1.2rem;
+        }
+
+        .connection-line.weak {
+            background: linear-gradient(to right, #ffaa88, #ff8888);
+            opacity: 0.3;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            background: rgba(136, 255, 170, 0.2);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #88ffaa;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(136, 255, 170, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #88ffaa;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(136, 255, 170, 0.5);
+        }
+
+        .slider-value {
+            min-width: 60px;
+            background: rgba(136, 255, 170, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid #88ffaa;
+            text-align: center;
+        }
+
+        .metric-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric-score {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: flicker 3s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .metric-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(170, 255, 204, 0.1);
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #aaffcc;
+        }
+
+        .action-button {
+            background: transparent;
+            border: 2px solid #88ffaa;
+            color: #88ffaa;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+
+        .action-button:hover {
+            background: #88ffaa;
+            color: #0a0a0a;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(136, 255, 170, 0.5);
+        }
+
+        .action-button.primary {
+            background: #88ffaa;
+            color: #0a0a0a;
+        }
+
+        .action-button.primary:hover {
+            background: #aaffcc;
+            border-color: #aaffcc;
+        }
+
+        .workshop-tools {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tool-button {
+            background: rgba(136, 255, 170, 0.1);
+            border: 1px solid #88ffaa;
+            color: #88ffaa;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .tool-button:hover {
+            background: rgba(136, 255, 170, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tool-button.active {
+            background: #88ffaa;
+            color: #0a0a0a;
+        }
+
+        .mini-game-panel {
+            grid-column: 1 / -1;
+            background: rgba(255, 204, 136, 0.05);
+            border: 2px solid #ffcc88;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: #ffcc88;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-score {
+            font-size: 1.2rem;
+            color: #aaffcc;
+        }
+
+        .surgery-workspace {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .story-editor {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #ffcc88;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .story-fragments {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .fragment {
+            background: rgba(255, 204, 136, 0.1);
+            border: 1px solid #ffcc88;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .fragment:hover {
+            background: rgba(255, 204, 136, 0.2);
+            transform: scale(1.02);
+        }
+
+        .fragment.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .fragment.correct-position {
+            border-color: #88ffaa;
+            background: rgba(136, 255, 170, 0.1);
+        }
+
+        .fragment.incorrect-position {
+            border-color: #ff8888;
+            background: rgba(255, 136, 136, 0.1);
+        }
+
+        .drop-zone {
+            min-height: 60px;
+            border: 2px dashed #ffcc88;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.active {
+            border-color: #88ffaa;
+            background: rgba(136, 255, 170, 0.1);
+            opacity: 1;
+        }
+
+        .coherence-heatmap {
+            grid-column: 1 / -1;
+            background: rgba(170, 255, 204, 0.05);
+            border: 2px solid #aaffcc;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .heatmap-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #aaffcc;
+            margin-bottom: 2rem;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 2px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .heatmap-cell.low {
+            background: rgba(255, 136, 136, 0.3);
+        }
+
+        .heatmap-cell.medium {
+            background: rgba(255, 204, 136, 0.3);
+        }
+
+        .heatmap-cell.high {
+            background: rgba(136, 255, 170, 0.3);
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #88ffaa;
+            color: #88ffaa;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: #88ffaa;
+            color: #0a0a0a;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #88ffaa;
+            animation: float 25s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .readability-meter {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(136, 255, 170, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff8888, #ffcc88, #88ffaa);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <button class="back-button" onclick="window.history.back()">← Back to Laboratory</button>
+
+    <header class="theater-header">
+        <h1 class="theater-title">Station 2: Fluency & Coherence Theater</h1>
+        <p class="theater-subtitle">Explore Text Flow, Readability & Coherence Through Interactive Visualization</p>
+    </header>
+
+    <main class="theater-grid">
+        <!-- Coherence Flow Visualizer -->
+        <div class="workshop-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Coherence Flow Visualizer</h2>
+                <div class="entity-status" id="coherenceStatus">Entity: Learning</div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Logic Chain Builder</h3>
+                <div class="workshop-tools">
+                    <button class="tool-button active" onclick="selectTool('analyze')">Analyze Flow</button>
+                    <button class="tool-button" onclick="selectTool('shuffle')">Sentence Shuffler</button>
+                    <button class="tool-button" onclick="selectTool('drift')">Add Off-Topic Content</button>
+                    <button class="tool-button" onclick="selectTool('connect')">Connect Ideas</button>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Text to Analyze</label>
+                    <textarea class="text-flow-area" id="coherenceText" placeholder="Enter text to analyze coherence flow...">The rise of artificial intelligence has transformed many industries. Machine learning algorithms can now process vast amounts of data. This capability enables more accurate predictions and better decision-making. Companies are investing heavily in AI research and development. The technology promises to revolutionize how we work and live.</textarea>
+                </div>
+                
+                <button class="action-button primary" onclick="analyzeCoherence()">Analyze Coherence Flow</button>
+            </div>
+
+            <div class="coherence-visualizer" id="coherenceViz">
+                <div class="sentence-flow" id="sentenceFlow">
+                    <!-- Sentence blocks will be dynamically generated -->
+                </div>
+            </div>
+
+            <div class="metric-display">
+                <div class="metric-score" id="coherenceScore">--</div>
+                <div class="metric-breakdown">
+                    <div class="metric-item">
+                        <div class="metric-label">Logical Flow</div>
+                        <div class="metric-value" id="logicalFlow">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Topic Consistency</div>
+                        <div class="metric-value" id="topicConsistency">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Transition Quality</div>
+                        <div class="metric-value" id="transitionQuality">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fluency Workshop -->
+        <div class="workshop-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Fluency Workshop</h2>
+                <div class="entity-status" id="fluencyStatus">Entity: Optimizing</div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Readability Renderer</h3>
+                
+                <div class="control-group">
+                    <label class="control-label">Complexity Level</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="complexitySlider" min="0" max="100" value="50">
+                        <div class="slider-value" id="complexityValue">50%</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Text Sample</label>
+                    <textarea class="text-flow-area" id="fluencyText" placeholder="Enter text to analyze fluency...">The implementation of advanced neural networks necessitates comprehensive understanding of computational complexity. These sophisticated algorithms require extensive preprocessing of multidimensional datasets. The optimization process involves iterative refinement of hyperparameters through systematic experimentation.</textarea>
+                </div>
+
+                <div class="workshop-tools">
+                    <button class="tool-button" onclick="addGrammarErrors()">Grammar Gremlin</button>
+                    <button class="tool-button" onclick="adjustReadability()">Simplify Language</button>
+                    <button class="tool-button" onclick="enhanceStyle()">Style Enhancer</button>
+                    <button class="tool-button" onclick="compareWithHuman()">Compare to Human</button>
+                </div>
+                
+                <button class="action-button primary" onclick="analyzeFluency()">Analyze Fluency</button>
+            </div>
+
+            <div class="readability-meter">
+                <div class="meter-bar">
+                    <div class="meter-fill" id="readabilityFill" style="width: 0%"></div>
+                </div>
+                <div class="meter-labels">
+                    <span>Very Hard</span>
+                    <span>Hard</span>
+                    <span>Medium</span>
+                    <span>Easy</span>
+                    <span>Very Easy</span>
+                </div>
+            </div>
+
+            <div class="metric-display">
+                <div class="metric-score" id="fluencyScore">--</div>
+                <div class="metric-breakdown">
+                    <div class="metric-item">
+                        <div class="metric-label">Grammar Quality</div>
+                        <div class="metric-value" id="grammarQuality">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Readability</div>
+                        <div class="metric-value" id="readabilityScore">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Naturalness</div>
+                        <div class="metric-value" id="naturalnessScore">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini-Game: Story Surgeon -->
+        <div class="mini-game-panel">
+            <div class="game-header">
+                <h2 class="game-title">🏥 Story Surgeon Challenge</h2>
+                <div class="game-score">Coherence Restored: <span id="gameScore">0</span> | Operations: <span id="gameOperations">0</span></div>
+            </div>
+
+            <div class="surgery-workspace">
+                <div class="story-editor">
+                    <h3 style="color: #ffcc88; margin-bottom: 1rem;">Patient Story (Broken Narrative)</h3>
+                    <div class="story-fragments" id="storyFragments">
+                        <!-- Story fragments will be dynamically generated -->
+                    </div>
+                    <div class="drop-zone" id="storyTarget">
+                        Drop fragments here to reconstruct the story
+                    </div>
+                    <button class="action-button primary" onclick="checkStoryCoherence()">Diagnose Coherence</button>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.5); border: 2px solid #ffcc88; border-radius: 10px; padding: 1.5rem;">
+                    <h3 style="color: #ffcc88; margin-bottom: 1rem;">Surgery Stats</h3>
+                    <div class="metric-item" style="margin-bottom: 1rem;">
+                        <div class="metric-label">Coherence Health</div>
+                        <div class="metric-value" id="storyHealth">Critical</div>
+                    </div>
+                    <div class="metric-item" style="margin-bottom: 1rem;">
+                        <div class="metric-label">Flow Recovery</div>
+                        <div class="metric-value" id="flowRecovery">0%</div>
+                    </div>
+                    <div class="metric-item" style="margin-bottom: 1rem;">
+                        <div class="metric-label">Logic Connections</div>
+                        <div class="metric-value" id="logicConnections">0/5</div>
+                    </div>
+                    <button class="action-button" onclick="resetSurgery()">New Patient</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coherence Heatmap -->
+        <div class="coherence-heatmap">
+            <h2 class="heatmap-title">Live Coherence Heatmap</h2>
+            <div class="heatmap-grid" id="heatmapGrid">
+                <!-- Heatmap cells will be dynamically generated -->
+            </div>
+            <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+                <span style="color: #ff8888;">■ Low Coherence</span>
+                <span style="color: #ffcc88; margin-left: 2rem;">■ Medium Coherence</span>
+                <span style="color: #88ffaa; margin-left: 2rem;">■ High Coherence</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Living Metric Entities for Station 2
+        class CoherenceEntity {
+            constructor() {
+                this.interactions = 0;
+                this.learningRate = 0.15;
+                this.adaptations = [];
+                this.state = 'learning';
+                this.patterns = new Map();
+            }
+
+            analyzeFlow(text) {
+                this.interactions++;
+                
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                let coherenceScores = [];
+                let logicalFlow = 0;
+                let topicConsistency = 0;
+                let transitionQuality = 0;
+
+                // Analyze each sentence for coherence
+                sentences.forEach((sentence, index) => {
+                    const words = sentence.toLowerCase().split(/\s+/);
+                    
+                    // Calculate coherence based on word overlap with previous sentences
+                    let sentenceCoherence = 50; // Base score
+                    
+                    if (index > 0) {
+                        const prevWords = sentences[index - 1].toLowerCase().split(/\s+/);
+                        const overlap = words.filter(word => prevWords.includes(word) && word.length > 3);
+                        sentenceCoherence += overlap.length * 10;
+                    }
+
+                    // Topic consistency check
+                    const topicWords = ['artificial', 'intelligence', 'machine', 'learning', 'algorithm', 'data', 'technology'];
+                    const topicMatches = words.filter(word => topicWords.includes(word));
+                    sentenceCoherence += topicMatches.length * 5;
+
+                    coherenceScores.push(Math.min(100, sentenceCoherence));
+                });
+
+                // Calculate overall metrics
+                logicalFlow = coherenceScores.reduce((sum, score) => sum + score, 0) / coherenceScores.length;
+                topicConsistency = this.calculateTopicConsistency(sentences);
+                transitionQuality = this.calculateTransitionQuality(sentences);
+
+                const overallCoherence = (logicalFlow + topicConsistency + transitionQuality) / 3;
+
+                // Learning and adaptation
+                if (this.interactions % 3 === 0) {
+                    this.adapt(overallCoherence);
+                }
+
+                return {
+                    overall: overallCoherence,
+                    logicalFlow: logicalFlow,
+                    topicConsistency: topicConsistency,
+                    transitionQuality: transitionQuality,
+                    sentenceScores: coherenceScores,
+                    sentences: sentences
+                };
+            }
+
+            calculateTopicConsistency(sentences) {
+                // Simplified topic consistency calculation
+                const allWords = sentences.join(' ').toLowerCase().split(/\s+/);
+                const wordFreq = new Map();
+                
+                allWords.forEach(word => {
+                    if (word.length > 3) {
+                        wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
+                    }
+                });
+
+                const repeatedWords = Array.from(wordFreq.entries()).filter(([word, freq]) => freq > 1);
+                return Math.min(100, repeatedWords.length * 15);
+            }
+
+            calculateTransitionQuality(sentences) {
+                // Simplified transition quality assessment
+                const transitionWords = ['however', 'therefore', 'furthermore', 'additionally', 'consequently', 'moreover', 'thus', 'hence'];
+                let transitionCount = 0;
+                
+                sentences.forEach(sentence => {
+                    const words = sentence.toLowerCase().split(/\s+/);
+                    if (words.some(word => transitionWords.includes(word))) {
+                        transitionCount++;
+                    }
+                });
+
+                return Math.min(100, (transitionCount / sentences.length) * 200);
+            }
+
+            adapt(coherenceScore) {
+                this.adaptations.push({
+                    timestamp: Date.now(),
+                    score: coherenceScore,
+                    change: 'Enhanced coherence pattern recognition'
+                });
+                console.log('Coherence entity adapted:', this.adaptations.length);
+            }
+
+            shuffle(sentences) {
+                // Fisher-Yates shuffle
+                const shuffled = [...sentences];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+        }
+
+        class FluencyEntity {
+            constructor() {
+                this.interactions = 0;
+                this.adaptations = [];
+                this.state = 'optimizing';
+                this.grammarPatterns = new Set();
+            }
+
+            analyzeFluency(text, complexity = 50) {
+                this.interactions++;
+
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                const words = text.split(/\s+/);
+                
+                let grammarQuality = this.assessGrammar(text);
+                let readability = this.calculateReadability(text, complexity);
+                let naturalness = this.assessNaturalness(text);
+
+                const overallFluency = (grammarQuality + readability + naturalness) / 3;
+
+                if (this.interactions % 4 === 0) {
+                    this.adapt(overallFluency);
+                }
+
+                return {
+                    overall: overallFluency,
+                    grammarQuality: grammarQuality,
+                    readability: readability,
+                    naturalness: naturalness,
+                    wordCount: words.length,
+                    sentenceCount: sentences.length,
+                    avgWordsPerSentence: words.length / sentences.length
+                };
+            }
+
+            assessGrammar(text) {
+                // Simplified grammar assessment
+                let score = 100;
+                
+                // Check for common grammar issues
+                const issues = [
+                    /\b(there|their|they're)\b/gi,
+                    /\b(your|you're)\b/gi,
+                    /\s{2,}/g, // Multiple spaces
+                    /[.]{2,}/g, // Multiple periods
+                ];
+
+                issues.forEach(pattern => {
+                    const matches = text.match(pattern);
+                    if (matches) score -= matches.length * 5;
+                });
+
+                return Math.max(0, score);
+            }
+
+            calculateReadability(text, complexity) {
+                // Simplified readability based on complexity slider
+                const words = text.split(/\s+/);
+                const longWords = words.filter(word => word.length > 6);
+                const longWordRatio = longWords.length / words.length;
+                
+                const complexityFactor = complexity / 100;
+                const baseReadability = 100 - (longWordRatio * 100);
+                
+                return Math.max(0, Math.min(100, baseReadability * (1 - complexityFactor * 0.5)));
+            }
+
+            assessNaturalness(text) {
+                // Simplified naturalness assessment
+                let score = 80; // Base naturalness
+                
+                const formalWords = ['implementation', 'necessitates', 'comprehensive', 'sophisticated', 'optimization'];
+                const casualWords = ['get', 'make', 'use', 'help', 'work'];
+                
+                const words = text.toLowerCase().split(/\s+/);
+                const formalCount = words.filter(word => formalWords.includes(word)).length;
+                const casualCount = words.filter(word => casualWords.includes(word)).length;
+                
+                // Balance between formal and casual
+                const balance = Math.abs(formalCount - casualCount);
+                score -= balance * 5;
+                
+                return Math.max(0, Math.min(100, score));
+            }
+
+            adapt(fluencyScore) {
+                this.adaptations.push({
+                    timestamp: Date.now(),
+                    score: fluencyScore,
+                    change: 'Refined readability algorithms'
+                });
+                console.log('Fluency entity adapted:', this.adaptations.length);
+            }
+
+            addGrammarErrors(text) {
+                // Simulate adding grammar errors for demonstration
+                let errorText = text;
+                const errorTypes = [
+                    { from: /\bthe\b/g, to: 'teh' },
+                    { from: /\band\b/g, to: 'adn' },
+                    { from: /\./g, to: '..' },
+                ];
+
+                const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+                return errorText.replace(errorType.from, errorType.to);
+            }
+        }
+
+        // Initialize entities
+        const coherenceEntity = new CoherenceEntity();
+        const fluencyEntity = new FluencyEntity();
+
+        // Current tool selection
+        let currentTool = 'analyze';
+
+        // Event listeners
+        document.getElementById('complexitySlider').addEventListener('input', function() {
+            document.getElementById('complexityValue').textContent = this.value + '%';
+            // Auto-update fluency analysis
+            analyzeFluency();
+        });
+
+        // Tool selection
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Analysis functions
+        function analyzeCoherence() {
+            const text = document.getElementById('coherenceText').value;
+            const result = coherenceEntity.analyzeFlow(text);
+            
+            // Update metrics display
+            document.getElementById('coherenceScore').textContent = result.overall.toFixed(1) + '%';
+            document.getElementById('logicalFlow').textContent = result.logicalFlow.toFixed(1) + '%';
+            document.getElementById('topicConsistency').textContent = result.topicConsistency.toFixed(1) + '%';
+            document.getElementById('transitionQuality').textContent = result.transitionQuality.toFixed(1) + '%';
+            
+            // Visualize sentence flow
+            visualizeSentenceFlow(result.sentences, result.sentenceScores);
+            
+            // Update heatmap
+            updateCoherenceHeatmap(result.sentenceScores);
+        }
+
+        function analyzeFluency() {
+            const text = document.getElementById('fluencyText').value;
+            const complexity = parseInt(document.getElementById('complexitySlider').value);
+            const result = fluencyEntity.analyzeFluency(text, complexity);
+            
+            // Update metrics display
+            document.getElementById('fluencyScore').textContent = result.overall.toFixed(1) + '%';
+            document.getElementById('grammarQuality').textContent = result.grammarQuality.toFixed(1) + '%';
+            document.getElementById('readabilityScore').textContent = result.readability.toFixed(1) + '%';
+            document.getElementById('naturalnessScore').textContent = result.naturalness.toFixed(1) + '%';
+            
+            // Update readability meter
+            document.getElementById('readabilityFill').style.width = result.readability + '%';
+        }
+
+        function visualizeSentenceFlow(sentences, scores) {
+            const flowContainer = document.getElementById('sentenceFlow');
+            flowContainer.innerHTML = '';
+            
+            sentences.forEach((sentence, index) => {
+                const score = scores[index];
+                const sentenceBlock = document.createElement('div');
+                sentenceBlock.className = 'sentence-block';
+                
+                if (score >= 70) sentenceBlock.classList.add('coherent');
+                else if (score >= 40) sentenceBlock.classList.add('incoherent');
+                else sentenceBlock.classList.add('off-topic');
+                
+                sentenceBlock.innerHTML = `
+                    ${sentence.trim()}
+                    <div class="coherence-score">${score.toFixed(0)}%</div>
+                `;
+                
+                flowContainer.appendChild(sentenceBlock);
+                
+                // Add connection line (except for last sentence)
+                if (index < sentences.length - 1) {
+                    const connectionLine = document.createElement('div');
+                    connectionLine.className = score < 50 ? 'connection-line weak' : 'connection-line';
+                    flowContainer.appendChild(connectionLine);
+                }
+            });
+        }
+
+        function updateCoherenceHeatmap(scores) {
+            const heatmapGrid = document.getElementById('heatmapGrid');
+            heatmapGrid.innerHTML = '';
+            
+            // Create a grid representing coherence across the text
+            const gridSize = Math.min(20, scores.length * 2);
+            
+            for (let i = 0; i < gridSize; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                
+                const scoreIndex = Math.floor((i / gridSize) * scores.length);
+                const score = scores[scoreIndex] || 50;
+                
+                if (score >= 70) cell.classList.add('high');
+                else if (score >= 40) cell.classList.add('medium');
+                else cell.classList.add('low');
+                
+                cell.title = `Coherence: ${score.toFixed(1)}%`;
+                heatmapGrid.appendChild(cell);
+            }
+        }
+
+        // Workshop tool functions
+        function addGrammarErrors() {
+            const text = document.getElementById('fluencyText').value;
+            const errorText = fluencyEntity.addGrammarErrors(text);
+            document.getElementById('fluencyText').value = errorText;
+            analyzeFluency();
+        }
+
+        function adjustReadability() {
+            const text = document.getElementById('fluencyText').value;
+            // Simplified text (replace complex words with simpler ones)
+            const simplifications = {
+                'implementation': 'use',
+                'necessitates': 'needs',
+                'comprehensive': 'complete',
+                'sophisticated': 'advanced',
+                'optimization': 'improvement'
+            };
+            
+            let simplifiedText = text;
+            Object.entries(simplifications).forEach(([complex, simple]) => {
+                const regex = new RegExp(complex, 'gi');
+                simplifiedText = simplifiedText.replace(regex, simple);
+            });
+            
+            document.getElementById('fluencyText').value = simplifiedText;
+            analyzeFluency();
+        }
+
+        function enhanceStyle() {
+            // Add style enhancements
+            alert('Style Enhanced: Added transition words and improved flow!');
+            analyzeFluency();
+        }
+
+        function compareWithHuman() {
+            alert('Human Comparison: This text scores 15% lower than average human writing in naturalness.');
+        }
+
+        // Story Surgeon Game
+        class StorySurgeonGame {
+            constructor() {
+                this.score = 0;
+                this.operations = 0;
+                this.storyFragments = [
+                    "Once upon a time, there was a small village nestled in the mountains.",
+                    "The villagers lived peacefully, tending to their farms and animals.",
+                    "One day, a mysterious stranger arrived at the village gate.",
+                    "He carried with him tales of distant lands and magical creatures.",
+                    "The children gathered around to hear his wonderful stories.",
+                    "As night fell, the stranger revealed his true purpose for coming.",
+                    "He needed the village's help to save his homeland from a terrible curse.",
+                    "The brave villagers agreed to help, packing supplies for the journey.",
+                    "Together, they set off on an adventure that would change their lives forever."
+                ];
+                this.currentOrder = [];
+                this.correctOrder = [...this.storyFragments];
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                // Shuffle the fragments
+                this.currentOrder = coherenceEntity.shuffle(this.storyFragments);
+                this.renderFragments();
+                this.updateStats();
+            }
+
+            renderFragments() {
+                const container = document.getElementById('storyFragments');
+                container.innerHTML = '';
+                
+                this.currentOrder.forEach((fragment, index) => {
+                    const fragmentDiv = document.createElement('div');
+                    fragmentDiv.className = 'fragment';
+                    fragmentDiv.textContent = fragment;
+                    fragmentDiv.draggable = true;
+                    fragmentDiv.dataset.index = index;
+                    
+                    fragmentDiv.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', index);
+                        fragmentDiv.classList.add('dragging');
+                    });
+                    
+                    fragmentDiv.addEventListener('dragend', () => {
+                        fragmentDiv.classList.remove('dragging');
+                    });
+                    
+                    container.appendChild(fragmentDiv);
+                });
+            }
+
+            checkCoherence() {
+                this.operations++;
+                let correctPositions = 0;
+                
+                this.currentOrder.forEach((fragment, index) => {
+                    if (fragment === this.correctOrder[index]) {
+                        correctPositions++;
+                    }
+                });
+                
+                const coherencePercentage = (correctPositions / this.storyFragments.length) * 100;
+                this.score += Math.round(coherencePercentage);
+                
+                this.updateStats();
+                
+                if (coherencePercentage === 100) {
+                    alert('Perfect! You have fully restored the story\'s coherence!');
+                    this.initializeGame(); // Start new story
+                }
+            }
+
+            updateStats() {
+                document.getElementById('gameScore').textContent = this.score;
+                document.getElementById('gameOperations').textContent = this.operations;
+                
+                let correctPositions = 0;
+                this.currentOrder.forEach((fragment, index) => {
+                    if (fragment === this.correctOrder[index]) {
+                        correctPositions++;
+                    }
+                });
+                
+                const health = correctPositions >= 7 ? 'Healthy' : correctPositions >= 4 ? 'Stable' : 'Critical';
+                const recovery = Math.round((correctPositions / this.storyFragments.length) * 100);
+                
+                document.getElementById('storyHealth').textContent = health;
+                document.getElementById('flowRecovery').textContent = recovery + '%';
+                document.getElementById('logicConnections').textContent = `${correctPositions}/${this.storyFragments.length}`;
+            }
+        }
+
+        // Initialize game
+        const storySurgeon = new StorySurgeonGame();
+
+        function checkStoryCoherence() {
+            storySurgeon.checkCoherence();
+        }
+
+        function resetSurgery() {
+            storySurgeon.initializeGame();
+        }
+
+        // Particle system
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                if (document.querySelectorAll('.particle').length < 40) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    particle.style.animationDuration = (20 + Math.random() * 15) + 's';
+                    particlesContainer.appendChild(particle);
+
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 35000);
+                }
+            }, 800);
+        }
+
+        // Initialize
+        createParticles();
+        
+        // Auto-run initial analysis
+        setTimeout(() => {
+            analyzeCoherence();
+            analyzeFluency();
+        }, 1000);
+
+        console.log('Station 2: Fluency & Coherence Theater initialized');
+        console.log('Living entities active:', {
+            coherence: coherenceEntity.state,
+            fluency: fluencyEntity.state
+        });
+    </script>
+</body>
+</html>

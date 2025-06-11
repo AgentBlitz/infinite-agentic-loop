@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station 1: Accuracy & Correctness Arena - EDD LLM Metrics Laboratory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .arena-header {
+            background: rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff88;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .arena-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #00ff88;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff88; }
+            to { text-shadow: 0 0 30px #00ff88, 0 0 40px #00ff88; }
+        }
+
+        .arena-subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            color: #88ffaa;
+            opacity: 0.8;
+        }
+
+        .arena-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .detector-panel {
+            background: rgba(0, 255, 136, 0.05);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 2rem;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: #88ffaa;
+        }
+
+        .entity-status {
+            background: rgba(0, 255, 136, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #00ff88;
+        }
+
+        .interactive-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #88ffaa;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 0.5rem;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .slider-value {
+            min-width: 60px;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid #00ff88;
+            text-align: center;
+        }
+
+        .text-area {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 1rem;
+            color: #00ff88;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .text-area:focus {
+            outline: none;
+            border-color: #88ffaa;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .metric-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric-score {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .metric-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(136, 255, 170, 0.1);
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #88ffaa;
+        }
+
+        .action-button {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+
+        .action-button:hover {
+            background: #00ff88;
+            color: #0a0a0a;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .action-button.primary {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .action-button.primary:hover {
+            background: #88ffaa;
+            border-color: #88ffaa;
+        }
+
+        .mini-game-panel {
+            grid-column: 1 / -1;
+            background: rgba(255, 170, 0, 0.05);
+            border: 2px solid #ffaa00;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: #ffaa00;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-score {
+            font-size: 1.2rem;
+            color: #88ffaa;
+        }
+
+        .game-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .challenge-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #ffaa00;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .challenge-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .challenge-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-button {
+            background: transparent;
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            padding: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-button:hover {
+            background: rgba(255, 170, 0, 0.1);
+            border-color: #88ffaa;
+        }
+
+        .option-button.correct {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .option-button.incorrect {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .game-stats {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffaa00;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(255, 170, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        .leaderboard {
+            margin-top: 1rem;
+        }
+
+        .leaderboard-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #ffaa00;
+            text-align: center;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.3rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .visualization-panel {
+            grid-column: 1 / -1;
+            background: rgba(136, 255, 170, 0.05);
+            border: 2px solid #88ffaa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .vis-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #88ffaa;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .comparison-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #88ffaa;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .comparison-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .comparison-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #88ffaa;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff88;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <button class="back-button" onclick="window.history.back()">← Back to Laboratory</button>
+
+    <header class="arena-header">
+        <h1 class="arena-title">Station 1: Accuracy & Correctness Arena</h1>
+        <p class="arena-subtitle">Master LLM Accuracy Metrics Through Interactive Experimentation</p>
+    </header>
+
+    <main class="arena-grid">
+        <!-- Factual Accuracy Detector -->
+        <div class="detector-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Factual Accuracy Detector</h2>
+                <div class="entity-status" id="accuracyStatus">Entity: Active</div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Truth Slider Control</h3>
+                <div class="control-group">
+                    <label class="control-label">Factual Accuracy Level</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="truthSlider" min="0" max="100" value="75">
+                        <div class="slider-value" id="truthValue">75%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Context Manipulator</h3>
+                <div class="control-group">
+                    <label class="control-label">Source Context</label>
+                    <textarea class="text-area" id="sourceContext" placeholder="Enter source context or reference material...">The capital of France is Paris, established as the capital in 987 AD. It has a population of approximately 2.2 million in the city proper.</textarea>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">LLM Output to Evaluate</label>
+                    <textarea class="text-area" id="llmOutput" placeholder="Enter LLM output to evaluate for accuracy...">Paris is the capital of France and has been since the 10th century. The city has about 2.2 million people living in it.</textarea>
+                </div>
+                <button class="action-button primary" onclick="evaluateAccuracy()">Evaluate Accuracy</button>
+            </div>
+
+            <div class="metric-display" id="accuracyDisplay">
+                <div class="metric-score" id="accuracyScore">--</div>
+                <div class="metric-breakdown">
+                    <div class="metric-item">
+                        <div class="metric-label">Fact Match</div>
+                        <div class="metric-value" id="factMatch">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Context Alignment</div>
+                        <div class="metric-value" id="contextAlign">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Hallucination Risk</div>
+                        <div class="metric-value" id="hallucinationRisk">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exact Match Laboratory -->
+        <div class="detector-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Exact Match Laboratory</h2>
+                <div class="entity-status" id="exactMatchStatus">Entity: Active</div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Character-by-Character Visualizer</h3>
+                <div class="control-group">
+                    <label class="control-label">Reference Text</label>
+                    <textarea class="text-area" id="referenceText" placeholder="Enter reference text...">The quick brown fox jumps over the lazy dog</textarea>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Generated Text</label>
+                    <textarea class="text-area" id="generatedText" placeholder="Enter generated text...">The quick brown fox jumps over the lazy dog</textarea>
+                </div>
+                <button class="action-button primary" onclick="analyzeExactMatch()">Analyze Match</button>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Fuzzy Match Settings</h3>
+                <div class="control-group">
+                    <label class="control-label">Tolerance Level</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="toleranceSlider" min="0" max="100" value="0">
+                        <div class="slider-value" id="toleranceValue">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-display" id="exactMatchDisplay">
+                <div class="metric-score" id="exactMatchScore">--</div>
+                <div class="metric-breakdown">
+                    <div class="metric-item">
+                        <div class="metric-label">Character Match</div>
+                        <div class="metric-value" id="charMatch">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Length Diff</div>
+                        <div class="metric-value" id="lengthDiff">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Position Errors</div>
+                        <div class="metric-value" id="positionErrors">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- F1 Score Balancer -->
+        <div class="detector-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">F1 Score Balancer</h2>
+                <div class="entity-status" id="f1Status">Entity: Active</div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Precision/Recall Seesaw</h3>
+                <div class="control-group">
+                    <label class="control-label">Precision Weight</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="precisionSlider" min="0" max="100" value="50">
+                        <div class="slider-value" id="precisionValue">50%</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Recall Weight</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="recallSlider" min="0" max="100" value="50">
+                        <div class="slider-value" id="recallValue">50%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-section">
+                <h3 class="section-title">Classification Playground</h3>
+                <div class="control-group">
+                    <label class="control-label">True Positives</label>
+                    <input type="number" class="text-area" id="truePositives" value="85" style="height: 40px;">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">False Positives</label>
+                    <input type="number" class="text-area" id="falsePositives" value="15" style="height: 40px;">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">False Negatives</label>
+                    <input type="number" class="text-area" id="falseNegatives" value="10" style="height: 40px;">
+                </div>
+                <button class="action-button primary" onclick="calculateF1()">Calculate F1 Score</button>
+            </div>
+
+            <div class="metric-display" id="f1Display">
+                <div class="metric-score" id="f1Score">--</div>
+                <div class="metric-breakdown">
+                    <div class="metric-item">
+                        <div class="metric-label">Precision</div>
+                        <div class="metric-value" id="precisionScore">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Recall</div>
+                        <div class="metric-value" id="recallScore">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Balance</div>
+                        <div class="metric-value" id="balanceScore">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini-Game: Fact or Fiction -->
+        <div class="mini-game-panel">
+            <div class="game-header">
+                <h2 class="game-title">🎮 Fact or Fiction Challenge</h2>
+                <div class="game-score">Score: <span id="gameScore">0</span> | Streak: <span id="gameStreak">0</span></div>
+            </div>
+
+            <div class="game-content">
+                <div class="challenge-card">
+                    <div class="challenge-text" id="challengeText">
+                        Loading challenge...
+                    </div>
+                    <div class="challenge-options" id="challengeOptions">
+                        <!-- Options will be dynamically generated -->
+                    </div>
+                </div>
+
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <span>Accuracy Rate</span>
+                        <span id="accuracyRate">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Best Streak</span>
+                        <span id="bestStreak">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Games Played</span>
+                        <span id="gamesPlayed">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Calibration Score</span>
+                        <span id="calibrationScore">--</span>
+                    </div>
+
+                    <div class="leaderboard">
+                        <div class="leaderboard-title">🏆 Leaderboard</div>
+                        <div class="leaderboard-entry">
+                            <span>1. MetricMaster</span>
+                            <span>2,450</span>
+                        </div>
+                        <div class="leaderboard-entry">
+                            <span>2. AccuracyAce</span>
+                            <span>2,100</span>
+                        </div>
+                        <div class="leaderboard-entry">
+                            <span>3. TruthSeeker</span>
+                            <span>1,875</span>
+                        </div>
+                        <div class="leaderboard-entry">
+                            <span>4. You</span>
+                            <span id="playerScore">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Comparison Visualization -->
+        <div class="visualization-panel">
+            <h2 class="vis-title">Live Metric Comparison</h2>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <div class="comparison-label">Factual Accuracy</div>
+                    <div class="comparison-value" id="compAccuracy">--</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Exact Match</div>
+                    <div class="comparison-value" id="compExactMatch">--</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">F1 Score</div>
+                    <div class="comparison-value" id="compF1">--</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Precision</div>
+                    <div class="comparison-value" id="compPrecision">--</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Recall</div>
+                    <div class="comparison-value" id="compRecall">--</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Balance Quality</div>
+                    <div class="comparison-value" id="compBalance">--</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Living Metric Entities for Station 1
+        class AccuracyEntity {
+            constructor() {
+                this.interactions = 0;
+                this.accuracy = 0.8;
+                this.adaptations = [];
+                this.state = 'active';
+            }
+
+            evaluate(context, output) {
+                this.interactions++;
+                
+                // Simulate sophisticated accuracy evaluation
+                const contextWords = context.toLowerCase().split(/\s+/);
+                const outputWords = output.toLowerCase().split(/\s+/);
+                
+                let factMatches = 0;
+                let contextAlignment = 0;
+                let hallucinationRisk = 0;
+
+                // Simple fact matching
+                contextWords.forEach(word => {
+                    if (outputWords.includes(word) && word.length > 3) {
+                        factMatches += 10;
+                    }
+                });
+
+                // Context alignment scoring
+                contextAlignment = Math.min(100, factMatches * 1.2);
+
+                // Hallucination risk assessment
+                const uniqueInOutput = outputWords.filter(word => 
+                    !contextWords.includes(word) && word.length > 3
+                );
+                hallucinationRisk = Math.min(100, uniqueInOutput.length * 15);
+
+                const overallAccuracy = Math.max(0, Math.min(100, 
+                    (factMatches + contextAlignment - hallucinationRisk) / 2
+                ));
+
+                // Adaptation logic
+                if (this.interactions % 5 === 0) {
+                    this.adapt();
+                }
+
+                return {
+                    overall: overallAccuracy,
+                    factMatch: Math.min(100, factMatches),
+                    contextAlign: contextAlignment,
+                    hallucinationRisk: hallucinationRisk
+                };
+            }
+
+            adapt() {
+                this.adaptations.push({
+                    timestamp: Date.now(),
+                    change: 'Enhanced fact verification sensitivity'
+                });
+                console.log('Accuracy entity adapted:', this.adaptations.length);
+            }
+        }
+
+        class ExactMatchEntity {
+            constructor() {
+                this.interactions = 0;
+                this.tolerance = 0;
+                this.adaptations = [];
+                this.state = 'active';
+            }
+
+            analyze(reference, generated, tolerance = 0) {
+                this.interactions++;
+                this.tolerance = tolerance;
+
+                const refLength = reference.length;
+                const genLength = generated.length;
+                const lengthDiff = Math.abs(refLength - genLength);
+
+                let charMatch = 0;
+                let positionErrors = 0;
+
+                const minLength = Math.min(refLength, genLength);
+                
+                for (let i = 0; i < minLength; i++) {
+                    if (reference.charAt(i) === generated.charAt(i)) {
+                        charMatch++;
+                    } else {
+                        positionErrors++;
+                    }
+                }
+
+                const matchPercentage = minLength > 0 ? (charMatch / minLength) * 100 : 0;
+                const adjustedMatch = tolerance > 0 ? 
+                    Math.min(100, matchPercentage + (tolerance * 0.5)) : matchPercentage;
+
+                if (this.interactions % 7 === 0) {
+                    this.adapt();
+                }
+
+                return {
+                    overall: adjustedMatch,
+                    charMatch: matchPercentage,
+                    lengthDiff: lengthDiff,
+                    positionErrors: positionErrors
+                };
+            }
+
+            adapt() {
+                this.adaptations.push({
+                    timestamp: Date.now(),
+                    change: 'Optimized character comparison algorithm'
+                });
+                console.log('ExactMatch entity adapted:', this.adaptations.length);
+            }
+        }
+
+        class F1Entity {
+            constructor() {
+                this.interactions = 0;
+                this.adaptations = [];
+                this.state = 'active';
+            }
+
+            calculate(truePos, falsePos, falseNeg, precisionWeight = 0.5, recallWeight = 0.5) {
+                this.interactions++;
+
+                const precision = truePos + falsePos > 0 ? truePos / (truePos + falsePos) : 0;
+                const recall = truePos + falseNeg > 0 ? truePos / (truePos + falseNeg) : 0;
+                
+                const f1 = precision + recall > 0 ? 2 * (precision * recall) / (precision + recall) : 0;
+                
+                // Calculate balance quality
+                const balance = 100 - Math.abs(precision - recall) * 100;
+                
+                // Apply weights
+                const weightedF1 = (f1 * (precisionWeight + recallWeight)) / 2;
+
+                if (this.interactions % 6 === 0) {
+                    this.adapt();
+                }
+
+                return {
+                    overall: weightedF1 * 100,
+                    precision: precision * 100,
+                    recall: recall * 100,
+                    balance: balance
+                };
+            }
+
+            adapt() {
+                this.adaptations.push({
+                    timestamp: Date.now(),
+                    change: 'Refined precision-recall balancing'
+                });
+                console.log('F1 entity adapted:', this.adaptations.length);
+            }
+        }
+
+        // Initialize entities
+        const accuracyEntity = new AccuracyEntity();
+        const exactMatchEntity = new ExactMatchEntity();
+        const f1Entity = new F1Entity();
+
+        // Slider event listeners
+        document.getElementById('truthSlider').addEventListener('input', function() {
+            document.getElementById('truthValue').textContent = this.value + '%';
+        });
+
+        document.getElementById('toleranceSlider').addEventListener('input', function() {
+            document.getElementById('toleranceValue').textContent = this.value + '%';
+        });
+
+        document.getElementById('precisionSlider').addEventListener('input', function() {
+            const value = this.value;
+            document.getElementById('precisionValue').textContent = value + '%';
+            document.getElementById('recallSlider').value = 100 - value;
+            document.getElementById('recallValue').textContent = (100 - value) + '%';
+        });
+
+        document.getElementById('recallSlider').addEventListener('input', function() {
+            const value = this.value;
+            document.getElementById('recallValue').textContent = value + '%';
+            document.getElementById('precisionSlider').value = 100 - value;
+            document.getElementById('precisionValue').textContent = (100 - value) + '%';
+        });
+
+        // Evaluation functions
+        function evaluateAccuracy() {
+            const context = document.getElementById('sourceContext').value;
+            const output = document.getElementById('llmOutput').value;
+            
+            const result = accuracyEntity.evaluate(context, output);
+            
+            document.getElementById('accuracyScore').textContent = result.overall.toFixed(1) + '%';
+            document.getElementById('factMatch').textContent = result.factMatch.toFixed(1) + '%';
+            document.getElementById('contextAlign').textContent = result.contextAlign.toFixed(1) + '%';
+            document.getElementById('hallucinationRisk').textContent = result.hallucinationRisk.toFixed(1) + '%';
+            
+            updateComparison('compAccuracy', result.overall);
+        }
+
+        function analyzeExactMatch() {
+            const reference = document.getElementById('referenceText').value;
+            const generated = document.getElementById('generatedText').value;
+            const tolerance = parseInt(document.getElementById('toleranceSlider').value);
+            
+            const result = exactMatchEntity.analyze(reference, generated, tolerance);
+            
+            document.getElementById('exactMatchScore').textContent = result.overall.toFixed(1) + '%';
+            document.getElementById('charMatch').textContent = result.charMatch.toFixed(1) + '%';
+            document.getElementById('lengthDiff').textContent = result.lengthDiff;
+            document.getElementById('positionErrors').textContent = result.positionErrors;
+            
+            updateComparison('compExactMatch', result.overall);
+        }
+
+        function calculateF1() {
+            const truePos = parseInt(document.getElementById('truePositives').value) || 0;
+            const falsePos = parseInt(document.getElementById('falsePositives').value) || 0;
+            const falseNeg = parseInt(document.getElementById('falseNegatives').value) || 0;
+            const precisionWeight = parseInt(document.getElementById('precisionSlider').value) / 100;
+            const recallWeight = parseInt(document.getElementById('recallSlider').value) / 100;
+            
+            const result = f1Entity.calculate(truePos, falsePos, falseNeg, precisionWeight, recallWeight);
+            
+            document.getElementById('f1Score').textContent = result.overall.toFixed(1) + '%';
+            document.getElementById('precisionScore').textContent = result.precision.toFixed(1) + '%';
+            document.getElementById('recallScore').textContent = result.recall.toFixed(1) + '%';
+            document.getElementById('balanceScore').textContent = result.balance.toFixed(1) + '%';
+            
+            updateComparison('compF1', result.overall);
+            updateComparison('compPrecision', result.precision);
+            updateComparison('compRecall', result.recall);
+            updateComparison('compBalance', result.balance);
+        }
+
+        function updateComparison(elementId, value) {
+            document.getElementById(elementId).textContent = value.toFixed(1) + '%';
+        }
+
+        // Fact or Fiction Game Logic
+        class FactOrFictionGame {
+            constructor() {
+                this.score = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.gamesPlayed = 0;
+                this.correctAnswers = 0;
+                this.currentChallenge = null;
+                this.challenges = [
+                    {
+                        text: "The Great Wall of China is visible from space with the naked eye.",
+                        isTrue: false,
+                        explanation: "This is a common myth. The Great Wall is not visible from space with the naked eye."
+                    },
+                    {
+                        text: "Python was named after the British comedy group Monty Python.",
+                        isTrue: true,
+                        explanation: "Correct! Guido van Rossum named Python after Monty Python's Flying Circus."
+                    },
+                    {
+                        text: "Lightning never strikes the same place twice.",
+                        isTrue: false,
+                        explanation: "False. Lightning often strikes the same place multiple times, especially tall structures."
+                    },
+                    {
+                        text: "Goldfish have a memory span of only 3 seconds.",
+                        isTrue: false,
+                        explanation: "This is a myth. Goldfish can remember things for months, not seconds."
+                    },
+                    {
+                        text: "The human brain uses approximately 20% of the body's total energy.",
+                        isTrue: true,
+                        explanation: "Correct! Despite being only 2% of body weight, the brain uses about 20% of our energy."
+                    }
+                ];
+                this.loadNewChallenge();
+            }
+
+            loadNewChallenge() {
+                this.currentChallenge = this.challenges[Math.floor(Math.random() * this.challenges.length)];
+                
+                const challengeText = document.getElementById('challengeText');
+                const challengeOptions = document.getElementById('challengeOptions');
+                
+                challengeText.textContent = this.currentChallenge.text;
+                
+                challengeOptions.innerHTML = `
+                    <button class="option-button" onclick="game.answer(true)">🟢 TRUE - This statement is factually correct</button>
+                    <button class="option-button" onclick="game.answer(false)">🔴 FALSE - This statement is not factually correct</button>
+                `;
+            }
+
+            answer(userAnswer) {
+                this.gamesPlayed++;
+                const isCorrect = userAnswer === this.currentChallenge.isTrue;
+                
+                if (isCorrect) {
+                    this.correctAnswers++;
+                    this.score += (10 + this.streak * 2);
+                    this.streak++;
+                    this.bestStreak = Math.max(this.bestStreak, this.streak);
+                } else {
+                    this.streak = 0;
+                }
+
+                // Update UI
+                this.updateStats();
+                
+                // Show feedback
+                const options = document.querySelectorAll('.option-button');
+                options.forEach(btn => {
+                    if ((btn.textContent.includes('TRUE') && this.currentChallenge.isTrue) ||
+                        (btn.textContent.includes('FALSE') && !this.currentChallenge.isTrue)) {
+                        btn.classList.add('correct');
+                    } else {
+                        btn.classList.add('incorrect');
+                    }
+                    btn.disabled = true;
+                });
+
+                // Show explanation and load new challenge after delay
+                setTimeout(() => {
+                    alert(`${isCorrect ? 'Correct!' : 'Incorrect!'}\n\n${this.currentChallenge.explanation}`);
+                    this.loadNewChallenge();
+                }, 1000);
+            }
+
+            updateStats() {
+                document.getElementById('gameScore').textContent = this.score;
+                document.getElementById('gameStreak').textContent = this.streak;
+                document.getElementById('bestStreak').textContent = this.bestStreak;
+                document.getElementById('gamesPlayed').textContent = this.gamesPlayed;
+                document.getElementById('playerScore').textContent = this.score;
+                
+                const accuracyRate = this.gamesPlayed > 0 ? 
+                    ((this.correctAnswers / this.gamesPlayed) * 100).toFixed(1) + '%' : '--';
+                document.getElementById('accuracyRate').textContent = accuracyRate;
+                
+                const calibrationScore = this.gamesPlayed > 0 ? 
+                    Math.min(100, (this.correctAnswers * 10) + (this.bestStreak * 5)) : '--';
+                document.getElementById('calibrationScore').textContent = calibrationScore;
+            }
+        }
+
+        // Initialize game
+        const game = new FactOrFictionGame();
+
+        // Particle system
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                if (document.querySelectorAll('.particle').length < 30) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                    particlesContainer.appendChild(particle);
+
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 25000);
+                }
+            }, 1000);
+        }
+
+        // Initialize
+        createParticles();
+        
+        // Auto-run initial calculations
+        setTimeout(() => {
+            evaluateAccuracy();
+            analyzeExactMatch();
+            calculateF1();
+        }, 1000);
+
+        console.log('Station 1: Accuracy & Correctness Arena initialized');
+        console.log('Living entities active:', {
+            accuracy: accuracyEntity.state,
+            exactMatch: exactMatchEntity.state,
+            f1: f1Entity.state
+        });
+    </script>
+</body>
+</html>
